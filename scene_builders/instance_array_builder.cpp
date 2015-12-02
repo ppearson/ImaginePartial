@@ -54,9 +54,9 @@ std::string InstanceArrayBuilder::getSceneBuilderDescription()
 
 void InstanceArrayBuilder::buildParameters(Parameters& parameters, unsigned int flags)
 {
-	parameters.addParameter(new RangeParameter<unsigned int, unsigned int>("width", "width", &m_width, eParameterUInt, 1, 1000, eParameterScrubButton));
-	parameters.addParameter(new RangeParameter<unsigned int, unsigned int>("depth", "depth", &m_depth, eParameterUInt, 1, 1000, eParameterScrubButton));
-	parameters.addParameter(new RangeParameter<unsigned int, unsigned int>("height", "height", &m_height, eParameterUInt, 1, 1000, eParameterScrubButton));
+	parameters.addParameter(new RangeParameter<unsigned int, unsigned int>("width", "width", &m_width, eParameterUInt, 1, 5000, eParameterScrubButton));
+	parameters.addParameter(new RangeParameter<unsigned int, unsigned int>("depth", "depth", &m_depth, eParameterUInt, 1, 5000, eParameterScrubButton));
+	parameters.addParameter(new RangeParameter<unsigned int, unsigned int>("height", "height", &m_height, eParameterUInt, 1, 5000, eParameterScrubButton));
 
 	parameters.addParameter(new RangeParameter<float, float>("gapX", "X Gap", &m_gapX, eParameterFloat, 0.0f, 1000.0f, eParameterScrubButton));
 	parameters.addParameter(new RangeParameter<float, float>("gapY", "Y Gap", &m_gapY, eParameterFloat, 0.0f, 1000.0f, eParameterScrubButton));
@@ -176,7 +176,7 @@ void InstanceArrayBuilder::createScene(Scene& scene)
 				}
 
 				sprintf(szName, "InstArrayObj_%d", count++);
-				pNewObject->setName(szName);
+				pNewObject->setName(szName, false);
 
 				zPos += bbExtent.z + m_gapZ;
 

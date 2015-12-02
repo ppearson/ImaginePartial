@@ -53,7 +53,9 @@ public:
 
 		// hacks for the moment...
 		IMAGE_CONSTRAINTS_MIPMAP_LEVEL_MINUS1	= 1 << 15,
-		IMAGE_CONSTRAINTS_MIPMAP_LEVEL_MINUS2	= 1 << 16
+		IMAGE_CONSTRAINTS_MIPMAP_LEVEL_MINUS2	= 1 << 16,
+
+		IMAGE_NO_CACHING				= 1 << 24
 	};
 
 	virtual ~Image()

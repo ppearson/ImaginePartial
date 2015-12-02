@@ -19,6 +19,8 @@
 #include "image_reader_hgt.h"
 
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "image/image_1f.h"
 
@@ -31,18 +33,21 @@ ImageReaderHGT::ImageReaderHGT()
 
 Image* ImageReaderHGT::readGreyscaleImage(const std::string& filePath, unsigned int requiredTypeFlags)
 {
-	// TODO: work out res based on file size
-
-	unsigned int numRows = 1201;
-//	unsigned int numRows = 3601;
-
 	FILE* pFile = fopen(filePath.c_str(), "rb");
 	if (!pFile)
 	{
 		return NULL;
 	}
 
-	// TODO: scale this res to something nice
+	// work out the res based on file size... - only way there seems to be to do this.
+	struct stat fileInfo;
+	stat(filePath.c_str(), &fileInfo);
+	int fileSize = fileInfo.st_size;
+
+//	unsigned int numRows = 1201;
+//	unsigned int numRows = 3601;
+
+	unsigned int numRows = (fileSize == 2884802) ? 1201 : 3601;
 
 	unsigned int imageWidth = numRows;
 	unsigned int imageHeight = numRows;
@@ -71,12 +76,9 @@ Image* ImageReaderHGT::readGreyscaleImage(const std::string& filePath, unsigned 
 			fread(&secVal, 1, 1, pFile);
 
 			float elevation = (float)((float)mainVal * 256.0f) + (float)secVal;
-
-			// record the value regardless of whether it was an edit, we'll try and correct it later...
 			pNewImage->floatAt(x, y) = elevation;
 		}
 	}
-
 
 	fclose(pFile);
 

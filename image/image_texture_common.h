@@ -24,6 +24,7 @@
 #include "colour/colour3f.h"
 
 #include "utils/hints.h"
+#include "utils/time_counter.h"
 
 class ImageTextureFileHandle
 {
@@ -58,6 +59,20 @@ protected:
 	//       valid - NFS issues are a good example of this, so this might be a mechanism to allow
 	//       to do sweeps of these orphaned handles in the future...
 	bool			m_isOpen;
+};
+
+class ImageTextureCustomData
+{
+public:
+	ImageTextureCustomData()
+	{
+
+	}
+
+	virtual ~ImageTextureCustomData()
+	{
+
+	}
 };
 
 // represents one image, or one image's mipmap level
@@ -130,10 +145,20 @@ protected:
 class ImageTextureDetails
 {
 public:
-	ImageTextureDetails() : m_fullWidth(0), m_fullHeight(0), m_flipY(false),
-		m_isTiled(false), m_isMipmapped(false), m_isConstant(false), m_channelCount(0), m_dataType(eUnknown)
+	ImageTextureDetails() : m_pCustomData(NULL), m_fullWidth(0), m_fullHeight(0), m_flipY(false),
+		m_isTiled(false), m_isMipmapped(false), m_isConstant(false), m_needsPerThreadFileHandles(true),
+		m_channelCount(0), m_dataType(eUnknown), m_wrapMode(eClamp)
 	{
 
+	}
+
+	~ImageTextureDetails()
+	{
+		if (m_pCustomData)
+		{
+			delete m_pCustomData;
+			m_pCustomData = NULL;
+		}
 	}
 
 	enum ImageDataType
@@ -146,14 +171,25 @@ public:
 		eUInt8
 	};
 
+	enum ImageWrapMode
+	{
+		eClamp,
+		eBlack,
+		ePeriodic
+	};
+
+	void setFilePath(const std::string& filePath) { m_filePath = filePath; }
+	const std::string& getFilePath() const { return m_filePath; }
+
+	// this assumes it is not set before hand which should always be the case
+	void setCustomData(const ImageTextureCustomData* pData) { m_pCustomData = pData; }
+	const ImageTextureCustomData* getCustomData() const { return m_pCustomData; }
+
 	void setFullWidth(unsigned int fullWidth) { m_fullWidth = (float)fullWidth; }
 	void setFullHeight(unsigned int fullHeight) { m_fullHeight = (float)fullHeight; }
 
 	float getFullWidth() const { return m_fullWidth; }
 	float getFullHeight() const { return m_fullHeight; }
-
-	void setFilePath(const std::string& filePath) { m_filePath = filePath; }
-	const std::string& getFilePath() const { return m_filePath; }
 
 	void setFlipY(bool flipY) { m_flipY = flipY; }
 	bool isFlipY() const { return m_flipY; }
@@ -168,17 +204,27 @@ public:
 	void setIsConstant(bool isConstant) { m_isConstant = isConstant; }
 	bool isConstant() const { return m_isConstant; }
 
+	void setNeedsPerThreadFileHandles(bool needsPerThreadFileHandles) { m_needsPerThreadFileHandles = needsPerThreadFileHandles; }
+	bool isNeedsPerThreadFileHandles() const { return m_needsPerThreadFileHandles; }
+
 	void setChannelCount(unsigned int channelCount) { m_channelCount = channelCount; }
 	unsigned int getChannelCount() const { return m_channelCount; }
 
 	void setDataType(ImageDataType dataType) { m_dataType = dataType; }
 	ImageDataType getDataType() const { return m_dataType; }
 
+	void setWrapMode(ImageWrapMode wrapMode) { m_wrapMode = wrapMode; }
+	ImageWrapMode getWrapMode() const { return m_wrapMode; }
+
 	const std::vector<ImageTextureItemDetails>& getMipmaps() const { return m_aMipmaps; }
 	std::vector<ImageTextureItemDetails>& getMipmaps() { return m_aMipmaps; }
 
 protected:
 	std::string					m_filePath;
+
+	// optional custom data that an image reader can set, and then get access to later when reading tiles.
+	// once this is set, ImageTextureCache owns it and will free it with the ImageTextureItem
+	const ImageTextureCustomData*	m_pCustomData;
 
 	// don't really need these, as they're duplicates of the base level mipmap's items, but
 	// storing them as float prevents us having to cast when working out texture filtering regions...
@@ -191,9 +237,12 @@ protected:
 	bool						m_isMipmapped;
 	bool						m_isConstant;
 
+	bool						m_needsPerThreadFileHandles;
+
 	unsigned short				m_channelCount;
 
 	ImageDataType				m_dataType;
+	ImageWrapMode				m_wrapMode; // TODO: support separate s/t wrap modes?
 
 	std::vector<ImageTextureItemDetails>	m_aMipmaps;
 };
@@ -208,7 +257,8 @@ class ImageTextureTileReadParams
 public:
 	__finline ImageTextureTileReadParams(const ImageTextureDetails& textureDetails, unsigned int mmLevel, unsigned int tX,
 							   unsigned int tY, unsigned char* pD) : m_imageDetails(textureDetails), mipmapLevel(mmLevel),
-								tileX(tX), tileY(tY), pData(pD), m_pExistingFileHandle(NULL), m_allowedToLeaveFileHandleOpen(false)
+								tileX(tX), tileY(tY), pData(pD), m_pExistingFileHandle(NULL), m_allowedToLeaveFileHandleOpen(false),
+								m_wantStats(true)
 	{
 
 	}
@@ -220,6 +270,10 @@ public:
 
 	void setAllowedToLeaveFileHandleOpen(bool leaveOpen) { m_allowedToLeaveFileHandleOpen = leaveOpen; }
 	bool isAllowedToLeaveFileHandleOpen() const { return m_allowedToLeaveFileHandleOpen; }
+
+	// whether we want timing stats or not (there's a slight overhead to using the timers)
+	void setWantStats(bool wantStats) { m_wantStats = wantStats; }
+	bool wantStats() const { return m_wantStats; }
 
 protected:
 	const ImageTextureDetails&		m_imageDetails;
@@ -246,6 +300,8 @@ protected:
 	// If a reader wants to "leak" a file handle, it must set the pointer in ImageTextureTileReadResults
 	// to a non-NULL value, after which ImageTextureCache then owns and controls the handle object
 	bool	m_allowedToLeaveFileHandleOpen;
+
+	bool	m_wantStats;
 };
 
 // output parameter
@@ -267,19 +323,33 @@ public:
 
 	bool wasFileHandleUpdated() const { return m_existingFileHandleUpdated; }
 
-	void setTileConstant(const void* constantData)
+	// this assumes passed in data will be 1x1 res in size
+	void setTileConstant(unsigned char* pConstantData)
 	{
 		m_tileWasConstant = true;
-		m_pConstantData = constantData;
+		m_pConstantData = pConstantData;
 	}
 
-	const void* getConstantData()
+	void setFileOpenedThisRequest()
+	{
+		m_openedFile = true;
+	}
+
+	bool wasFileOpenedThisRequest() const
+	{
+		return m_openedFile;
+	}
+
+	unsigned char* getConstantData()
 	{
 		if (!m_tileWasConstant || !m_pConstantData)
 			return NULL;
 
 		return m_pConstantData;
 	}
+
+	TimerCounter& getFileOpenTimer() { return m_fileOpenTimer; }
+	TimerCounter& getFileReadTimer() { return m_fileReadTimer; }
 
 protected:
 	// we don't own this - a reader may optionally create a new one if allowed, and will set this pointer in that case.
@@ -295,14 +365,24 @@ protected:
 	// indicates the tile asked for was actually constant, and the passed in memory therefore wasn't used
 	// and can be de-allocated
 	bool						m_tileWasConstant;
+
 	// pointer to heap allocated constant value. Reader's should allow this to "leak", as the ImageTextureCache will own this
 	// and use it like a block of regular (non-constant) tile pixel data, and manage it.
 	// If a file reader supports determining if tile data is constant this is recommended (if determining this is fast),
 	// as ImageTextureCache slightly prioritises (in terms of keeping them) these allocations over regular tile data
 	// when freeing/paging tiles.
 	// It's currently assumed that the number of channels and data type is identical to that of normal tile blocks, just
-	// for one single pixel
-	const void*					m_pConstantData; // we don't own this
+	// for one single pixel.
+	// Note: Image reader's shouldn't use this method for entire images which are constant if they know that up front -
+	//       the best approach there currently is to just register the image as 1x1 in size, with no mipmap levels and
+	//       set the constant property to true. ImageTextureCache will recognise this when paging tiles and try not to
+	//       drop those ones as much (if ever)
+	unsigned char*		m_pConstantData; // we don't own this
+
+	// not really too happy about this, but alternative is providing callbacks back to ImageTextureCache to start/stop
+	// timers which the Reader calls, which seems rather convoluted and doesn't have any more guarentees in terms of enforcement
+	TimerCounter		m_fileOpenTimer;
+	TimerCounter		m_fileReadTimer;
 };
 
 #endif // IMAGE_TEXTURE_COMMON_H

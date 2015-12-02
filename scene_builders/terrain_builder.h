@@ -40,6 +40,8 @@ public:
 
 	virtual void createScene(Scene& scene);
 
+	virtual bool controlChanged(const std::string& name, PostChangedActions& postChangedActions);
+
 protected:
 	unsigned int	m_width;
 	unsigned int	m_depth;

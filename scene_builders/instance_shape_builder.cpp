@@ -470,7 +470,7 @@ void InstanceShapeBuilder::createScene(Scene& scene)
 			pNewObject->setPosition(Vector(point.x, point.y, point.z));
 
 			sprintf(szName, "so_%d", count++);
-			pNewObject->setName(szName);
+			pNewObject->setName(szName, false);
 
 			if (m_drawAsBBox)
 				pNewObject->setDisplayType(eBoundaryBox);

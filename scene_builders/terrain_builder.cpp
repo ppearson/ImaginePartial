@@ -83,7 +83,7 @@ void TerrainBuilder::createScene(Scene& scene)
 	if (m_heightSource == eImage && !m_heightMapPath.empty())
 	{
 		// load in the texture
-		unsigned int requiredFlags = Image::IMAGE_CHANNELS_1 | Image::IMAGE_FORMAT_NATIVE | Image::IMAGE_FLAGS_BRIGHTNESS;
+		unsigned int requiredFlags = Image::IMAGE_CHANNELS_1 | Image::IMAGE_FORMAT_NATIVE | Image::IMAGE_FLAGS_BRIGHTNESS | Image::IMAGE_NO_CACHING;
 
 		pHeightMapTexture = ImageTextureFactory::createGreyscaleImageTextureForImageFromPath(m_heightMapPath, requiredFlags);
 	}
@@ -357,6 +357,22 @@ void TerrainBuilder::createScene(Scene& scene)
 	pNewMesh->setDefaultMaterial();
 
 	addObject(scene, pNewMesh);
+}
+
+bool TerrainBuilder::controlChanged(const std::string& name, PostChangedActions& postChangedActions)
+{
+	if (name == "height_map_path")
+	{
+		if (m_heightMapPath.find("hgt") != std::string::npos)
+		{
+			m_normalise = true;
+
+			postChangedActions.addRefreshItem("normalise");
+
+			return true;
+		}
+	}
+	return false;
 }
 
 namespace
