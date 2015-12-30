@@ -216,19 +216,6 @@ System::ProcessMemInfo System::getProcessMemInfo()
 #if __linux__
 	// on linux, this is in kb, so
 	info.maxRSS *= 1024;
-
-	FILE* pFile = fopen("/proc/self/statm", "r");
-	if (!pFile)
-		return info;
-
-	unsigned long rssSize = 0;
-	// ignore first item up to whitespace
-	fscanf(pFile, "%*s%ld", &rssSize);
-
-	size_t pageSize = (size_t)sysconf(_SC_PAGESIZE);
-	info.currentRSS = rssSize * pageSize;
-
-	fclose(pFile);
 #endif
 
 	return info;

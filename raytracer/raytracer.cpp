@@ -267,21 +267,19 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 		memLimit *= 1024;
 		size_t fileHandleLimit = GlobalContext::instance().getTextureCacheFileHandleLimit();
 
-		m_pGlobalImageCache = new ImageTextureCache(memLimit, textureFileHandleCaching, fileHandleLimit);
-
-		unsigned int textureTileDataFixType = settings.getUInt("textureTileDataFix", 0);
-
-		m_pGlobalImageCache->setFixTileDataType((ImageTextureCache::FixTileValuesType)textureTileDataFixType);
+		m_pGlobalImageCache = new ImageTextureCache(memLimit, textureFileHandleCaching, fileHandleLimit, m_numberOfThreads);
 
 		if (m_pGlobalImageCache)
 		{
-			m_pGlobalImageCache->initThreadLocks(m_numberOfThreads);
-		}
+			unsigned int textureTileDataFixType = settings.getUInt("textureTileDataFix", 0);
 
-		float textureGlobalMipmapBias = settings.getFloat("textureGlobalMipmapBias", 0.0f);
-		if (textureGlobalMipmapBias != 0.0f)
-		{
-			m_pGlobalImageCache->setGlobalMipmapLevelBias((int)textureGlobalMipmapBias);
+			m_pGlobalImageCache->setFixTileDataType((ImageTextureCache::FixTileValuesType)textureTileDataFixType);
+
+			float textureGlobalMipmapBias = settings.getFloat("textureGlobalMipmapBias", 0.0f);
+			if (textureGlobalMipmapBias != 0.0f)
+			{
+				m_pGlobalImageCache->setGlobalMipmapLevelBias((int)textureGlobalMipmapBias);
+			}
 		}
 	}
 
@@ -328,7 +326,7 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 
 	// if we have more than one processor socket, initialise things differently
 	System::CPUInfo cpuInfo = System::getCPUInfo();
-	bool initOnThreads = cpuInfo.numSockets > 1;
+	bool initOnThreads = cpuInfo.numSockets > 1 && m_numberOfThreads > 1;
 
 	if (initOnThreads)
 	{
@@ -350,6 +348,19 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 				const RenderThreadInitHelper::RenderThreadInitResult& result = itResult->second;
 
 				m_aThreadTempImages.push_back(result.pImageTile);
+
+				// create approprate time counter for thread, based off stats type
+				ThreadTimeCounter* pNewTimeCounter = NULL;
+				if (m_statsType != eStatisticsFull)
+				{
+					pNewTimeCounter = new ThreadTimeCounterNull();
+				}
+				else
+				{
+					pNewTimeCounter = new ThreadTimeCounterReal();
+				}
+
+				result.pRenderThreadContext->setTimeCounter(pNewTimeCounter);
 
 				result.pRenderThreadContext->setMainImageTextureCache(m_pGlobalImageCache);
 
@@ -380,6 +391,19 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 			{
 				// TODO: this won't always be the value to set (e.g. per thread)...
 				pNewRenderThreadContext->setMainImageTextureCache(m_pGlobalImageCache);
+
+				// create approprate time counter for thread, based off stats type
+				ThreadTimeCounter* pNewTimeCounter = NULL;
+				if (m_statsType != eStatisticsFull)
+				{
+					pNewTimeCounter = new ThreadTimeCounterNull();
+				}
+				else
+				{
+					pNewTimeCounter = new ThreadTimeCounterReal();
+				}
+
+				pNewRenderThreadContext->setTimeCounter(pNewTimeCounter);
 
 				if (m_pGlobalImageCache)
 				{
