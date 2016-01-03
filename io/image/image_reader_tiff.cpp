@@ -53,7 +53,14 @@ bool ImageReaderTIFF::readInfo(TIFF* pTiff, TiffInfo& tiffInfo)
 	TIFFGetField(pTiff, TIFFTAG_SAMPLESPERPIXEL, &tiffInfo.channelCount);
 
 	TIFFGetField(pTiff, TIFFTAG_ROWSPERSTRIP, &tiffInfo.rowsPerStrip);
-	TIFFGetField(pTiff, TIFFTAG_SAMPLEFORMAT, &tiffInfo.sampleFormat);
+	TIFFGetFieldDefaulted(pTiff, TIFFTAG_SAMPLEFORMAT, &tiffInfo.sampleFormat);
+
+	uint16_t planarConfig = 0;
+	TIFFGetFieldDefaulted(pTiff, TIFFTAG_PLANARCONFIG, &planarConfig);
+	if (planarConfig == PLANARCONFIG_SEPARATE && tiffInfo.channelCount > 1)
+	{
+		tiffInfo.separatePlanes = true;
+	}
 
 	TIFFGetField(pTiff, TIFFTAG_ORIENTATION, &tiffInfo.orientation);
 
@@ -965,32 +972,241 @@ Image* ImageReaderTIFF::readTiledGreyscaleImage(const std::string& filePath, TIF
 
 bool ImageReaderTIFF::readImageDetails(const std::string& filePath, ImageTextureDetails& textureDetails) const
 {
-	// TODO: implement this at some point for completeness's sake, but given that tiled TIFF reading for texture caching
-	//       is really slow (due to statting done to change mipmap level dirs), using TIFFs for texture caching
-	//       at production level isn't really a good idea, and EXR is much faster...
-	return false;
-
-	if (!FileHelpers::doesFileExist(filePath))
-		return false;
-
-	bool isTiled = false;
-
-	if (!isTiled)
+	TIFF* pTiff = TIFFOpen(filePath.c_str(), "r");
+	if (!pTiff)
 	{
-		fprintf(stderr, "Reading of non-tiled TIFFs with texture caching enabled is not yet supported.\n");
+		fprintf(stderr, "Error reading file: %s\n", filePath.c_str());
 		return false;
 	}
 
-	return true;
+	TiffInfo info;
+	if (!readInfo(pTiff, info) || !info.isTiled)
+	{
+		TIFFClose(pTiff);
+		return false;
+	}
+
+	textureDetails.setFullWidth(info.imageWidth);
+	textureDetails.setFullHeight(info.imageHeight);
+
+	if (info.separatePlanes)
+	{
+		TiffCustomData* pCustData = new TiffCustomData();
+
+		pCustData->separatePlanes = true;
+
+		textureDetails.setCustomData(pCustData);
+	}
+
+	// TODO: technically, in TIFF all the below stuff can be completely different per subimage, so it's possible
+	// there's a complete miss-match and this won't work...
+
+	textureDetails.setChannelCount(info.channelCount);
+	ImageTextureDetails::ImageDataType dataType = ImageTextureDetails::eUnknown;
+	if (info.bitDepth == 8)
+	{
+		dataType = ImageTextureDetails::eUInt8;
+	}
+	else if (info.bitDepth == 16)
+	{
+		dataType = ImageTextureDetails::eUInt16;
+	}
+	else if (info.bitDepth == 32)
+	{
+		dataType = ImageTextureDetails::eFloat;
+	}
+	textureDetails.setDataType(dataType);
+
+	textureDetails.setIsTiled(true);
+	textureDetails.setMipmapped(true);
+
+	// we're not going to support all the modes, just check for flip of Y...
+	if (info.orientation == 1 || info.orientation == 2)
+	{
+		textureDetails.setFlipY(true);
+	}
+
+	std::vector<ImageTextureItemDetails>& mipmaps = textureDetails.getMipmaps();
+
+	unsigned int imageWidth = info.imageWidth;
+	unsigned int imageHeight = info.imageHeight;
+	unsigned int tileWidth = info.tileWidth;
+	unsigned int tileHeight = info.tileHeight;
+
+	bool wasOkay = true;
+
+	int mipmapLevel = 0;
+	while (imageWidth > 1 || imageHeight > 1)
+	{
+		ImageTextureItemDetails mipmapDetails(imageWidth, imageHeight, tileWidth, tileHeight);
+		mipmaps.push_back(mipmapDetails);
+
+		mipmapLevel += 1;
+		if (TIFFSetDirectory(pTiff, mipmapLevel) == 0)
+		{
+			// we don't seem to have this, so exit out...
+			break;
+		}
+
+		// check the subimages have roughly the same data type
+		uint16_t bitDepth;
+		uint16_t channelCount;
+		TIFFGetField(pTiff, TIFFTAG_BITSPERSAMPLE, &bitDepth);
+		TIFFGetField(pTiff, TIFFTAG_SAMPLESPERPIXEL, &channelCount);
+
+		// if not, exit out
+		if (bitDepth != info.bitDepth || channelCount != info.channelCount)
+		{
+			fprintf(stderr, "Image subimage mismatch: %s\n", filePath.c_str());
+			wasOkay = false;
+			break;
+		}
+
+		// now get the next info for the next level
+		TIFFGetField(pTiff, TIFFTAG_IMAGELENGTH, &imageHeight);
+		TIFFGetField(pTiff, TIFFTAG_IMAGEWIDTH, &imageWidth);
+
+		TIFFGetField(pTiff, TIFFTAG_TILEWIDTH, &tileWidth);
+		TIFFGetField(pTiff, TIFFTAG_TILELENGTH, &tileHeight);
+	}
+
+	TIFFClose(pTiff);
+
+	return wasOkay;
 }
 
 bool ImageReaderTIFF::readImageTile(const ImageTextureTileReadParams& readParams, ImageTextureTileReadResults& readResults) const
 {
 	const ImageTextureDetails& textureDetails = readParams.getImageDetails();
 
-	// TODO...
+	if (readParams.wantStats())
+	{
+		readResults.getFileOpenTimer().start();
+	}
 
-	return false;
+	TIFF* pTiff = TIFFOpen(textureDetails.getFilePath().c_str(), "r");
+	if (!pTiff)
+	{
+		if (readParams.wantStats())
+		{
+			readResults.getFileOpenTimer().stop();
+		}
+		return false;
+	}
+
+	if (readParams.wantStats())
+	{
+		readResults.getFileOpenTimer().stop();
+	}
+
+	readResults.setFileOpenedThisRequest();
+
+	const ImageTextureItemDetails& mipmapInfo = textureDetails.getMipmaps()[readParams.mipmapLevel];
+
+	unsigned int tileWidth = mipmapInfo.getTileWidth();
+	unsigned int tileHeight = mipmapInfo.getTileHeight();
+
+	if (readParams.wantStats())
+	{
+		readResults.getFileSeekTimer().start();
+	}
+
+	// set mipmap level - this is expensive over NFS as it does a stat() internally...
+	TIFFSetDirectory(pTiff, readParams.mipmapLevel);
+
+	if (readParams.wantStats())
+	{
+		readResults.getFileSeekTimer().stop();
+	}
+
+	// work out the tile coords in image space - TIFF needs them as opposed to actual tile indices
+	unsigned int tilePosX = readParams.tileX * tileWidth;
+	unsigned int tilePosY = readParams.tileY * tileHeight;
+
+	// should be okay with this, but MSVC used to be fussy about static_casting NULL pointers...
+	// seems to work on Linux/Mac anyway...
+	const TiffCustomData* pCustData = static_cast<const TiffCustomData*>(textureDetails.getCustomData());
+
+	// not great, but...
+	if (readParams.wantStats())
+	{
+		readResults.getFileReadTimer().start();
+	}
+
+	if (pCustData && pCustData->separatePlanes)
+	{
+		// each channel is stored in separate planar planes in the image, so we can't just pull it out, we need to read each
+		// plane seperately, then reorder into the destination buffer
+
+		// TODO: ideally, we should expose some beeter stuff in ImageTextureDetails to do this...
+		size_t tileSize = tileWidth * tileHeight * readParams.pixelSize;
+		size_t tilePlaneSize = tileSize / textureDetails.getChannelCount();
+		size_t singleChannelPixelByte = readParams.pixelSize / textureDetails.getChannelCount();
+		unsigned char* pTempData = new unsigned char[tileSize];
+
+		if (!pTempData)
+		{
+			if (readParams.wantStats())
+			{
+				readResults.getFileReadTimer().stop();
+			}
+
+			TIFFClose(pTiff);
+
+			return false;
+		}
+
+		// read each plane in separately into the temp buffer
+		unsigned char* pTilePlaneData = pTempData;
+		for (unsigned int i = 0; i < textureDetails.getChannelCount(); i++)
+		{
+			TIFFReadTile(pTiff, pTilePlaneData, tilePosX, tilePosY, 0, i);
+
+			pTilePlaneData += tilePlaneSize;
+		}
+
+		unsigned char* __restrict pDst = readParams.pData;
+		unsigned char* __restrict pSrc = pTempData;
+
+		// now re-order the pixels in interleaved fashion
+
+		// we're probably going to thrash the caches anyway, regardless of the order we do this...
+
+		for (unsigned int y = 0; y < tileHeight; y++)
+		{
+			for (unsigned int x = 0; x < tileWidth; x++)
+			{
+				for (unsigned int c = 0; c < textureDetails.getChannelCount(); c++)
+				{
+					// we could cache some of this above in the individual loops...
+					pSrc = pTempData + (tilePlaneSize * c) + (y * tileWidth * singleChannelPixelByte) + (x * singleChannelPixelByte);
+
+					memcpy(pDst, pSrc, singleChannelPixelByte);
+
+					pDst += singleChannelPixelByte;
+				}
+			}
+		}
+
+		if (pTempData)
+		{
+			delete [] pTempData;
+			pTempData = NULL;
+		}
+	}
+	else
+	{
+		TIFFReadTile(pTiff, readParams.pData, tilePosX, tilePosY, 0, 0);
+	}
+
+	if (readParams.wantStats())
+	{
+		readResults.getFileReadTimer().stop();
+	}
+
+	TIFFClose(pTiff);
+
+	return true;
 }
 
 namespace
@@ -1000,5 +1216,5 @@ namespace
 		return new ImageReaderTIFF();
 	}
 
-	const bool registered = FileIORegistry::instance().registerImageReaderMultipleExtensions("tif;tiff;tex", createImageReaderTIFF);
+	const bool registered = FileIORegistry::instance().registerImageReaderMultipleExtensions("tif;tiff;tex;tx", createImageReaderTIFF, true);
 }

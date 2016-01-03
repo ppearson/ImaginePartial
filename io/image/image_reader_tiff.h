@@ -34,7 +34,7 @@ public:
 	struct TiffInfo
 	{
 		TiffInfo() : imageHeight(0), imageWidth(0), rowsPerStrip(0), bitDepth(0), channelCount(0), orientation(0),
-			sampleFormat(0), compression(0), isTiled(false), tileWidth(0), tileHeight(0), tileDepth(0)
+			sampleFormat(0), compression(0), separatePlanes(false), isTiled(false), tileWidth(0), tileHeight(0), tileDepth(0)
 		{
 		}
 
@@ -48,6 +48,8 @@ public:
 		uint16_t	sampleFormat;
 		uint32_t	compression;
 
+		bool		separatePlanes; // each channel is stored in separate planes
+
 		uint32_t	xPos;
 		uint32_t	yPos;
 
@@ -57,7 +59,7 @@ public:
 		uint16_t	tileDepth;
 	};
 
-	bool readInfo(TIFF* pTiff, TiffInfo& tiffInfo);
+	static bool readInfo(TIFF* pTiff, TiffInfo& tiffInfo);
 
 	virtual Image* readColourImage(const std::string& filePath, unsigned int requiredTypeFlags);
 
@@ -67,6 +69,17 @@ public:
 	{
 		return true;
 	}
+
+	class TiffCustomData : public ImageTextureCustomData
+	{
+	public:
+		TiffCustomData() : separatePlanes(false)
+		{
+
+		}
+
+		bool separatePlanes;
+	};
 
 	virtual bool readImageDetails(const std::string& filePath, ImageTextureDetails& textureDetails) const;
 

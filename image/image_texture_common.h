@@ -256,8 +256,8 @@ class ImageTextureTileReadParams
 {
 public:
 	__finline ImageTextureTileReadParams(const ImageTextureDetails& textureDetails, unsigned int mmLevel, unsigned int tX,
-							   unsigned int tY, unsigned char* pD) : m_imageDetails(textureDetails), mipmapLevel(mmLevel),
-								tileX(tX), tileY(tY), pData(pD), m_pExistingFileHandle(NULL), m_allowedToLeaveFileHandleOpen(false),
+							   unsigned int tY, size_t pSize, unsigned char* pD) : m_imageDetails(textureDetails), mipmapLevel(mmLevel),
+								tileX(tX), tileY(tY), pixelSize(pSize), pData(pD), m_pExistingFileHandle(NULL), m_allowedToLeaveFileHandleOpen(false),
 								m_wantStats(true)
 	{
 
@@ -282,6 +282,8 @@ public:
 	unsigned int mipmapLevel;
 	unsigned int tileX;
 	unsigned int tileY;
+
+	size_t		pixelSize; // size of one pixel (data type * num channels) in bytes
 
 	// passed in pointer to memory which will be big enough for the tile dimensions and the image type / num channels
 	// Note: it is important that all channels are read fully and the data copied to pData. ImageTextureCache is responsible
@@ -348,8 +350,16 @@ public:
 		return m_pConstantData;
 	}
 
+	// time taken to open files so as to be ready to read pixel data / metadata
 	TimerCounter& getFileOpenTimer() { return m_fileOpenTimer; }
+	const TimerCounter& getFileOpenTimer() const { return m_fileOpenTimer; }
+	// time taken to prepare to read pixel data - this is really optional, and is mainly here for timing TIFF's
+	// TIFFSetDirectory() to switch mipmap levels, but can also be used to count per-read setup before each tile read
+	TimerCounter& getFileSeekTimer() { return m_fileSeekTimer; }
+	const TimerCounter& getFileSeekTimer() const { return m_fileSeekTimer; }
+	// time taken to actually read pixel data into memory (including any decompression / bit shuffling)
 	TimerCounter& getFileReadTimer() { return m_fileReadTimer; }
+	const TimerCounter& getFileReadTimer() const { return m_fileReadTimer; }
 
 protected:
 	// we don't own this - a reader may optionally create a new one if allowed, and will set this pointer in that case.
@@ -366,11 +376,11 @@ protected:
 	// and can be de-allocated
 	bool						m_tileWasConstant;
 
-	// pointer to heap allocated constant value. Reader's should allow this to "leak", as the ImageTextureCache will own this
+	// pointer to heap allocated constant value. Readers should allow this to "leak", as the ImageTextureCache will own this
 	// and use it like a block of regular (non-constant) tile pixel data, and manage it.
 	// If a file reader supports determining if tile data is constant this is recommended (if determining this is fast),
 	// as ImageTextureCache slightly prioritises (in terms of keeping them) these allocations over regular tile data
-	// when freeing/paging tiles.
+	// when freeing/paging tile pixel data.
 	// It's currently assumed that the number of channels and data type is identical to that of normal tile blocks, just
 	// for one single pixel.
 	// Note: Image reader's shouldn't use this method for entire images which are constant if they know that up front -
@@ -382,6 +392,7 @@ protected:
 	// not really too happy about this, but alternative is providing callbacks back to ImageTextureCache to start/stop
 	// timers which the Reader calls, which seems rather convoluted and doesn't have any more guarentees in terms of enforcement
 	TimerCounter		m_fileOpenTimer;
+	TimerCounter		m_fileSeekTimer;
 	TimerCounter		m_fileReadTimer;
 };
 
