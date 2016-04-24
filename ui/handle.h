@@ -33,7 +33,7 @@ class Handle
 {
 public:
 	Handle();
-	virtual ~Handle();
+	~Handle();
 
 	static void initAxisHandleObjects();
 

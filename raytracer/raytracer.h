@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2015 Peter Pearson.
+ Copyright 2011-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -52,6 +52,8 @@ class ImageTextureCache;
 class RemoteState;
 
 class RenderThreadContext;
+
+class DebugPathCollection;
 
 class RenderTask : public Task
 {
@@ -141,6 +143,9 @@ public:
 
 	bool isProgressive() const { return m_progressive; }
 
+	void setDebugPathCollection(DebugPathCollection* pDPC) { m_pDebugPathCollection = pDPC;}
+	DebugPathCollection* getDebugPathCollection() const { return m_pDebugPathCollection; }
+
 protected:
 	virtual bool doTask(Task* pTask, unsigned int threadID);
 
@@ -215,6 +220,8 @@ protected:
 
 	unsigned int			m_tileSize;
 	unsigned int			m_tileOrder;
+
+	DebugPathCollection*	m_pDebugPathCollection;
 };
 
 #endif // RAYTRACER_H

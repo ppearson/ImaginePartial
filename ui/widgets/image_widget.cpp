@@ -31,7 +31,7 @@
 #include "io/image_writer.h"
 
 ImageWidget::ImageWidget(QWidget *parent) : QAbstractScrollArea(parent), m_pQImage(NULL), m_pRawImage(NULL), m_pDisplayImage(NULL),
-	m_zoomLevel(1.0f), m_gotDimensions(false), m_displayChannel(eRGB), m_gain(1.0f)
+	m_zoomLevel(1.0f), m_gotDimensions(false), m_displayChannel(eRGB), m_gain(1.0f), m_haveNormalisedRawImage(false)
 {
 	adjustScrollbars();
 	viewport()->update();
@@ -53,13 +53,22 @@ ImageWidget::ImageWidget(QWidget *parent) : QAbstractScrollArea(parent), m_pQIma
 ImageWidget::~ImageWidget()
 {
 	if (m_pQImage)
+	{
 		delete m_pQImage;
+		m_pQImage = NULL;
+	}
 
 	if (m_pRawImage)
+	{
 		delete m_pRawImage;
+		m_pRawImage = NULL;
+	}
 
 	if (m_pDisplayImage)
+	{
 		delete m_pDisplayImage;
+		m_pDisplayImage = NULL;
+	}
 }
 
 void ImageWidget::paintEvent(QPaintEvent* event)
@@ -174,17 +183,30 @@ void ImageWidget::keyPressEvent(QKeyEvent* event)
 		return;
 	}
 
+	bool redrawImage = false;
+
 	if (event->key() == Qt::Key_A)
 	{
-		if (m_displayChannel == eRGB)
-			m_displayChannel = eA;
-		else
-			m_displayChannel = eRGB;
+		toggleDisplayImageEnum(eA);
+		redrawImage = true;
+	}
 
-		event->accept();
-		convertImageValues();
-		update();
-		return;
+	if (event->key() == Qt::Key_R)
+	{
+		toggleDisplayImageEnum(eR);
+		redrawImage = true;
+	}
+
+	if (event->key() == Qt::Key_G)
+	{
+		toggleDisplayImageEnum(eG);
+		redrawImage = true;
+	}
+
+	if (event->key() == Qt::Key_B)
+	{
+		toggleDisplayImageEnum(eB);
+		redrawImage = true;
 	}
 
 	if (event->modifiers() & Qt::AltModifier)
@@ -192,22 +214,32 @@ void ImageWidget::keyPressEvent(QKeyEvent* event)
 		bool modified = false;
 		if (event->key() == Qt::Key_Up)
 		{
-			m_gain += 0.1f;
+			m_gain += 0.05f;
 			modified = true;
 		}
 		else if (event->key() == Qt::Key_Down)
 		{
-			m_gain -= 0.1f;
+			m_gain -= 0.05f;
+			modified = true;
+		}
+		else if (event->key() == Qt::Key_Right)
+		{
+			m_gain = 1.0f;
 			modified = true;
 		}
 
 		if (modified)
 		{
-			event->accept();
-			convertImageValues();
-			update();
-			return;
+			redrawImage = true;
 		}
+	}
+
+	if (redrawImage)
+	{
+		event->accept();
+		convertImageValues();
+		this->viewport()->repaint();
+		return;
 	}
 
 	event->ignore();
@@ -287,20 +319,37 @@ void ImageWidget::drawLastTiles(QPainter& painter)
 
 void ImageWidget::showImage(const OutputImage& image, float gamma)
 {
+	// explicitly copy the raw image
 	if (m_pRawImage)
+	{
 		delete m_pRawImage;
-
-	if (m_pDisplayImage)
-		delete m_pDisplayImage;
-
-	if (m_pQImage)
-		delete m_pQImage;
+		m_pRawImage = NULL;
+	}
 
 	m_pRawImage = new OutputImage(image);
-	m_pDisplayImage = new OutputImage(image);
 
-	m_pDisplayImage->normaliseProgressive();
-	m_pDisplayImage->applyExposure(gamma);
+	// only allocate m_pDisplayImage and m_pQImage first time through...
+	// TODO: when we have slots, we're going to need to use a hash to control
+	//       when to re-create these for different images
+
+	if (!m_pDisplayImage)
+	{
+		// we haven't allocated yet, so create it first time around
+		m_pDisplayImage = new OutputImage(*m_pRawImage);
+	}
+	else
+	{
+		// we already have it, so just copy the pixels
+		m_pDisplayImage->copyFullImageContents(*m_pRawImage, COMPONENT_SAMPLES);
+	}
+
+	if (!m_haveNormalisedRawImage)
+	{
+		// the raw image hasn't been normalised yet (probably still rendering)
+		// so do this to the display image copy
+		m_pDisplayImage->normaliseProgressive();
+		m_pDisplayImage->applyExposure(gamma);
+	}
 
 	m_width = image.getWidth();
 	m_height = image.getHeight();
@@ -308,7 +357,10 @@ void ImageWidget::showImage(const OutputImage& image, float gamma)
 	m_window = QRectF(0.0f, 0.0f, m_width, m_height);
 	m_gotDimensions = true;
 
-	m_pQImage = new QImage(m_width, m_height, QImage::Format_RGB32);
+	if (!m_pQImage)
+	{
+		m_pQImage = new QImage(m_width, m_height, QImage::Format_RGB32);
+	}
 
 	if (!m_pQImage)
 		return;
@@ -324,9 +376,26 @@ void ImageWidget::convertImageValues()
 
 	const float gainValue = m_gain * 255.0f;
 
+	float rMult = gainValue * ((m_displayChannel == eR || m_displayChannel == eRGB) ? 1.0f : 0.0f);
+	float gMult = gainValue * ((m_displayChannel == eG || m_displayChannel == eRGB) ? 1.0f : 0.0f);
+	float bMult = gainValue * ((m_displayChannel == eB || m_displayChannel == eRGB) ? 1.0f : 0.0f);
+
 	for (unsigned int y = 0; y < m_height; y++)
 	{
-		if (m_displayChannel == eRGB)
+		if (m_displayChannel == eA)
+		{
+			for (unsigned int x = 0; x < m_width; x++)
+			{
+				const Colour4f& rawColour = m_pDisplayImage->colourAt(x, y);
+
+				float finalA = rawColour.a * gainValue;
+				int a = std::min((int)(finalA), 255);
+
+				value = qRgb(a, a, a);
+				m_pQImage->setPixel(x, y, value);
+			}
+		}
+		else if (m_displayChannel == eRGB)
 		{
 			for (unsigned int x = 0; x < m_width; x++)
 			{
@@ -344,20 +413,36 @@ void ImageWidget::convertImageValues()
 				m_pQImage->setPixel(x, y, value);
 			}
 		}
-		else if (m_displayChannel == eA)
+		else
 		{
+			// we're one (maybe two in the future?!) of the options
 			for (unsigned int x = 0; x < m_width; x++)
 			{
 				const Colour4f& rawColour = m_pDisplayImage->colourAt(x, y);
 
-				float finalA = rawColour.a * gainValue;
-				int a = std::min((int)(finalA), 255);
+				float finalR = rawColour.r * rMult;
+				float finalG = rawColour.g * gMult;
+				float finalB = rawColour.b * bMult;
 
-				value = qRgb(a, a, a);
+				// we can just max to get the single value we want for greyscale...
+
+				float singleValue = std::max(finalR, std::max(finalG, finalB));
+
+				int grey = std::min((int)(singleValue), 255);
+
+				value = qRgb(grey, grey, grey);
 				m_pQImage->setPixel(x, y, value);
 			}
 		}
 	}
+}
+
+void ImageWidget::toggleDisplayImageEnum(DisplayChannel type)
+{
+	if (m_displayChannel == type)
+		m_displayChannel = eRGB;
+	else
+		m_displayChannel = type;
 }
 
 void ImageWidget::saveImage(unsigned int channels, unsigned int flags)
@@ -387,10 +472,18 @@ void ImageWidget::saveImage(unsigned int channels, unsigned int flags)
 		return;
 	}
 
-	pWriter->writeImage(path, *m_pDisplayImage, channels, flags);
+	pWriter->writeImage(path, *m_pRawImage, channels, flags);
 
 	delete pWriter;
 	pWriter = NULL;
+}
+
+void ImageWidget::renderFinished(float gamma)
+{
+	m_haveNormalisedRawImage = true;
+
+	m_pRawImage->normaliseProgressive();
+	m_pRawImage->applyExposure(gamma);
 }
 
 void ImageWidget::saveImage()

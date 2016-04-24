@@ -18,11 +18,11 @@
 
 #include "parameters_panel.h"
 
+#include <QProxyStyle>
+
 #include <QLabel>
-#include <QWindowsStyle>
 #include <QScrollArea>
 
-#include "materials/material.h"     // ????
 #include "view_context.h"
 
 ParametersPanel::ParametersPanel(ParametersInterface* pParent, ParameterPanelType type) : m_pParent(pParent), m_type(type)
@@ -39,7 +39,7 @@ ParametersPanel::ParametersPanel(ParametersInterface* pParent, ParameterPanelTyp
 
 	// TODO: is this leaking? Deleting the previous one makes below line have
 	//       no effect
-	m_tabWidget->setStyle(new QWindowsStyle());
+	m_tabWidget->setStyle(new QProxyStyle());
 
 	m_form->setMinimumWidth(310);
 }

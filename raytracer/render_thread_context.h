@@ -35,6 +35,11 @@ public:
 	RenderThreadContext(unsigned int threadID) : m_threadID(threadID), m_pLightSampler(NULL), m_pTimeCounter(NULL),
 					m_pMainImageTextureCache(NULL)
 	{
+
+	}
+
+	~RenderThreadContext()
+	{
 		if (m_pLightSampler)
 		{
 			delete m_pLightSampler;
@@ -46,6 +51,11 @@ public:
 			delete m_pTimeCounter;
 			m_pTimeCounter = NULL;
 		}
+	}
+
+	unsigned int getThreadID() const
+	{
+		return m_threadID;
 	}
 
 	inline RenderStatistics& getRenderStatistics()
@@ -66,6 +76,16 @@ public:
 	inline LightSampler* getLightSampler()
 	{
 		return m_pLightSampler;
+	}
+
+	void setTimeCounter(ThreadTimeCounter* pTimeCounter)
+	{
+		m_pTimeCounter = pTimeCounter;
+	}
+
+	inline ThreadTimeCounter* getTimeCounter()
+	{
+		return m_pTimeCounter;
 	}
 
 	void setMainImageTextureCache(ImageTextureCache* pMainImageTextureCache)

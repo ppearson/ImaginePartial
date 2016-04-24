@@ -52,9 +52,6 @@
 	#define socklen_t int
 #endif
 
-const int MAX_SEND_LENGTH = 1024;
-const int MAX_RECV_LENGTH = 4096;
-
 class Socket
 {
 public:
@@ -62,7 +59,7 @@ public:
 	Socket(int port);
 	Socket(const std::string& host, int port);
 
-	virtual ~Socket();
+	~Socket();
 
 	bool create();
 	bool bind(int port);

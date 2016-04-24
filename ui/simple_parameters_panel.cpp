@@ -19,7 +19,6 @@
 #include "simple_parameters_panel.h"
 
 #include <QLabel>
-#include <QWindowsStyle>
 #include <QFormLayout>
 
 #include "ui/widgets/texture_widget.h"

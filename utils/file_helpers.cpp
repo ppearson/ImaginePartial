@@ -124,7 +124,7 @@ std::string FileHelpers::bakeFrameIntoFileSequencePath(const std::string& path, 
 {
 	size_t sequenceCharStart = path.find_first_of("#");
 	if (sequenceCharStart == std::string::npos)
-		return "";
+		return path;
 
 	size_t sequenceCharEnd = path.find_first_not_of("#", sequenceCharStart);
 	unsigned int sequenceCharLength = sequenceCharEnd - sequenceCharStart;

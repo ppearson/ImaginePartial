@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2012 Peter Pearson.
+ Copyright 2011-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 
 #include <string>
 #include <vector>
+#include <stdint.h>
 
 struct StringToken
 {
@@ -50,6 +51,9 @@ bool stringCompare(const char* str1, const char* str2, unsigned int length, unsi
 
 std::string formatSize(size_t amount);
 std::string formatNumberThousandsSeparator(size_t value);
+
+std::string formatTimePeriodSeconds(double seconds, bool keepAsSeconds = false);
+std::string formatTimePeriod(uint64_t time);
 
 
 #endif // STRING_HELPERS_H

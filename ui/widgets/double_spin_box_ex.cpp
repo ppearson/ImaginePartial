@@ -93,7 +93,11 @@ QString DoubleSpinBoxEx::removeTrailingZeros(const QString& string) const
 		if (count++ == numberOfTrailingZerosToRemove)
 			break;
 
+#ifndef IMAGINE_QT_5
 		char cTest = newString.at(i).toAscii();
+#else
+		char cTest = newString.at(i).toLatin1();
+#endif
 
 		if (cTest == '0' || cTest == decSep.at(0))
 			newString = newString.left(newString.length() - 1);
@@ -377,7 +381,12 @@ void DoubleSpinBoxEx::stepPositionValue(QString& textValue, int position, bool p
 
 	if (!positionAtLimit)
 	{
+#ifndef IMAGINE_QT_5
 		char cValue = changeValue.toAscii();
+#else
+		char cValue = changeValue.toLatin1();
+#endif
+
 //		cValue += (positiveChange) ? 1 : -1;
 		cValue += ((positiveChange && originalIsPositive) || (!positiveChange && !originalIsPositive)) ? 1 : -1;
 		localTextValue.replace(finalPositionToChange, 1, cValue);

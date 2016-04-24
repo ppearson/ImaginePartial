@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2012 Peter Pearson.
+ Copyright 2011-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -193,4 +193,44 @@ std::string formatNumberThousandsSeparator(size_t value)
 	std::reverse(final.begin(), final.end());
 
 	return final;
+}
+
+std::string formatTimePeriodSeconds(double seconds, bool keepAsSeconds)
+{
+	char szTemp[32];
+	if (keepAsSeconds)
+	{
+		sprintf(szTemp, "%0.4f s", seconds);
+		return std::string(szTemp);
+	}
+
+	if (seconds < 60.0)
+	{
+		sprintf(szTemp, "00:%02.f m", seconds);
+		return std::string(szTemp);
+	}
+
+	unsigned int minutes = (unsigned int)(seconds / 60.0);
+	seconds -= minutes * 60;
+
+	if (minutes < 60)
+	{
+//		sprintf(szTemp, "%02d:%04.1f m", minutes, seconds);
+		sprintf(szTemp, "%02d:%02.f m", minutes, seconds);
+		return std::string(szTemp);
+	}
+
+	unsigned int hours = (unsigned int)(minutes / 60.0);
+	minutes -= hours * 60;
+
+//	sprintf(szTemp, "%2d:%02d:%02.1f hours", hours, minutes, seconds);
+	sprintf(szTemp, "%2d:%02d:%02d h", hours, minutes, (unsigned int)seconds);
+	return std::string(szTemp);
+}
+
+std::string formatTimePeriod(uint64_t time)
+{
+	double seconds = (double)time / 1000000.0;
+
+	return formatTimePeriodSeconds(seconds);
 }

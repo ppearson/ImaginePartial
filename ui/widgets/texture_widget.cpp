@@ -104,7 +104,7 @@ void TextureWidget::initCommon()
 	m_lastContentWasCustom = false;
 
 	m_pConstantColour = NULL;
-	m_cachedConstantColour = Colour3f(0.8f);
+	m_cachedConstantColour = Colour3f(0.6f);
 
 	m_pFloatSlider = NULL;
 

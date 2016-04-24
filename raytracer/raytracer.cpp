@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2015 Peter Pearson.
+ Copyright 2011-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@
 
 #include "scene_interface.h"
 #include "scene.h"
-#include "image/output_image.h"
 
 #include "objects/camera.h"
 #include "lights/light.h"
@@ -43,7 +42,7 @@
 #include "utils/timer.h"
 #include "utils/maths/rng.h"
 #include "utils/params.h"
-#include "utils/sse.h" // for flush to zero functions
+#include "utils/simd.h" // for flush to zero functions
 
 #include "textures/texture.h"
 #include "textures/mapping.h"
@@ -63,6 +62,8 @@
 #include "raytracer/aov_full_renderer.h"
 #include "raytracer/path_tracer_distributed.h"
 #include "raytracer/bi_directional_path_tracer.h"
+
+#include "raytracer/debug_renderer.h"
 
 #include "raytracer/renderer_background.h"
 
@@ -97,7 +98,8 @@ Raytracer::Raytracer(SceneInterface& scene, OutputImage* outputImage, Params& se
 	  m_tileApronSize(0), m_progressive(settings.getBool("progressive")), m_extraChannels(0), m_statsType(eStatisticsNone),
 	  m_statsOutputType(eStatsOutputConsole), m_preview(preview), m_pRenderCamera(NULL), m_pCameraRayCreator(NULL), m_pHost(NULL),
 	  m_pGlobalImageCache(NULL), m_backgroundType(eBackgroundNone),
-	  m_pBackground(NULL), m_lightSampling(eLSFullAllLights), m_sampleLights(false), m_lightSamples(0), m_motionBlur(false), m_depthOfField(false)
+	  m_pBackground(NULL), m_lightSampling(eLSFullAllLights), m_sampleLights(false), m_lightSamples(0), m_motionBlur(false), m_depthOfField(false),
+	  m_pDebugPathCollection(NULL)
 {
 	initialise(outputImage, settings);
 
@@ -110,7 +112,7 @@ Raytracer::Raytracer(SceneInterface& scene, unsigned int threads, bool progressi
 	m_pOutputImage(NULL), m_useRemoteClients(false), m_pRenderer(NULL), m_pFilter(NULL), m_tileApronSize(0), m_progressive(progressive),
 	m_preview(true), m_pRenderCamera(NULL), m_pCameraRayCreator(NULL), m_pHost(NULL), m_pGlobalImageCache(NULL),
 	m_backgroundType(eBackgroundNone), m_pBackground(NULL),
-	m_lightSampling(eLSFullAllLights), m_sampleLights(false), m_lightSamples(0), m_motionBlur(false)
+	m_lightSampling(eLSFullAllLights), m_sampleLights(false), m_lightSamples(0), m_motionBlur(false), m_pDebugPathCollection(NULL)
 {
 	// assumes that initialise() is going to be called later on
 	m_tileOrder = 0;
@@ -280,6 +282,9 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 			{
 				m_pGlobalImageCache->setGlobalMipmapLevelBias((int)textureGlobalMipmapBias);
 			}
+
+			bool deleteTileItems = settings.getBool("textureDeleteTileItems", false);
+			m_pGlobalImageCache->setDeleteTileItems(deleteTileItems);
 		}
 	}
 
@@ -452,6 +457,13 @@ void Raytracer::initRendererAndIntegrator(const Params& settings)
 	if (m_pRenderer)
 		delete m_pRenderer;
 
+	bool debugRender = settings.getBool("debugRender", false);
+	if (debugRender)
+	{
+		m_pRenderer = new DebugRenderer(*this, settings, m_numberOfThreads);
+		return;
+	}
+
 	unsigned int integratorType = settings.getUInt("integrator", 0);
 
 	// TODO: this is pretty horrendous, especially the templated-render/integrator stuff...
@@ -527,13 +539,55 @@ void Raytracer::initRendererAndIntegrator(const Params& settings)
 
 		if (settings.getBool("adaptive"))
 		{
-			if (transparentShadows || settings.getBool("volumetric", false))
+			if (settings.getUInt("filter_type", 0) == 0) // if box reconstruction filter, we can avoid doing filtering altogether
 			{
-				m_pRenderer = new AdaptiveRenderer<PathVolume>(*this, settings, m_numberOfThreads);
+				if (m_statsType != eStatisticsFull)
+				{
+					if (transparentShadows || settings.getBool("volumetric", false))
+					{
+						m_pRenderer = new AdaptiveRenderer<PathVolume, Colour4fStandard, TimerCounterNull>(*this, settings, m_numberOfThreads);
+					}
+					else
+					{
+						m_pRenderer = new AdaptiveRenderer<Path, Colour4fStandard, TimerCounterNull>(*this, settings, m_numberOfThreads);
+					}
+				}
+				else
+				{
+					if (transparentShadows || settings.getBool("volumetric", false))
+					{
+						m_pRenderer = new AdaptiveRenderer<PathVolume, Colour4fStandard, TimerCounter>(*this, settings, m_numberOfThreads);
+					}
+					else
+					{
+						m_pRenderer = new AdaptiveRenderer<Path, Colour4fStandard, TimerCounter>(*this, settings, m_numberOfThreads);
+					}
+				}
 			}
 			else
 			{
-				m_pRenderer = new AdaptiveRenderer<Path>(*this, settings, m_numberOfThreads);
+				if (m_statsType != eStatisticsFull)
+				{
+					if (transparentShadows || settings.getBool("volumetric", false))
+					{
+						m_pRenderer = new AdaptiveRenderer<PathVolume, Colour4fFiltered, TimerCounterNull>(*this, settings, m_numberOfThreads);
+					}
+					else
+					{
+						m_pRenderer = new AdaptiveRenderer<Path, Colour4fFiltered, TimerCounterNull>(*this, settings, m_numberOfThreads);
+					}
+				}
+				else
+				{
+					if (transparentShadows || settings.getBool("volumetric", false))
+					{
+						m_pRenderer = new AdaptiveRenderer<PathVolume, Colour4fFiltered, TimerCounter>(*this, settings, m_numberOfThreads);
+					}
+					else
+					{
+						m_pRenderer = new AdaptiveRenderer<Path, Colour4fFiltered, TimerCounter>(*this, settings, m_numberOfThreads);
+					}
+				}
 			}
 			return;
 		}
@@ -729,6 +783,12 @@ void Raytracer::renderScene(float time, const Params* pParams)
 	_mm_setcsr(_mm_getcsr() | (1<<15) | (1<<6));
 
 	{
+		RenderStatistics totalStatistics;
+		if (m_statsType != eStatisticsNone)
+		{
+			totalStatistics.recordInitialPreRenderStatistics();
+		}
+
 		Timer time1("Actual rendering", !m_preview);
 
 		// explicitly turn on affinity setting for threads...
@@ -750,7 +810,6 @@ void Raytracer::renderScene(float time, const Params* pParams)
 				m_statsOutputType = eStatsOutputConsole;
 			}
 			// build up total RenderStatistics from all render threads's totals
-			RenderStatistics totalStatistics;
 			std::vector<RenderThreadContext*>::const_iterator itRenderThreadContext = m_aRenderThreadContexts.begin();
 			for (; itRenderThreadContext != m_aRenderThreadContexts.end(); ++itRenderThreadContext)
 			{
@@ -765,17 +824,21 @@ void Raytracer::renderScene(float time, const Params* pParams)
 				m_pGlobalImageCache->bakeSummaryStatistics(totalStatistics.getImageTextureCacheStats());
 			}
 
+			totalStatistics.populateOverallStatistics();
+
 			if (m_statsOutputType == eStatsOutputConsole)
 			{
 				totalStatistics.printStatistics();
 			}
 			else
 			{
-				totalStatistics.writeStatistics(statsPath);
+				int frameNumber = OutputContext::instance().getFrame();
+				totalStatistics.writeStatistics(statsPath, frameNumber);
 			}
 		}
 
 		// if remote render, need to wait for results server
+		// TODO: this should probably be above...
 		if (m_useRemoteClients)
 		{
 			m_clientJobManager.wait();
@@ -926,6 +989,9 @@ void Raytracer::processExtraChannels(RenderTask* pTask, unsigned int threadID) c
 				float fPixelXPos = (float)pixelXPos + 0.5f;
 
 				Ray viewRay = m_pCameraRayCreator->createBasicCameraRay(fPixelXPos, fPixelYPos);
+
+				if (viewRay.type == RAY_UNDEFINED)
+					continue;
 
 				float depth;
 				HitResult hitResult = processRayExtra(viewRay, depth);

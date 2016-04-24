@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2012 Peter Pearson.
+ Copyright 2012-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -54,8 +54,7 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 	unsigned int tileWidth = pRTask->getWidth();
 	unsigned int tileHeight = pRTask->getHeight();
 
-	uint32_t rngSeed = Renderer::getTimeSeed() + startX - startY;
-	rngSeed += pRTask->getState();
+	uint32_t rngSeed = this->getRndSeed(startX, startY, tileWidth, tileHeight, threadID);
 	rngSeed += pRTask->getIterations();
 	RNG rng(rngSeed);
 
@@ -101,10 +100,14 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 
 				float fPixelXPos = (float)x + startX + 0.5f;
 
+				Ray viewRay = pCamRayCreator->createBasicCameraRay(fPixelXPos, fPixelYPos);
+
+				if (viewRay.type == RAY_UNDEFINED)
+					continue;
+
 				SampleBundle samples(fPixelXPos, fPixelYPos);
 				sampleGenerator.generateSampleBundleStratified(samples);
 
-				Ray viewRay = pCamRayCreator->createBasicCameraRay(fPixelXPos, fPixelYPos);
 				colour += this->m_integrator.processRay(*pRenderThreadCtx, shadingContext, viewRay, draftIntegratorState, samples, 0);
 
 				pOurImage->colourAt(x, y) = colour;
@@ -158,12 +161,15 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 
 			for (unsigned int sample = 0; sample < this->m_globalIlluminationSamplesPerIteration; sample++)
 			{
-				const Sample2D& samplePos = this->m_aCameraSamples[iteration].get2DSample(sample);
+				const Sample2D& samplePos = this->m_aCameraSamples[iteration - 1].get2DSample(sample);
 
 				float pixelXPos = fPixelXPos + samplePos.x;
 				float pixelYPos = fPixelYPos + samplePos.y;
 
 				Ray viewRay = pCamRayCreator->createCameraRay(pixelXPos, pixelYPos, samples, sample);
+
+				if (viewRay.type == RAY_UNDEFINED)
+					continue;
 
 				colour += this->m_integrator.processRay(*pRenderThreadCtx, shadingContext, viewRay, integratorState, samples, sample);
 			}

@@ -140,6 +140,24 @@ public:
 		return r == 0.0f && g == 0.0f && b == 0.0f;
 	}
 
+	float max() const
+	{
+		if (r > g)
+		{
+			if (b > r)
+				return b;
+			else
+				return r;
+		}
+		else
+		{
+			if (b > g)
+				return b;
+			else
+				return g;
+		}
+	}
+
 	inline void clamp(float max = 1.0f)
 	{
 		r = std::min(r, max);

@@ -40,6 +40,9 @@ public:
 	enum DisplayChannel
 	{
 		eRGB,
+		eR,
+		eG,
+		eB,
 		eA
 	};
 
@@ -62,8 +65,11 @@ public:
 
 	void showImage(const OutputImage& image, float gamma);
 	void convertImageValues();
+	void toggleDisplayImageEnum(DisplayChannel type);
 
 	void saveImage(unsigned int channels, unsigned int flags);
+
+	void renderFinished(float gamma);
 
 public slots:
 	void saveImage();
@@ -96,6 +102,8 @@ protected:
 
 	unsigned int	m_width;
 	unsigned int	m_height;
+
+	bool			m_haveNormalisedRawImage;
 };
 
 #endif // IMAGE_WIDGET_H

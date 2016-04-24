@@ -561,13 +561,15 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 			{
 				if (!aPolyOffsets.empty())
 				{
+					pNewGeoInstance->getPolygonOffsets() = aPolyOffsets;
+					pNewGeoInstance->getPolygonIndices() = aPolyIndices;
+
+					GeoHelperObj::copyPointItemsToGeometry(aPoints, aVertexIndexesForObject, pNewGeoInstance);
+
 					if (options.rotate90NegX)
 					{
 						applyMatrixToMesh(rotate, pNewMesh, false);
 					}
-
-					pNewGeoInstance->getPolygonOffsets() = aPolyOffsets;
-					pNewGeoInstance->getPolygonIndices() = aPolyIndices;
 
 					if (!aUVIndices.empty())
 					{
@@ -575,8 +577,6 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 
 						GeoHelperObj::copyUVItemsToGeometry(aUVs, aUVIndexesForObject, pNewGeoInstance);
 					}
-
-					GeoHelperObj::copyPointItemsToGeometry(aPoints, aVertexIndexesForObject, pNewGeoInstance);
 
 					pNewGeoInstance->calculateBoundaryBox();
 					subObjects.push_back(pNewMesh);
@@ -724,13 +724,15 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 			{
 				if (!aPolyOffsets.empty())
 				{
+					pNewGeoInstance->getPolygonOffsets() = aPolyOffsets;
+					pNewGeoInstance->getPolygonIndices() = aPolyIndices;
+
+					GeoHelperObj::copyPointItemsToGeometry(aPoints, aVertexIndexesForObject, pNewGeoInstance);
+
 					if (options.rotate90NegX)
 					{
 						applyMatrixToMesh(rotate, pNewMesh, false);
 					}
-
-					pNewGeoInstance->getPolygonOffsets() = aPolyOffsets;
-					pNewGeoInstance->getPolygonIndices() = aPolyIndices;
 
 					if (!aUVIndices.empty())
 					{
@@ -738,8 +740,6 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 
 						GeoHelperObj::copyUVItemsToGeometry(aUVs, aUVIndexesForObject, pNewGeoInstance);
 					}
-
-					GeoHelperObj::copyPointItemsToGeometry(aPoints, aVertexIndexesForObject, pNewGeoInstance);
 
 					pNewGeoInstance->calculateBoundaryBox();
 					subObjects.push_back(pNewMesh);
@@ -795,13 +795,15 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 	{
 		if (!aPolyOffsets.empty())
 		{
+			pNewGeoInstance->getPolygonOffsets() = aPolyOffsets;
+			pNewGeoInstance->getPolygonIndices() = aPolyIndices;
+
+			GeoHelperObj::copyPointItemsToGeometry(aPoints, aVertexIndexesForObject, pNewGeoInstance);
+
 			if (options.rotate90NegX)
 			{
 				applyMatrixToMesh(rotate, pNewMesh, false);
 			}
-
-			pNewGeoInstance->getPolygonOffsets() = aPolyOffsets;
-			pNewGeoInstance->getPolygonIndices() = aPolyIndices;
 
 			if (!aUVIndices.empty())
 			{
@@ -809,8 +811,6 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 
 				GeoHelperObj::copyUVItemsToGeometry(aUVs, aUVIndexesForObject, pNewGeoInstance);
 			}
-
-			GeoHelperObj::copyPointItemsToGeometry(aPoints, aVertexIndexesForObject, pNewGeoInstance);
 
 			pNewGeoInstance->calculateBoundaryBox();
 			subObjects.push_back(pNewMesh);

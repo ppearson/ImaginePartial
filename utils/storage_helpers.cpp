@@ -22,18 +22,18 @@ void storeString(const std::string& string, std::fstream& stream)
 {
 	int size = string.size();
 
-	if (size <= 256)
+	if (size <= 255)
 	{
 		const unsigned char csize = (unsigned char)size;
 
 		stream.write((char*)&csize, sizeof(unsigned char));
 		stream.write(string.c_str(), csize);
 	}
-	else // cap the string at 256
+	else // cap the string at 255
 	{
-		std::string strLimitedString = string.substr(0, 256);
+		std::string strLimitedString = string.substr(0, 255);
 
-		const unsigned char csize = (unsigned char)256;
+		const unsigned char csize = (unsigned char)255;
 
 		stream.write((char*)&csize, sizeof(unsigned char));
 		stream.write(strLimitedString.c_str(), csize);

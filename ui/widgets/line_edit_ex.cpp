@@ -22,6 +22,8 @@
 #include <QFileInfo>
 #include <QUrl>
 
+#include <QMimeData>
+
 LineEditEx::LineEditEx(QWidget *parent) : QLineEdit(parent)
 {
 }

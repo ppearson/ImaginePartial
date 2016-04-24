@@ -213,7 +213,11 @@ void FileBrowseWidget::performBrowse(bool onlyIfEmpty)
 		for (unsigned int i = 0; i < filenameLength; i++)
 		{
 			QChar testChar = firstFileName[i];
+#ifndef IMAGINE_QT_5
 			char tC = testChar.toAscii();
+#else
+			char tC = testChar.toLatin1();
+#endif
 			bool isDigit = testChar.isDigit();
 
 			if (!isDigit && consecutiveDigitCount == 0)

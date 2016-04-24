@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2015 Peter Pearson.
+ Copyright 2011-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -126,6 +126,8 @@ public:
 	unsigned char	flags;
 
 	float			importance;
+
+	// basically a roughness, 0.0f - 1.0f - camera rays are 0.0f
 	float			width;
 
 	float			time;

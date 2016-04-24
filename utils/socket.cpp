@@ -20,6 +20,9 @@
 #include <errno.h>
 #include <unistd.h>
 
+const int MAX_SEND_LENGTH = 1024;
+const int MAX_RECV_LENGTH = 4096;
+
 Socket::Socket() : m_sock(-1), m_port(-1)
 {
 	memset(&m_addr, 0, sizeof(m_addr));
