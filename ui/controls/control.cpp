@@ -21,6 +21,9 @@
 //#include "parameters_panel.h"
 #include "parameters_panel_interface.h"
 
+namespace Imagine
+{
+
 Control::Control(const std::string& name, const std::string& label) : m_widget(NULL), m_name(name), m_label(label),
 	m_pParametersPanel(NULL), m_pConnectionProxy(NULL), m_enabled(true), m_canUndo(false)
 {
@@ -85,3 +88,5 @@ bool Control::isEnabled() const
 {
 	return m_enabled;
 }
+
+} // namespace Imagine

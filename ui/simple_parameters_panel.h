@@ -25,11 +25,14 @@
 #include "parameter.h"
 #include "parameters_panel_interface.h"
 
-class ParametersInterface;
-class Control;
-
 class QWidget;
 class QFormLayout;
+
+namespace Imagine
+{
+
+class ParametersInterface;
+class Control;
 
 class TextureWidget;
 class MaterialWidget;
@@ -63,5 +66,7 @@ protected:
 
 	std::map<std::string, Control*>		m_aControls;
 };
+
+} // namespace Imagine
 
 #endif // SIMPLE_PARAMETERS_PANEL_H

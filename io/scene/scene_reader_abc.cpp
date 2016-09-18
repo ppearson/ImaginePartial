@@ -34,6 +34,9 @@
 #include "objects/compound_object.h"
 #include "objects/mesh.h"
 
+namespace Imagine
+{
+
 using namespace Alembic::AbcGeom;
 
 // TODO: this has got a lot of duplicate code from GeoReaderAbc - inherit both that and this class from a common class
@@ -948,6 +951,8 @@ Vector SceneReaderAbc::quaternionToEuler(const Imath::Quatd& quat)
 }
 
 
+} // namespace Imagine
+
 namespace
 {
 	SceneReader* createSceneReaderAbc()
@@ -955,5 +960,5 @@ namespace
 		return new SceneReaderAbc();
 	}
 
-	const bool registered = FileIORegistry::instance().registerSceneReader("abc", createSceneReaderAbc);
+	const bool registered = Imagine::FileIORegistry::instance().registerSceneReader("abc", createSceneReaderAbc);
 }

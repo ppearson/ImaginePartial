@@ -25,6 +25,9 @@
 #include <windows.h>
 #endif
 
+namespace Imagine
+{
+
 class Mutex
 {
 public:
@@ -51,14 +54,16 @@ public:
 	{
 		m_mutex.lock();
 	}
-	
+
 	~Guard()
 	{
 		m_mutex.unlock();
 	}
-	
+
 protected:
 	Mutex m_mutex;
 };
+
+} // namespace Imagine
 
 #endif

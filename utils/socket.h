@@ -52,6 +52,9 @@
 	#define socklen_t int
 #endif
 
+namespace Imagine
+{
+
 class Socket
 {
 public:
@@ -102,5 +105,7 @@ protected:
 	std::string		m_clientAddress;
 	int				m_clientPort;
 };
+
+} // namespace Imagine
 
 #endif

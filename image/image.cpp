@@ -20,6 +20,9 @@
 
 #include "image/image_cache.h"
 
+namespace Imagine
+{
+
 void Image::removeReferenceFromImageCache()
 {
 	if (m_recipeHash != 0)
@@ -27,3 +30,5 @@ void Image::removeReferenceFromImageCache()
 		ImageCache::instance().removeImage(this);
 	}
 }
+
+} // namespace Imagine

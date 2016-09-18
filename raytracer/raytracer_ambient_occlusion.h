@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2015 Peter Pearson.
+ Copyright 2011-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -23,25 +23,32 @@
 
 #include "sampling/cached_sampler.h"
 
-class Normal;
-class Point;
+namespace Imagine
+{
+
+class HitResult;
 class SceneInterface;
 class RNG;
+class Raytracer;
 
 class RaytracerAmbientOcclusion
 {
 public:
-	RaytracerAmbientOcclusion(const SceneInterface& scene);
+	RaytracerAmbientOcclusion();
+	RaytracerAmbientOcclusion(const SceneInterface* scene, const Raytracer* rt);
 
-	float getOcclusionAtPoint(const Point& point, const Normal& normal, RNG& rng);
-	float getOcclusionAtPointExistingSamples(const Point& point, const Normal& normal, SampleBundle& samples, unsigned int sampleIndex) const;
+	float getOcclusionAtPoint(const HitResult& hitResult, RNG& rng);
+	float getOcclusionAtPointExistingSamples(const HitResult& hitResult, SampleBundle& samples, unsigned int sampleIndex) const;
+
+	float getOcclusionAtPointStandAlone(const HitResult& hitResult, RNG& rng) const;
 
 	void setSampleCount(unsigned int samples);
 	void setDistanceAttenuation(float distAttenuation) { m_distanceAttenuation = distAttenuation; }
 
 
 protected:
-	const SceneInterface&	m_scene;
+	const SceneInterface*	m_pScene;
+	const Raytracer*		m_pRaytracer;
 
 	CachedSampler			m_sampler;
 
@@ -56,5 +63,7 @@ protected:
 	std::vector<float>		m_aXSamples;
 	std::vector<float>		m_aYSamples;
 };
+
+} // namespace Imagine
 
 #endif // RAYTRACER_AMBIENT_OCCLUSION_H

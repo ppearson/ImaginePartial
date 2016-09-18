@@ -22,6 +22,9 @@
 
 #include "volumes/volume_grid_sparse.h"
 
+namespace Imagine
+{
+
 #define PACKED_READ 1
 
 VolumeReaderIVV::VolumeReaderIVV()
@@ -289,12 +292,14 @@ VolumeInstance* VolumeReaderIVV::readVolume(const std::string& filePath, unsigne
 }
 
 
+} // namespace Imagine
+
 namespace
 {
-	VolumeReader* createVolumeReaderIVV()
+	Imagine::VolumeReader* createVolumeReaderIVV()
 	{
-		return new VolumeReaderIVV();
+		return new Imagine::VolumeReaderIVV();
 	}
 
-	const bool registered = FileIORegistry::instance().registerVolumeReader("ivv", createVolumeReaderIVV);
+	const bool registered = Imagine::FileIORegistry::instance().registerVolumeReader("ivv", createVolumeReaderIVV);
 }

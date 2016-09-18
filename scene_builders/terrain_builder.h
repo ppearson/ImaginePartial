@@ -21,6 +21,9 @@
 
 #include "scene_builder.h"
 
+namespace Imagine
+{
+
 class TerrainBuilder : public SceneBuilder
 {
 public:
@@ -60,5 +63,7 @@ protected:
 	bool			m_normalise;
 	float			m_heightIgnoreThreshold;
 };
+
+} // namespace Imagine
 
 #endif // TERRAIN_BUILDER_H

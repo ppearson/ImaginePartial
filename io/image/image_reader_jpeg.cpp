@@ -27,6 +27,9 @@
 
 #include "colour/colour_space.h"
 
+namespace Imagine
+{
+
 ImageReaderJPEG::ImageReaderJPEG()
 {
 }
@@ -555,12 +558,14 @@ Image* ImageReaderJPEG::readGreyscaleImage(const std::string& filePath, unsigned
 	return pFinalImage;
 }
 
+} // namespace Imagine
+
 namespace
 {
-	ImageReader* createImageReaderJPEG()
+	Imagine::ImageReader* createImageReaderJPEG()
 	{
-		return new ImageReaderJPEG();
+		return new Imagine::ImageReaderJPEG();
 	}
 
-	const bool registered = FileIORegistry::instance().registerImageReaderMultipleExtensions("jpg;jpeg", createImageReaderJPEG);
+	const bool registered = Imagine::FileIORegistry::instance().registerImageReaderMultipleExtensions("jpg;jpeg", createImageReaderJPEG);
 }

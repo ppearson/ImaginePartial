@@ -29,6 +29,7 @@
 #include "objects/primitives/sphere.h"
 #include "objects/compound_object.h"
 #include "objects/compound_static_spheres.h"
+#include "objects/compound_instance.h"
 
 #include "geometry/editable_geometry_instance.h"
 #include "geometry/triangle_geometry_instance.h"
@@ -37,6 +38,9 @@
 
 #include "utils/system.h"
 #include "utils/timer.h"
+
+namespace Imagine
+{
 
 ObjectDetectorTask::ObjectDetectorTask(const ObjectDetectorSpecs& specs) : m_specs(specs)
 {
@@ -143,7 +147,7 @@ static Normal kDirectionTests[6] = {
 };
 
 InstanceShapeBuilder::InstanceShapeBuilder() : SceneBuilder(), m_scale(0.1f), m_objectType(eSourceObject), m_drawAsBBox(false),
-	m_addToGroup(true), m_gap(0.1f), m_parallelBuild(true)
+	m_addToGroup(true), m_useBakedInstances(false), m_gap(0.1f), m_parallelBuild(true)
 {
 }
 
@@ -169,6 +173,8 @@ void InstanceShapeBuilder::buildParameters(Parameters& parameters, unsigned int 
 
 	parameters.addParameter(new BasicParameter<bool>("set_to_bbox", "draw as bbox", &m_drawAsBBox, eParameterBool));
 	parameters.addParameter(new BasicParameter<bool>("add_to_group", "add to group", &m_addToGroup, eParameterBool));
+
+	parameters.addParameter(new BasicParameter<bool>("use_baked_instances", "Use baked instances", &m_useBakedInstances, eParameterBool));
 
 	parameters.addParameter(new RangeParameter<float, float>("gap", "Gap", &m_gap, eParameterFloat, 0.00001f, 5.0f, eParameterScrubButton));
 
@@ -238,14 +244,15 @@ void InstanceShapeBuilder::createScene(Scene& scene)
 		numberY = (unsigned int)floorf(overallShapeExtent.y / extent.y);
 		numberZ = (unsigned int)floorf(overallShapeExtent.z / extent.z);
 
-		// if the type of object we want to make instances of is just a single mesh (not a compound object)
+		float currentScale = m_scale * pSecondSelectedObject->getUniformScale();
+
 		if (pSecondSelectedObject->getObjectType() != eCollection)
 		{
+			// if the type of object we want to make instances of is just a single mesh (not a compound object)
 			GeometryInstanceGathered* pGeoInstance = pSecondSelectedObject->getGeometryInstance();
-			float currentScale = m_scale * pSecondSelectedObject->getUniformScale();
-			Vector scaleFactor(currentScale, currentScale, currentScale);
 
 			// TODO: doesn't cope with rotated geometry...
+			Vector scaleFactor(currentScale, currentScale, currentScale);
 			GeometryInstanceGathered* pNewScaledGeoInstance = createScaledGeoInstanceCopy(pGeoInstance, scaleFactor);
 
 			pNewHolderObject = new Mesh();
@@ -253,7 +260,18 @@ void InstanceShapeBuilder::createScene(Scene& scene)
 		}
 		else
 		{
-			return;
+			// it's a compound object
+			if (m_useBakedInstances)
+			{
+				CompoundObject* pSrcCO = dynamic_cast<CompoundObject*>(pSecondSelectedObject);
+				pNewHolderObject = new CompoundInstance(pSrcCO);
+
+				pNewHolderObject->setUniformScale(currentScale);
+			}
+			else
+			{
+				return;
+			}
 		}
 	}
 	else if (m_objectType == eSphere)
@@ -352,7 +370,7 @@ void InstanceShapeBuilder::createScene(Scene& scene)
 
 	fprintf(stderr, "Testing: %u positions...\n", totalItems);
 
-	unsigned int numberOfThreadsAvailable = System::getNumberOfCores();
+	unsigned int numberOfThreadsAvailable = System::getNumberOfThreads();
 	bool doInParallel = m_parallelBuild && numberOfThreadsAvailable > 1 && totalItems > 20000;
 
 	if (doInParallel)
@@ -588,13 +606,15 @@ GeometryInstanceGathered* InstanceShapeBuilder::createScaledGeoInstanceCopy(Geom
 	return static_cast<GeometryInstanceGathered*>(pNewGeoInstance);
 }
 
+} // namespace Imagine
+
 namespace
 {
-	SceneBuilder* createInstanceShapeBuilderSceneBuilder()
+	Imagine::SceneBuilder* createInstanceShapeBuilderSceneBuilder()
 	{
-		return new InstanceShapeBuilder();
+		return new Imagine::InstanceShapeBuilder();
 	}
 
-	const bool registered = SceneBuilderFactory::instance().registerSceneBuilder(5, "Instance Shape", createInstanceShapeBuilderSceneBuilder);
+	const bool registered = Imagine::SceneBuilderFactory::instance().registerSceneBuilder(5, "Instance Shape", createInstanceShapeBuilderSceneBuilder);
 }
 

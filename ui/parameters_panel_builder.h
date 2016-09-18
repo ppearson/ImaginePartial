@@ -21,6 +21,9 @@
 
 #include "parameter.h"
 
+namespace Imagine
+{
+
 class Parameters;
 class ParametersPanel;
 
@@ -31,5 +34,7 @@ public:
 
 	static ParametersPanel* buildParametersPanel(Parameters& parameters, ParametersInterface* pParent, ParameterPanelType panelType);
 };
+
+} // namespace Imagine
 
 #endif // PARAMETERS_PANEL_BUILDER_H

@@ -23,6 +23,9 @@
 
 #include "utils/maths/maths.h"
 
+namespace Imagine
+{
+
 class Colour3f
 {
 public:
@@ -199,5 +202,7 @@ public:
 	float g;
 	float b;
 };
+
+} // namespace Imagine
 
 #endif // COLOUR3F_H

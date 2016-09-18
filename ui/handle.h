@@ -19,6 +19,9 @@
 #ifndef HANDLE_H
 #define HANDLE_H
 
+namespace Imagine
+{
+
 class Cylinder;
 class Cone;
 class Cube;
@@ -81,5 +84,7 @@ protected:
 	static Cube* pFaceScaleY;
 	static Cube* pFaceScaleUniform;
 };
+
+} // namespace Imagine
 
 #endif // HANDLE_H

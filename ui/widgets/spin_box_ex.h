@@ -21,6 +21,9 @@
 
 #include <QSpinBox>
 
+namespace Imagine
+{
+
 class SpinBoxEx : public QSpinBox
 {
     Q_OBJECT
@@ -35,5 +38,7 @@ signals:
 public slots:
 
 };
+
+} // namespace Imagine
 
 #endif // SPIN_BOX_EX_H

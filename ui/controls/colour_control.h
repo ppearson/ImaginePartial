@@ -27,6 +27,9 @@
 
 #include "widgets/colour_button.h"
 
+namespace Imagine
+{
+
 class ColourControl : public Control
 {
 public:
@@ -42,5 +45,7 @@ protected:
 	ColourButton*		m_pickButton;
 	Colour3f*			m_pairedValue;
 };
+
+} // namespace Imagine
 
 #endif // COLOUR_CONTROL_H

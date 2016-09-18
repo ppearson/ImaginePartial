@@ -36,6 +36,9 @@
 #include "materials/material.h"
 #include "object.h"
 
+namespace Imagine
+{
+
 MaterialControl::MaterialControl(const std::string& name, Object* parentObject, std::string label) : Control(name, label), m_pParentObject(parentObject),
 	m_pSelectionManager(NULL), m_shiftPressed(false)
 {
@@ -84,7 +87,7 @@ void MaterialControl::initCommon()
 
 	for (; it != itEnd; ++it)
 	{
-		const std::string materialName = (*it).second;
+		const std::string& materialName = (*it).second;
 		int materialIndex = (int)(*it).first;
 		QAction* pNewMaterial = new QAction(materialName.c_str(), m_pEditNewMaterialButton);
 		m_pEditNewMaterialButton->connect(pNewMaterial, SIGNAL(triggered()), m_signalMapper, SLOT(map()));
@@ -307,3 +310,5 @@ void MaterialControl::setSelectionManager()
 	m_pParentObject = NULL;
 	m_pSelectionManager = &SelectionManager::instance();
 }
+
+} // namespace Imagine

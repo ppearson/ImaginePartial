@@ -23,6 +23,9 @@
 #include <sys/time.h>
 #include <stdio.h>
 
+namespace Imagine
+{
+
 class Timer
 {
 public:
@@ -60,5 +63,7 @@ protected:
 	timeval			m_startTime;
 };
 
+
+} // namespace Imagine
 
 #endif

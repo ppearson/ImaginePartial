@@ -37,6 +37,9 @@ using std::tr1::unordered_map;
 #include "core/hash.h"
 
 #include "utils/threads/mutex.h"
+
+namespace Imagine
+{
 //#include "utils/spin_lock.h" // is actually slower than just a standard mutex on Linux
 
 // A Sharded Map class, which splits the map into "shards" (I've used the DB name for
@@ -99,6 +102,11 @@ public:
 		return m_store.insert(values).first;
 	}
 
+	iterator erase(const iterator itErase)
+	{
+		return m_store.erase(itErase);
+	}
+
 protected:
 	std::map<HashValue, Value>	m_store;
 };
@@ -148,6 +156,11 @@ public:
 	iterator insertScoped(const std::pair<HashValue, Value>& values)
 	{
 		return m_store.insert(values).first;
+	}
+
+	iterator erase(const iterator itErase)
+	{
+		return m_store.erase(itErase);
 	}
 
 protected:
@@ -225,7 +238,7 @@ public:
 		bool operator==(const iterator& rhs)
 		{
 			// for end() comparisons
-			if (m_shardIndex == -1 && rhs.m_shardIndex == -1)
+			if (m_shardIndex == -1u && rhs.m_shardIndex == -1u)
 				return true;
 
 			if (m_pShardMap != rhs.m_pShardMap)
@@ -270,7 +283,7 @@ public:
 			if (m_holdLock)
 				return;
 
-			if (m_shardIndex == -1)
+			if (m_shardIndex == -1u)
 				return;
 
 			Shard& shardItem = m_pShardMap->m_aShards[m_shardIndex];
@@ -284,7 +297,7 @@ public:
 			if (!m_holdLock)
 				return;
 
-			if (m_shardIndex == -1)
+			if (m_shardIndex == -1u)
 				return;
 
 			Shard& shardItem = m_pShardMap->m_aShards[m_shardIndex];
@@ -313,7 +326,7 @@ public:
 
 		void releaseShard()
 		{
-			if (m_shardIndex == -1)
+			if (m_shardIndex == -1u)
 			{
 				return;
 			}
@@ -323,7 +336,7 @@ public:
 				unlock();
 			}
 
-			m_shardIndex = -1;
+			m_shardIndex = -1u;
 		}
 
 		// checks whether the internal iterator to an item in a shard's map is valid
@@ -355,7 +368,7 @@ public:
 	//       map is empty, it will return the same as end()
 	iterator begin()
 	{
-		iterator it(this, -1);
+		iterator it(this, -1u);
 		it.aquireShard(0);
 
 		// find the first shard with items in it
@@ -423,7 +436,7 @@ public:
 		HashValue shardHash = mixHash(value);
 		unsigned int shardIndex = getShardIndex(shardHash);
 
-		iterator it(this, -1);
+		iterator it(this, -1u);
 		it.aquireShard(shardIndex);
 
 		// find the first shard with items in it
@@ -450,7 +463,7 @@ public:
 	// if the specified shard was empty
 	iterator itForShardIndex(unsigned int shardIndex)
 	{
-		iterator it(this, -1);
+		iterator it(this, -1u);
 		it.aquireShard(shardIndex % m_shardCount);
 
 		// find the first shard with items in it
@@ -497,6 +510,45 @@ public:
 		iterator itResult(this, shardIndex);
 		itResult.m_storeIt = itNewItem;
 		itResult.m_holdLock = true;
+
+		return itResult;
+	}
+
+	// erases the item the iterator points to, and returns an iterator to the next item in the shard's
+	// map, or the first item in the next shard if the deleted item was the last item in the shard...
+	iterator erase(iterator& itErase)
+	{
+		// assume here that itErase holds the lock
+
+		Shard& shard = m_aShards[itErase.getShardIndex()];
+
+		typename StoreAdapter::StoreType_t::iterator itEraseMapResult = shard.m_store.erase(itErase.m_storeIt);
+
+		iterator itResult;
+
+		// if we've now got a resulting valid iterator from the erase operation, we should have the next item
+		// after the one we've just deleted.
+		if (itEraseMapResult != shard.m_store.itEnd())
+		{
+			// get iterator within the shard's map, and return that
+			itResult = itErase;
+			itResult.m_storeIt = itEraseMapResult;
+			return itResult;
+		}
+
+		// otherwise, we've run off the end of the shard, so try and aquire next shard
+
+		if (itErase.m_shardIndex == (m_shardCount - 1))
+		{
+			itErase.releaseShard();
+			// we're the last shard, so bail out returning an invalid iterator as there's no more shards or items
+			return end();
+		}
+
+		// try the next shard - this will either be in the next item in any next shard, or the end() iterator
+
+		itErase.releaseShard();
+		itResult = itForShardIndex(itErase.m_shardIndex + 1);
 
 		return itResult;
 	}
@@ -551,6 +603,8 @@ protected:
 
 	unsigned int		m_shardCount;
 };
+
+} // namespace Imagine
 
 #endif // SHARDED_MAP_H
 

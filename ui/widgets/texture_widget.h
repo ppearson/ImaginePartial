@@ -34,6 +34,9 @@ class QAction;
 class QVBoxLayout;
 class QHBoxLayout;
 
+namespace Imagine
+{
+
 class ColourButton;
 class FileBrowseWidget;
 class DoubleSpinBoxEx;
@@ -157,5 +160,7 @@ protected:
 	bool					m_logScale;
 	bool					m_highPrecision;
 };
+
+} // namespace Imagine
 
 #endif // TEXTURE_WIDGET_H

@@ -22,6 +22,9 @@
 
 #include "ui/widgets/texture_widget.h"
 
+namespace Imagine
+{
+
 TextureControl::TextureControl(const std::string& name, TextureParameters* pairedValue, std::string label, unsigned int flags) : Control(name, label),
 	m_pTextureWidget(NULL), m_pairedValue(NULL)
 {
@@ -58,3 +61,5 @@ void TextureControl::refreshFromValue()
 		}
 	}
 }
+
+} // namespace Imagine

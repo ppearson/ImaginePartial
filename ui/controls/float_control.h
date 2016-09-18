@@ -23,6 +23,9 @@
 
 #include "widgets/double_spin_box_ex.h"
 
+namespace Imagine
+{
+
 class FloatControl : public Control
 {
 public:
@@ -46,5 +49,7 @@ protected:
 
 	float				m_lastValue;
 };
+
+} // namespace Imagine
 
 #endif // FLOAT_CONTROL_H

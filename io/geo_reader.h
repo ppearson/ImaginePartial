@@ -27,6 +27,9 @@
 #include "geometry/geometry_instance.h"
 #include "geometry/editable_geometry_instance.h"
 
+namespace Imagine
+{
+
 class Object;
 class Mesh;
 class Material;
@@ -133,5 +136,7 @@ protected:
 
 	GeoReaderOptions		m_readOptions;
 };
+
+} // namespace Imagine
 
 #endif // GEO_READER_H

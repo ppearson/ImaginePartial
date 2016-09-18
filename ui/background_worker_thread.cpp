@@ -31,6 +31,9 @@
 
 #include "lights/light.h"
 
+namespace Imagine
+{
+
 BackgroundWorkerTask::BackgroundWorkerTask()
 {
 
@@ -118,3 +121,5 @@ void BackgroundWorkerThread::run()
 		m_pTask = NULL;
 	}
 }
+
+} // namespace Imagine

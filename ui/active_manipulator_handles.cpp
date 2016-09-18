@@ -22,6 +22,9 @@
 
 #include "manipulator_handle.h"
 
+namespace Imagine
+{
+
 ActiveManipulatorHandles::ActiveManipulatorHandles()
 {
 }
@@ -95,3 +98,5 @@ void ActiveManipulatorHandles::drawForSelection()
 		glPopName();
 	}
 }
+
+} // namespace Imagine

@@ -23,6 +23,9 @@
 
 #include <set>
 
+namespace Imagine
+{
+
 class GeoReaderObj : public GeoReader
 {
 public:
@@ -42,5 +45,7 @@ public:
 	// TriangleGeometryInstance
 	bool readFileTriangleMesh(const std::string& path, const GeoReaderOptions& options);
 };
+
+} // namespace Imagine
 
 #endif // OBJ_READER_H

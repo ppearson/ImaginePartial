@@ -32,6 +32,9 @@
 #include "parameter.h"
 #include "parameters_panel_interface.h"
 
+namespace Imagine
+{
+
 class ParametersPanel : ParametersPanelInterface
 {
 public:
@@ -73,5 +76,7 @@ protected:
 
 	ParameterPanelType					m_type;
 };
+
+} // namespace Imagine
 
 #endif // PARAMETERS_PANEL_H

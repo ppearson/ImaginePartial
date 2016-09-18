@@ -20,6 +20,9 @@
 
 #include "ui/widgets/material_widget.h"
 
+namespace Imagine
+{
+
 MaterialEditControl::MaterialEditControl(const std::string& name, Material** pairedMaterial, std::string label) :
 	Control(name, label), m_pActualWidget(NULL)
 {
@@ -44,3 +47,5 @@ void MaterialEditControl::refreshFromValue()
 {
 	m_pActualWidget->refreshMaterialControls();
 }
+
+} // namespace Imagine

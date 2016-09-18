@@ -34,6 +34,9 @@
 
 #include "scene.h"
 
+namespace Imagine
+{
+
 ImportSceneThread::ImportSceneThread(Scene& scene, QObject* parent) : QThread(parent), m_scene(scene)
 {
 }
@@ -97,3 +100,5 @@ void ImportSceneThread::run()
 
 	emit importedScene(true, aObjects, aMaterials);
 }
+
+} // namespace Imagine

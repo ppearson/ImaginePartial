@@ -21,6 +21,9 @@
 
 #include <string>
 
+namespace Imagine
+{
+
 class Point;
 class Vector;
 
@@ -31,6 +34,9 @@ class Hash
 public:
 	Hash();
 
+	HashValue getHash() const { return m_hash; }
+
+	// these are designed to be used in CRC style, only to detect differences in state
 	void addInt(int value);
 	void addUInt(unsigned int value);
 	void addLongLong(long long value);
@@ -39,14 +45,12 @@ public:
 	void addUChar(unsigned char value);
 	void addString(const std::string& value);
 
-	HashValue getHash() const { return m_hash; }
-
 	void addPoint(const Point& point);
 	void addVector(const Vector& vector);
 
 	static HashValue hashPoint(const Point& point);
 
-	static HashValue stringHash(const std::string& string);
+	// designed to be used as an actual hash
 	static HashValue stringHashJenkins(const std::string& string);
 
 protected:
@@ -56,5 +60,7 @@ protected:
 public:
 	HashValue m_hash;
 };
+
+} // namespace Imagine
 
 #endif // HASH_H

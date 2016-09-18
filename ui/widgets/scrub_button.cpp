@@ -25,6 +25,9 @@
 #include <QMouseEvent>
 #include <QCursor>
 
+namespace Imagine
+{
+
 ScrubButton::ScrubButton(QWidget* parent) : QPushButton(QIcon(":/imagine/images/scrub_button.png"), "", parent),
 	m_mouseDown(false), m_lastMouseX(0), m_lastMouseScreenX(0), m_lastMouseScreenY(0), m_index(-1)
 {
@@ -102,3 +105,5 @@ void ScrubButton::mouseMoveEvent(QMouseEvent* e)
 		}
 	}
 }
+
+} // namespace Imagine

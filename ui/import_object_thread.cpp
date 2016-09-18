@@ -30,6 +30,9 @@
 
 #include "materials/material.h"
 
+namespace Imagine
+{
+
 ImportObjectThread::ImportObjectThread(QObject *parent) : QThread(parent), m_pScene(NULL)
 {
 }
@@ -100,3 +103,5 @@ void ImportObjectThread::run()
 
 	emit importedObjects(true, aObjects, aMaterials);
 }
+
+} // namespace Imagine

@@ -21,6 +21,9 @@
 
 #include "io/image_reader.h"
 
+namespace Imagine
+{
+
 class ImageReaderHGT : public ImageReader
 {
 public:
@@ -36,5 +39,7 @@ public:
 
 protected:
 };
+
+} // namespace Imagine
 
 #endif // IMAGEREADERHGT_H

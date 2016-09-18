@@ -21,6 +21,9 @@
 
 #include <QThread>
 
+namespace Imagine
+{
+
 class BackgroundWorkerTask
 {
 public:
@@ -67,5 +70,7 @@ protected:
 protected:
 	BackgroundWorkerTask*		m_pTask;
 };
+
+} // namespace Imagine
 
 #endif // BACKGROUND_WORKER_THREAD_H

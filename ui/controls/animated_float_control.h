@@ -28,6 +28,9 @@
 
 #include "widgets/double_spin_box_ex.h"
 
+namespace Imagine
+{
+
 class AnimatedFloatControl : public Control
 {
 public:
@@ -67,5 +70,7 @@ protected:
 
 	QSignalMapper*	m_signalMapper;
 };
+
+} // namespace Imagine
 
 #endif // ANIMATED_FLOAT_CONTROL_H

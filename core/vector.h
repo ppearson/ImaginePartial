@@ -25,6 +25,9 @@
 
 #include "utils/io/stream.h"
 
+namespace Imagine
+{
+
 class Point;
 
 class Vector
@@ -245,5 +248,7 @@ public:
 	float y;
 	float z;
 };
+
+} // namespace Imagine
 
 #endif // VECTOR_H

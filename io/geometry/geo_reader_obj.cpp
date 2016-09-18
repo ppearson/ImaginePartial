@@ -35,6 +35,9 @@
 
 #include "io/geo_helper_obj.h"
 
+namespace Imagine
+{
+
 // TODO: lots of duplication here...
 
 GeoReaderObj::GeoReaderObj() : GeoReader()
@@ -964,7 +967,7 @@ bool GeoReaderObj::readFileTriangleMesh(const std::string& path, const GeoReader
 
 			items = fastSplit(line, aItems, sep1, 2);
 
-			assert(items == 3);
+//			assert(items == 3);
 
 			for (unsigned int i = 0; i < items; i++)
 			{
@@ -1046,12 +1049,14 @@ bool GeoReaderObj::readFileTriangleMesh(const std::string& path, const GeoReader
 }
 
 
+} // namespace Imagine
+
 namespace
 {
-	GeoReader* createGeoReaderObj()
+	Imagine::GeoReader* createGeoReaderObj()
 	{
-		return new GeoReaderObj();
+		return new Imagine::GeoReaderObj();
 	}
 
-	const bool registered = FileIORegistry::instance().registerGeoReader("obj", createGeoReaderObj);
+	const bool registered = Imagine::FileIORegistry::instance().registerGeoReader("obj", createGeoReaderObj);
 }

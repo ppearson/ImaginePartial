@@ -21,6 +21,9 @@
 
 #include "camera_ray_creator.h"
 
+namespace Imagine
+{
+
 class CamRayCreatorSpherical : public CameraRayCreator
 {
 public:
@@ -39,6 +42,8 @@ public:
 		Ray ray1(Point(), newDirection, RAY_CAMERA);
 		ray1 = m_transform.transform(ray1);
 		ray1.direction.normalise();
+
+		ray1.tMin = m_nearClippingPlane;
 
 		if (m_createDifferentials)
 		{
@@ -77,6 +82,8 @@ public:
 		Ray ray1(Point(), newDirection, RAY_CAMERA);
 		ray1 = m_transform.transform(ray1);
 		ray1.direction.normalise();
+
+		ray1.tMin = m_nearClippingPlane;
 
 		if (m_createDifferentials)
 		{
@@ -127,6 +134,8 @@ public:
 		Ray ray1(Point(), newDirection, time, RAY_CAMERA);
 		ray1 = m_transform.transform(ray1);
 		ray1.direction.normalise();
+
+		ray1.tMin = m_nearClippingPlane;
 
 		if (m_createDifferentials)
 		{
@@ -181,6 +190,8 @@ public:
 		ray1 = ssT.m_transform.transform(ray1);
 		ray1.direction.normalise();
 
+		ray1.tMin = m_nearClippingPlane;
+
 		if (m_createDifferentials)
 		{
 			float diffTheta = kPI * (y + 1.0f) * m_invHeight;
@@ -203,5 +214,7 @@ public:
 		return ray1;
 	}
 };
+
+} // namespace Imagine
 
 #endif // CAM_RAY_CREATOR_SPHERICAL_H

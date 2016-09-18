@@ -21,6 +21,9 @@
 
 #include <QLineEdit>
 
+namespace Imagine
+{
+
 class LineEditEx : public QLineEdit
 {
 	Q_OBJECT
@@ -31,5 +34,7 @@ public:
 	virtual void dropEvent(QDropEvent* event);
 
 };
+
+} // namespace Imagine
 
 #endif // LINE_EDIT_EX_H

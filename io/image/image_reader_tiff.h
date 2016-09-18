@@ -23,6 +23,9 @@
 
 #include "io/image_reader.h"
 
+namespace Imagine
+{
+
 struct tiff;
 typedef struct tiff TIFF;
 
@@ -92,5 +95,7 @@ protected:
 	Image* readScanlineGreyscaleImage(const std::string& filePath, TIFF* pTiff, TiffInfo& tiffInfo, unsigned int requiredTypeFlags);
 	Image* readTiledGreyscaleImage(const std::string& filePath, TIFF* pTiff, TiffInfo& tiffInfo, unsigned int requiredTypeFlags);
 };
+
+} // namespace Imagine
 
 #endif // IMAGE_READER_TIFF_H

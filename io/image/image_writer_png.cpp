@@ -26,6 +26,9 @@
 
 #include "utils/maths/maths.h"
 
+namespace Imagine
+{
+
 ImageWriterPNG::ImageWriterPNG() : ImageWriter()
 {
 }
@@ -198,12 +201,14 @@ bool ImageWriterPNG::writeImage(const std::string& filePath, const OutputImage& 
 	return true;
 }
 
+} // namespace Imagine
+
 namespace
 {
-	ImageWriter* createImageWriterPNG()
+	Imagine::ImageWriter* createImageWriterPNG()
 	{
-		return new ImageWriterPNG();
+		return new Imagine::ImageWriterPNG();
 	}
 
-	const bool registered = FileIORegistry::instance().registerImageWriter("png", createImageWriterPNG);
+	const bool registered = Imagine::FileIORegistry::instance().registerImageWriter("png", createImageWriterPNG);
 }

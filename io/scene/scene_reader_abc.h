@@ -30,6 +30,9 @@
 
 #include "core/hash.h"
 
+namespace Imagine
+{
+
 using namespace Alembic::AbcGeom;
 
 class GeometryInstanceGathered;
@@ -73,5 +76,7 @@ protected:
 	GeoInstanceMap		m_aGeoInstances;
 	SceneReaderOptions	m_options;
 };
+
+} // namespace Imagine
 
 #endif // SCENE_READER_ABC_H

@@ -40,11 +40,17 @@
 
 #include "utils/params.h"
 
+namespace Imagine
+{
+
 MaterialPreviewRenderThread::MaterialPreviewRenderThread(SceneInterface* pScene, MaterialPreviewWidget* pWidget)
-	: QThread(NULL), m_pScene(pScene), m_pImage(NULL), m_pRaytracer(NULL), m_pWidget(pWidget)
+	: QThread(NULL), m_pScene(pScene), m_pImage(NULL), m_pRaytracer(NULL), m_pSettings(NULL), m_pWidget(pWidget)
 {
 	unsigned int threads = GlobalContext::instance().getRenderThreads();
-	threads /= 2;
+	if (threads > 2)
+	{
+		threads /= 2;
+	}
 
 	// we want progressive rendering
 	m_pRaytracer = new Raytracer(*m_pScene, threads, false);
@@ -593,3 +599,5 @@ void MaterialPreviewWidget::menuGlobalIllumination()
 	updateRaytracer();
 	renderImage(NULL);
 }
+
+} // namespace Imagine

@@ -38,6 +38,9 @@
 #include "controls/ray_visibility_control.h"
 #include "controls/material_edit_control.h"
 
+namespace Imagine
+{
+
 ParametersPanelBuilder::ParametersPanelBuilder()
 {
 }
@@ -194,7 +197,8 @@ ParametersPanel* ParametersPanelBuilder::buildParametersPanel(Parameters& parame
 				pControl = new FileControl(name, pTypedParam->getPairedValue(), label, category);
 				break;
 			}
-			case eParameterTexture:
+			case eParameterTexture1f:
+			case eParameterTexture3f:
 			{
 				BasicParameter<TextureParameters>* pTypedParam = static_cast<BasicParameter<TextureParameters>*>(pParam);
 
@@ -240,3 +244,5 @@ ParametersPanel* ParametersPanelBuilder::buildParametersPanel(Parameters& parame
 
 	return pPP;
 }
+
+} // namespace Imagine

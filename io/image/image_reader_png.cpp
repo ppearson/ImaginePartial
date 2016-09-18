@@ -27,6 +27,9 @@
 
 #include "colour/colour_space.h"
 
+namespace Imagine
+{
+
 struct PNGInfra
 {
 	FILE*			pFile;
@@ -574,12 +577,14 @@ Image* ImageReaderPNG::readGreyscaleImage(const std::string& filePath, unsigned 
 	return pFinalImage;
 }
 
+} // namespace Imagine
+
 namespace
 {
-	ImageReader* createImageReaderPNG()
+	Imagine::ImageReader* createImageReaderPNG()
 	{
-		return new ImageReaderPNG();
+		return new Imagine::ImageReaderPNG();
 	}
 
-	const bool registered = FileIORegistry::instance().registerImageReader("png", createImageReaderPNG);
+	const bool registered = Imagine::FileIORegistry::instance().registerImageReader("png", createImageReaderPNG);
 }

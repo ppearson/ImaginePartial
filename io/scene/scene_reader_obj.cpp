@@ -33,6 +33,9 @@
 
 #include "io/geo_helper_obj.h"
 
+namespace Imagine
+{
+
 SceneReaderObj::SceneReaderObj()
 {
 }
@@ -391,12 +394,14 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 }
 
 
+} // namespace Imagine
+
 namespace
 {
-	SceneReader* createSceneReaderObj()
+	Imagine::SceneReader* createSceneReaderObj()
 	{
-		return new SceneReaderObj();
+		return new Imagine::SceneReaderObj();
 	}
 
-	const bool registered = FileIORegistry::instance().registerSceneReader("obj", createSceneReaderObj);
+	const bool registered = Imagine::FileIORegistry::instance().registerSceneReader("obj", createSceneReaderObj);
 }

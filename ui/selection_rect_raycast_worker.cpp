@@ -23,6 +23,9 @@
 
 #include "objects/camera.h"
 
+namespace Imagine
+{
+
 
 SelectionRectRaycastTask::SelectionRectRaycastTask(SelectedObjects* pSelectedObjects, unsigned int startX, unsigned int startY,
 												   unsigned int endX, unsigned int endY) :
@@ -169,3 +172,5 @@ void SelectionRectRaycastWorker::doRaycasts(unsigned int startX, unsigned int st
 		}
 	}
 }
+
+} // namespace Imagine

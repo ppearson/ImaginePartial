@@ -27,12 +27,19 @@
 
 #include "image/image_texture_cache.h"
 
+namespace Imagine
+{
+
 class ImageTextureCache;
+class Raytracer;
+class SceneInterface;
 
 class RenderThreadContext
 {
 public:
-	RenderThreadContext(unsigned int threadID) : m_threadID(threadID), m_pLightSampler(NULL), m_pTimeCounter(NULL),
+	RenderThreadContext(const Raytracer* rt, const SceneInterface* sceneInterface, unsigned int threadID)
+		: m_pRaytracer(rt), m_pSceneInterface(sceneInterface),
+		  m_threadID(threadID), m_pLightSampler(NULL), m_pTimeCounter(NULL),
 					m_pMainImageTextureCache(NULL)
 	{
 
@@ -103,22 +110,36 @@ public:
 		return m_textureMicrocache;
 	}
 
+	const Raytracer* getRaytracer() const
+	{
+		return m_pRaytracer;
+	}
+
+	const SceneInterface* getSceneInterface() const
+	{
+		return m_pSceneInterface;
+	}
+
 protected:
+	const Raytracer*		m_pRaytracer;
+	const SceneInterface*	m_pSceneInterface;
 	// not really sure we need this, but...
-	unsigned int		m_threadID;
+	unsigned int			m_threadID;
 
-	RenderStatistics	m_statistics;
-
-	// we own this
-	LightSampler*		m_pLightSampler;
+	RenderStatistics		m_statistics;
 
 	// we own this
-	ThreadTimeCounter*	m_pTimeCounter;
+	LightSampler*			m_pLightSampler;
+
+	// we own this
+	ThreadTimeCounter*		m_pTimeCounter;
 
 	// we don't own this
-	ImageTextureCache*	m_pMainImageTextureCache;
+	ImageTextureCache*		m_pMainImageTextureCache;
 
 	ImageTextureCache::Microcache	m_textureMicrocache;
 };
+
+} // namespace Imagine
 
 #endif // RENDER_THREAD_CONTEXT_H

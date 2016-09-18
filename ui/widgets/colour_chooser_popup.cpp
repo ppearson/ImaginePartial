@@ -23,6 +23,9 @@
 
 #include "colour_button.h"
 
+namespace Imagine
+{
+
 const unsigned int rows = 9;
 const unsigned int columns = 6;
 
@@ -225,3 +228,5 @@ void ColourChooserPopup::mousePressEvent(QMouseEvent* event)
 	m_pOwner->colourPicked(m_aColours[m_selectedColourIndex]);
 	hide();
 }
+
+} // namespace Imagine

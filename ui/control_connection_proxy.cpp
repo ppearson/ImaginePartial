@@ -20,6 +20,9 @@
 
 #include "controls/control.h"
 
+namespace Imagine
+{
+
 ControlConnectionProxy::ControlConnectionProxy(Control* pOwner) :
 	QObject(), m_pOwner(pOwner)
 {
@@ -175,3 +178,5 @@ void ControlConnectionProxy::selectionChanged()
 		}
 	}
 }
+
+} // namespace Imagine

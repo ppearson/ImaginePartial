@@ -24,6 +24,9 @@
 
 #include "control_connection_proxy.h"
 
+namespace Imagine
+{
+
 class ParametersPanelInterface;
 
 class Control
@@ -75,5 +78,7 @@ protected:
 	bool			m_enabled;
 	bool			m_canUndo;
 };
+
+} // namespace Imagine
 
 #endif // CONTROL_H

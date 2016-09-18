@@ -25,6 +25,9 @@
 
 #include "widgets/double_spin_box_ex.h"
 
+namespace Imagine
+{
+
 class VectorControl : public Control
 {
 public:
@@ -40,5 +43,7 @@ protected:
 
 	Vector*				m_pairedValue;
 };
+
+} // namespace Imagine
 
 #endif // VECTOR_CONTROL_H

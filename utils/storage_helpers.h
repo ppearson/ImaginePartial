@@ -26,6 +26,9 @@
 //#include <stdint.h>
 #include <inttypes.h>
 
+namespace Imagine
+{
+
 typedef unsigned long long HashValue;
 
 void storeString(const std::string& string, std::fstream& stream);
@@ -51,5 +54,7 @@ void loadHash(HashValue& value, std::fstream& stream);
 
 void storeBool(bool& value, std::fstream& stream);
 void loadBool(bool& value, std::fstream& stream);
+
+} // namespace Imagine
 
 #endif // STORAGE_HELPERS_H

@@ -19,6 +19,9 @@
 #ifndef IMAGE_UTILS_H
 #define IMAGE_UTILS_H
 
+namespace Imagine
+{
+
 class ImageColour3f;
 class ImageColour3h;
 class Image1f;
@@ -42,5 +45,7 @@ protected:
 	static void flipImageVertically(Image1h* pImage, unsigned int scanlines, unsigned int numRows, unsigned int width, unsigned int scanlineBytes);
 
 };
+
+} // namespace Imagine
 
 #endif // IMAGE_UTILS_H

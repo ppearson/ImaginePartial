@@ -24,6 +24,10 @@
 class QIcon;
 class QString;
 
+namespace Imagine
+{
+
+
 class PushButtonEx : public QPushButton
 {
 	Q_OBJECT
@@ -38,5 +42,7 @@ signals:
 public slots:
 
 };
+
+} // namespace Imagine
 
 #endif // PUSH_BUTTON_EX_H

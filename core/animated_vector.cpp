@@ -20,6 +20,9 @@
 
 #include "output_context.h"
 
+namespace Imagine
+{
+
 AnimatedVector::AnimatedVector()
 {
 }
@@ -196,3 +199,5 @@ bool AnimatedVector::isNull() const
 	bool constantIsZero = (x.getValue() == 0.0f && y.getValue() == 0.0f && z.getValue() == 0.0f);
 	return constantIsZero;
 }
+
+} // namespace Imagine

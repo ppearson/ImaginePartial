@@ -22,6 +22,9 @@
 #include <QDoubleSpinBox>
 #include <QKeyEvent>
 
+namespace Imagine
+{
+
 class DoubleSpinBoxEx : public QDoubleSpinBox
 {
 	Q_OBJECT
@@ -58,5 +61,7 @@ protected:
 	int		m_decimalPlacesToShow; // used to indicate whether we should knock off trailing zeros
 
 };
+
+} // namespace Imagine
 
 #endif // DOUBLESPINBOXEX_H

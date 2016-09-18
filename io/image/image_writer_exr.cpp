@@ -43,6 +43,9 @@
 #include <ImfDeepScanLineOutputPart.h>
 #include <ImfDeepTiledOutputFile.h>
 #include <ImfDeepTiledOutputPart.h>
+
+namespace Imagine
+{
 #endif
 
 using namespace Imath;
@@ -509,12 +512,14 @@ bool ImageWriterEXR::writeDeepImage(const std::string& filePath, const OutputIma
 	return true;
 }
 
+} // namespace Imagine
+
 namespace
 {
-	ImageWriter* createImageWriterEXR()
+	Imagine::ImageWriter* createImageWriterEXR()
 	{
-		return new ImageWriterEXR();
+		return new Imagine::ImageWriterEXR();
 	}
 
-	const bool registered = FileIORegistry::instance().registerImageWriter("exr", createImageWriterEXR);
+	const bool registered = Imagine::FileIORegistry::instance().registerImageWriter("exr", createImageWriterEXR);
 }

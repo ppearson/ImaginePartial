@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2012-2014 Peter Pearson.
+ Copyright 2012-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -26,6 +26,9 @@
 #include "colour3b.h"
 #include "colour4f.h"
 
+namespace Imagine
+{
+
 class ColourSpace
 {
 public:
@@ -43,6 +46,9 @@ public:
 	static void convertLinearToSRGBFast(Colour4f& colour);
 
 	static Colour3f convertByteSRGBToLinearLUT(const Colour3b& colour);
+
+	static Colour3f convertByteHSVToLinearRGB(unsigned char H, unsigned char S, unsigned char V);
+	static Colour3f convertLinearHSVToLinearRGB(float H, float S, float V);
 
 
 	////
@@ -120,5 +126,7 @@ protected:
 	static float		m_SRGBToLinearLUT[256];
 	static float		m_byteToFloatLUT[256];
 };
+
+} // namespace Imagine
 
 #endif // COLOUR_SPACE_H

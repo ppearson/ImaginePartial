@@ -27,6 +27,9 @@
 #include "utils/io/stream.h"
 #include "utils/storage_helpers.h"
 
+namespace Imagine
+{
+
 AnimationCurve::AnimationCurve() : m_tag(0)
 {
 }
@@ -420,3 +423,5 @@ float AnimationCurve::quadraticTween(float time, float start, float end)
 	--time;
 	return -c / 2.0f * ((time) * (time - 2.0f) - 1.0f) + b;
 }
+
+} // namespace Imagine

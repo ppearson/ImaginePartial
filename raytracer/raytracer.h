@@ -22,7 +22,6 @@
 #include <vector>
 #include <string>
 
-#include "utils/maths/fixed.h"
 #include "utils/threads/thread_pool.h"
 
 #include "scene_common.h"
@@ -33,6 +32,9 @@
 #include "raytracer_common.h"
 
 #include "remote/render_client_job_manager.h"
+
+namespace Imagine
+{
 
 class Object;
 class SceneInterface;
@@ -103,9 +105,7 @@ public:
 	friend class Renderer;
 	template <typename Accumulator>
 	friend class DirectIllumination;
-	friend class RaytracerAntiAliasing;
 	friend class PathTracer;
-	friend class PreviewPathTracer;
 	friend class PathTracerDeep;
 
 	// this is for re-using an existing Raytracer
@@ -113,6 +113,7 @@ public:
 	void initRendererAndIntegrator(const Params& settings);
 
 	void setExtraChannels(unsigned int extraChannels) { m_extraChannels = extraChannels; }
+	unsigned int getExtraChannels() const { return m_extraChannels; }
 
 	void setHost(RaytracerHost* host) { m_pHost = host; }
 
@@ -138,6 +139,7 @@ public:
 	void updateCameraRayCreator();
 
 	size_t getRendererMemoryUsage() const;
+	float getRayEpsilon() const { return m_rayEpsilon; }
 
 	void setupRenderThreadContextLightSampling();
 
@@ -223,5 +225,7 @@ protected:
 
 	DebugPathCollection*	m_pDebugPathCollection;
 };
+
+} // namespace Imagine
 
 #endif // RAYTRACER_H

@@ -18,6 +18,9 @@
 
 #include "string_control.h"
 
+namespace Imagine
+{
+
 StringControl::StringControl(const std::string& name, std::string* pairedValue, std::string label) :
 		Control(name, label)
 {
@@ -58,3 +61,5 @@ std::string StringControl::getValue()
 {
 	return m_lineEdit->text().toStdString();
 }
+
+} // namespace Imagine

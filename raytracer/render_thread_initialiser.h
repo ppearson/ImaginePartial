@@ -23,12 +23,18 @@
 
 #include "image/output_image_tile.h"
 #include "raytracer/render_thread_context.h"
+#include "raytracer/raytracer.h"
 
 #include "utils/threads/thread_pool.h"
 
 #include "filters/filter.h"
 
-// Stand-alone thread pool which emulates the thread count / layout of Raytracer, the purpose being to initialise per-thread
+#include "scene_interface.h"
+
+namespace Imagine
+{
+
+// Stand-alone thread pool which emulates the thread count / layout of Raytracer, the purpose being to allocate and initialise per-thread
 // data on the particular processor core a thread will be running on, the aim being to ensure data is initialised by the processor
 // core it will be assigned to on multi socket systems in order to reduce needless cross-socket bandwidth with memory for items
 // being almost exclusively used by particular cores having to be fetched from the memory of different sockets...
@@ -38,7 +44,9 @@
 class RenderThreadInitHelper : public ThreadPool
 {
 public:
-	RenderThreadInitHelper(unsigned int numThreads, bool setAffinity) : ThreadPool(numThreads, false)
+	RenderThreadInitHelper(unsigned int numThreads, bool setAffinity, const Raytracer* pRaytracer, const SceneInterface* pSceneInterface)
+		: ThreadPool(numThreads, false),
+		  m_pRaytracer(pRaytracer), m_pSceneInterface(pSceneInterface)
 	{
 	}
 
@@ -138,11 +146,12 @@ protected:
 		{
 			RenderThreadInitTask1* pThisTask = static_cast<RenderThreadInitTask1*>(pTask);
 
-			// do the work of allocating (and importantly initialising the per-thread memory within the particular
+			// do the work of allocating (and importantly initialising) the per-thread memory within the particular
 			// threads themselves, so that they get run on their target processor cores / sockets
-			OutputImageTile* pNewImage = new OutputImageTile(pThisTask->m_tileSizeX, pThisTask->m_tileSizeY, pThisTask->m_imageComponents, pThisTask->m_pFilter);
+			OutputImageTile* pNewImage = new OutputImageTile(pThisTask->m_tileSizeX, pThisTask->m_tileSizeY,
+															 pThisTask->m_imageComponents, pThisTask->m_pFilter);
 
-			RenderThreadContext* pNewRenderThreadContext = new RenderThreadContext(pThisTask->m_threadIndex);
+			RenderThreadContext* pNewRenderThreadContext = new RenderThreadContext(m_pRaytracer, m_pSceneInterface, pThisTask->m_threadIndex);
 
 			RenderThreadInitResult result;
 			result.pImageTile = pNewImage;
@@ -188,7 +197,12 @@ protected:
 
 	std::map<unsigned int, RenderThreadInitResult>	m_results1;
 	std::map<unsigned int, LightSampler*>			m_results2;
+
+	const Raytracer*		m_pRaytracer;
+	const SceneInterface*	m_pSceneInterface;
 };
+
+} // namespace Imagine
 
 #endif // RENDER_THREAD_INITIALISER_H
 

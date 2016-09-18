@@ -20,6 +20,9 @@
 
 #include <QColorDialog>
 
+namespace Imagine
+{
+
 ColourControl::ColourControl(const std::string& name, Colour3f* pairedValue, std::string label) : Control(name, label)
 {
 	m_pickButton = new ColourButton();
@@ -91,3 +94,5 @@ void ColourControl::refreshFromValue()
 	m_pickButton->setColour(colour);
 }
 
+
+} // namespace Imagine

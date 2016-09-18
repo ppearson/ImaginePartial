@@ -26,6 +26,9 @@
 
 #include "ui/widgets/line_edit_ex.h"
 
+namespace Imagine
+{
+
 class FileBrowseWidget : public QWidget
 {
 	Q_OBJECT
@@ -70,5 +73,7 @@ protected:
 
 	bool			m_save;
 };
+
+} // namespace Imagine
 
 #endif // FILE_BROWSE_WIDGET_H

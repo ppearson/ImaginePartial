@@ -23,6 +23,9 @@
 
 #include "colour3f.h"
 
+namespace Imagine
+{
+
 class Colour4f
 {
 public:
@@ -74,7 +77,7 @@ public:
 		return Colour4f(scale * r, scale * g, scale * b, scale * a);
 	}
 
-	Colour4f& operator*=(Colour4f rhs)
+	Colour4f& operator*=(const Colour4f& rhs)
 	{
 		r *= rhs.r;
 		g *= rhs.g;
@@ -84,7 +87,7 @@ public:
 		return *this;
 	}
 
-	Colour4f& operator*=(Colour3f rhs)
+	Colour4f& operator*=(const Colour3f& rhs)
 	{
 		r *= rhs.r;
 		g *= rhs.g;
@@ -112,9 +115,48 @@ public:
 		return *this;
 	}
 
+	Colour4f operator-(const Colour4f& rhs) const
+	{
+		return Colour4f(r - rhs.r, g - rhs.g, b - rhs.b, a - rhs.a);
+	}
+
+	Colour4f operator+(const Colour4f& rhs) const
+	{
+		return Colour4f(r + rhs.r, g + rhs.g, b + rhs.b, a + rhs.a);
+	}
+
+	Colour4f operator/(float scale) const
+	{
+		float inv = 1.0f / scale;
+		return Colour4f(r * inv, g * inv, b * inv, a * inv);
+	}
+
+	Colour4f operator*(const Colour4f& rhs) const
+	{
+		return Colour4f(r * rhs.r, g * rhs.g, b * rhs.b, a * rhs.a);
+	}
+
 	float brightness() const
 	{
 		return (0.2126f * r) + (0.7152f * g) + (0.0722f * b);
+	}
+
+	float max() const
+	{
+		if (r > g)
+		{
+			if (b > r)
+				return b;
+			else
+				return r;
+		}
+		else
+		{
+			if (b > g)
+				return b;
+			else
+				return g;
+		}
 	}
 
 	inline void clamp(float max = 1.0f)
@@ -167,5 +209,7 @@ public:
 	float b;
 	float a;
 };
+
+} // namespace Imagine
 
 #endif // COLOUR4F_H

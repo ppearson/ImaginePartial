@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2012 Peter Pearson.
+ Copyright 2011-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -21,6 +21,9 @@
 
 #include <stdio.h>
 #include <string.h>
+
+namespace Imagine
+{
 
 template<typename T> class Matrix;
 
@@ -45,29 +48,29 @@ template<typename T>
 class Matrix
 {
 public:
-	Matrix() : m_width(0), m_height(0), m_data(NULL)
+	Matrix() : m_width(0), m_height(0), m_pData(NULL)
 	{
 
 	}
 
-	Matrix(unsigned int width, unsigned int height, bool initialise = true) : m_width(width), m_height(height), m_data(NULL)
+	Matrix(unsigned int width, unsigned int height, bool initialise = true) : m_width(width), m_height(height), m_pData(NULL)
 	{
 		if (initialise)
 		{
-			m_data = new T[width * height];
+			m_pData = new T[width * height];
 		}
 		else
 		{
-			m_data = static_cast<T*>(::operator new(sizeof(T) * width * height));
+			m_pData = static_cast<T*>(::operator new(sizeof(T) * width * height));
 		}
 	}
 
 	~Matrix()
 	{
-		if (m_data)
+		if (m_pData)
 		{
 			// TODO: won't match when using operator new
-			delete [] m_data;
+			delete [] m_pData;
 		}
 	}
 
@@ -82,45 +85,50 @@ public:
 	{
 		if (setToZero)
 		{
-			m_data = new T[width * height];
+			m_pData = new T[width * height];
 		}
 		else
 		{
-			m_data = static_cast<T*>(::operator new(sizeof(T) * width * height));
+			m_pData = static_cast<T*>(::operator new(sizeof(T) * width * height));
 		}
 	}
 
 	T* rowPtr(unsigned int row)
 	{
-		return m_data + (row * m_width);
+		return m_pData + (row * m_width);
 	}
 
 	T* rawData()
 	{
-		return m_data;
+		return m_pData;
 	}
 
 	void copy(const Matrix<T>& source)
 	{
-		memcpy(m_data, source.m_data, m_width * m_height * sizeof(T));
+		memcpy(m_pData, source.m_pData, m_width * m_height * sizeof(T));
 	}
 
 	void copy(const Matrix<T>* source)
 	{
-		memcpy(m_data, source->m_data, m_width * m_height * sizeof(T));
+		memcpy(m_pData, source->m_pData, m_width * m_height * sizeof(T));
 	}
 
 	// only usable for ints or float 0.0f
 	void setAll(T val)
 	{
-		memset(m_data, val, m_width * m_height * sizeof(T));
+		memset(m_pData, val, m_width * m_height * sizeof(T));
 	}
 
-	T& item(unsigned int x, unsigned int y) { return m_data[x + m_width * y]; }
-	const T& item(unsigned int x, unsigned int y) const { return m_data[x + m_width * y]; }
+	void setZero()
+	{
+		memset(m_pData, 0, m_width * m_height * sizeof(T));
+	}
 
-	T* itemPtr(unsigned int x, unsigned int y) { return &m_data[x + m_width * y]; }
-	const T* itemPtr(unsigned int x, unsigned int y) const { return &m_data[x + m_width * y]; }
+	T& item(unsigned int x, unsigned int y) { return m_pData[x + m_width * y]; }
+	const T& item(unsigned int x, unsigned int y) const { return m_pData[x + m_width * y]; }
+
+	T* itemPtr(unsigned int x, unsigned int y) { return &m_pData[x + m_width * y]; }
+	const T* itemPtr(unsigned int x, unsigned int y) const { return &m_pData[x + m_width * y]; }
 
 	Row<T>& operator[](unsigned int row)
 	{
@@ -130,8 +138,10 @@ public:
 protected:
 	unsigned int	m_width;
 	unsigned int	m_height;
-	T *		m_data;
+	T*				m_pData;
 
 };
+
+} // namespace Imagine
 
 #endif

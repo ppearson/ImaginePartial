@@ -62,6 +62,9 @@
 
 #include "utils/file_helpers.h"
 
+namespace Imagine
+{
+
 TextureWidget::TextureWidget(TextureParameters* pParams, QWidget* parent, unsigned int flags) : QWidget(parent),
 	m_pTexture(NULL), m_scaleU(1.0f), m_scaleV(1.0f), m_performAutoFileBrowse(true), m_logScale(false), m_highPrecision(false)
 {
@@ -277,15 +280,32 @@ void TextureWidget::initCommon()
 			m_offset += 1;
 		}
 	}
+	
+	// sort them for display
+	std::map<std::string, unsigned char> aSortedNames;
 
-	int menuIndex = m_offset;
 	TextureRegistry::TextureNames::iterator itTexture = TextureRegistry::instance().standardTextureNamesBegin();
 	for (; itTexture != TextureRegistry::instance().standardTextureNamesEnd(); ++itTexture)
 	{
-		const std::string textureName = (*itTexture).second;
-		int textureIndex = (int)(*itTexture).first;
+		const std::string& textureName = (*itTexture).second;
+		int textureTypeID = (int)(*itTexture).first;
 
-		m_aTextureIDs.push_back((unsigned char)textureIndex);
+		// hacky, but...
+		if (textureName == "Constant")
+			continue;
+		
+		aSortedNames[textureName] = (unsigned char)textureTypeID;
+	}
+	
+	int menuIndex = m_offset;
+	
+	std::map<std::string, unsigned char>::const_iterator itTextName = aSortedNames.begin();
+	for (; itTextName != aSortedNames.end(); ++itTextName)
+	{
+		const std::string& textureName = (*itTextName).first;
+		int textureTypeID = (int)(*itTextName).second;
+		
+		m_aTextureIDs.push_back((unsigned char)textureTypeID);
 
 		QAction* pNewTextureType = new QAction(textureName.c_str(), m_pTypeButton);
 		m_pTypeButton->connect(pNewTextureType, SIGNAL(triggered()), m_pSignalMapper, SLOT(map()));
@@ -297,7 +317,7 @@ void TextureWidget::initCommon()
 		// hack to set procedural texture menu checked state if it matched paired value
 		if (m_pPairedValue)
 		{
-			if ((int)m_pPairedValue->getTextureType() == textureIndex)
+			if ((int)m_pPairedValue->getTextureTypeID() == textureTypeID)
 			{
 				pNewTextureType->setChecked(true);
 			}
@@ -307,6 +327,40 @@ void TextureWidget::initCommon()
 
 		menuIndex++;
 	}
+
+	// now add advanced ones
+	pNewMenu->addSeparator();
+
+	itTexture = TextureRegistry::instance().advancedTextureNamesBegin();
+	for (; itTexture != TextureRegistry::instance().advancedTextureNamesEnd(); ++itTexture)
+	{
+		const std::string& textureName = (*itTexture).second;
+
+		int textureTypeID = (int)(*itTexture).first;
+
+		m_aTextureIDs.push_back((unsigned char)textureTypeID);
+
+		QAction* pNewTextureType = new QAction(textureName.c_str(), m_pTypeButton);
+		m_pTypeButton->connect(pNewTextureType, SIGNAL(triggered()), m_pSignalMapper, SLOT(map()));
+		m_pSignalMapper->setMapping(pNewTextureType, menuIndex);
+
+		pNewTextureType->setCheckable(true);
+		m_aMenuOther.push_back(pNewTextureType);
+
+		// hack to set procedural texture menu checked state if it matched paired value
+		if (m_pPairedValue)
+		{
+			if ((int)m_pPairedValue->getTextureTypeID() == textureTypeID)
+			{
+				pNewTextureType->setChecked(true);
+			}
+		}
+
+		pNewMenu->addAction(pNewTextureType);
+
+		menuIndex++;
+	}
+
 
 	if (m_pPairedValue)
 	{
@@ -320,9 +374,9 @@ void TextureWidget::initCommon()
 		}
 		else
 		{
-			int type = (int)m_pPairedValue->getTextureType();
+			int typeID = (int)m_pPairedValue->getTextureTypeID();
 
-			if (type == 0)
+			if (typeID == 0)
 			{
 				m_overallType = eTextureConstant;
 				m_pMenuConstant->setChecked(true);
@@ -344,7 +398,7 @@ void TextureWidget::initCommon()
 					updateFloatSliderFromPairedConstant();
 				}
 			}
-			else if (type == 1 || type == 2) // colour or float texture images
+			else if (typeID == 1 || typeID == 2) // colour or float texture images
 			{
 				m_overallType = eTextureImage;
 				m_pMenuImage->setChecked(true);
@@ -353,14 +407,14 @@ void TextureWidget::initCommon()
 				updateScalesFromPairedTexture();
 
 				// float textures need to set this to 1 to emulate colour file type
-				type = 1;
+				typeID = 1;
 			}
 			else
 			{
 				updateScalesFromPairedTexture();
 			}
 
-			showContent(type, false);
+			showContent(typeID, false);
 		}
 	}
 	else
@@ -903,7 +957,7 @@ void TextureWidget::clearMenuChecks()
 
 void TextureWidget::updateColourButtonFromPairedConstant()
 {
-	if (!m_pPairedValue || m_pPairedValue->getTextureType() != 0)
+	if (!m_pPairedValue || m_pPairedValue->getTextureTypeID() != 0)
 		return;
 
 	Constant* pConstant = static_cast<Constant*>(m_pPairedValue->getTexture());
@@ -917,7 +971,7 @@ void TextureWidget::updateColourButtonFromPairedConstant()
 
 void TextureWidget::updateFloatSliderFromPairedConstant()
 {
-	if (!m_pPairedValue || m_pPairedValue->getTextureType() != 0)
+	if (!m_pPairedValue || m_pPairedValue->getTextureTypeID() != 0)
 		return;
 
 	ConstantFloat* pConstant = static_cast<ConstantFloat*>(m_pPairedValue->getTexture());
@@ -931,7 +985,7 @@ void TextureWidget::updateFloatSliderFromPairedConstant()
 
 void TextureWidget::updateFileBrowserFromPairedImage()
 {
-	if (!m_pPairedValue || (m_pPairedValue->getTextureType() != 1 && m_pPairedValue->getTextureType() != 2))
+	if (!m_pPairedValue || (m_pPairedValue->getTextureTypeID() != 1 && m_pPairedValue->getTextureTypeID() != 2))
 		return;
 
 	if (m_outputType == Texture::eTypeColour)
@@ -956,7 +1010,7 @@ void TextureWidget::updateFileBrowserFromPairedImage()
 
 void TextureWidget::updateScalesFromPairedTexture()
 {
-	if (!m_pPairedValue || m_pPairedValue->getTextureType() == 0)
+	if (!m_pPairedValue || m_pPairedValue->getTextureTypeID() == 0)
 		return;
 
 	if (!m_pTexture)
@@ -1250,3 +1304,5 @@ void TextureWidget::constantColourButtonClicked()
 
 	emit textureChanged();
 }
+
+} // namespace Imagine

@@ -27,6 +27,9 @@
 class QSignalMapper;
 class QAction;
 
+namespace Imagine
+{
+
 // specialised version of MultiOptionMenuButton
 
 class RayVisibilityButton : public QPushButton
@@ -61,5 +64,7 @@ protected:
 	QSignalMapper*				m_pSignalMapper;
 	std::vector<QAction*>		m_aActions;
 };
+
+} // namespace Imagine
 
 #endif // RAY_VISIBILITY_BUTTON_H

@@ -23,6 +23,9 @@
 
 #include "ui/widgets/ray_visibility_button.h"
 
+namespace Imagine
+{
+
 class RayVisibilityControl : public Control
 {
 public:
@@ -37,5 +40,7 @@ protected:
 	RayVisibilityButton*	m_pVisibilityButton;
 	unsigned char*			m_pairedValue;
 };
+
+} // namespace Imagine
 
 #endif // RAY_VISIBILITY_CONTROL_H

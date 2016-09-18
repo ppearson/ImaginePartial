@@ -25,6 +25,9 @@
 
 #include "double_spin_box_ex.h"
 
+namespace Imagine
+{
+
 FloatSliderWidget::FloatSliderWidget(float min, float max, bool editControl, bool logScaleSlider, bool highPrecision,
 									 QWidget* parent) : QWidget(parent), m_pDoubleSpin(NULL), m_pSlider(NULL),
 									m_logScale(logScaleSlider)
@@ -101,6 +104,7 @@ FloatSliderWidget::FloatSliderWidget(float min, float max, bool editControl, boo
 	}
 
 	QObject::connect(m_pSlider, SIGNAL(sliderMoved(int)), this, SLOT(sliderChanged(int)));
+	QObject::connect(m_pSlider, SIGNAL(actionTriggered(int)), this, SLOT(sliderActionTriggered(int)));
 }
 
 FloatSliderWidget::~FloatSliderWidget()
@@ -134,8 +138,12 @@ void FloatSliderWidget::setValue(float value)
 
 	// TODO: block signals?
 
+	m_pSlider->blockSignals(true);
+
 	m_pSlider->setSliderPosition(localValue);
 	m_pSlider->setValue(localValue);
+
+	m_pSlider->blockSignals(false);
 
 	if (m_pDoubleSpin)
 	{
@@ -230,6 +238,47 @@ void FloatSliderWidget::sliderChanged(int position)
 	emit valueChanged();
 }
 
+void FloatSliderWidget::sliderActionTriggered(int actionTriggered)
+{
+	// annoyingly, on OS X, clicking the mouse outside the handle only triggers SliderMove,
+	// which is also triggered by scrubbing, which makes things much more complicated to isolate
+	// this event, so for the moment, don't bother catering for OS X...
+
+	if (actionTriggered != QAbstractSlider::SliderSingleStepAdd &&
+		actionTriggered != QAbstractSlider::SliderSingleStepSub &&
+		actionTriggered != QAbstractSlider::SliderPageStepAdd &&
+		actionTriggered != QAbstractSlider::SliderPageStepSub
+//	    && actionTriggered != QAbstractSlider::SliderMove
+		)
+	{
+		return;
+	}
+
+	int position = m_pSlider->value();
+
+	float floatValue = 0.0f;
+
+	if (!m_logScale)
+	{
+		floatValue = (float)(position) / m_converter;
+	}
+	else
+	{
+		floatValue = (float)(position) / m_converter;
+
+		floatValue = getExpValue(floatValue);
+	}
+
+	if (m_pDoubleSpin)
+	{
+		m_pDoubleSpin->blockSignals(true);
+		m_pDoubleSpin->setValue(floatValue);
+		m_pDoubleSpin->blockSignals(false);
+	}
+
+	emit valueChanged();
+}
+
 float FloatSliderWidget::getLinearValue(float x) const
 {
 	float value = 0;
@@ -253,3 +302,5 @@ float FloatSliderWidget::getExpValue(float x) const
 
 	return value;
 }
+
+} // namespace Imagine

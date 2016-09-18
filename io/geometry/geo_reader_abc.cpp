@@ -28,6 +28,9 @@
 #include "objects/compound_object.h"
 #include "objects/mesh.h"
 
+namespace Imagine
+{
+
 using namespace Alembic::AbcGeom;
 
 GeoReaderAbc::GeoReaderAbc() : GeoReader()
@@ -688,6 +691,8 @@ Vector GeoReaderAbc::quaternionToEuler(const Imath::Quatd& quat)
 	return endRotation;
 }
 
+} // namespace Imagine
+
 namespace
 {
 	GeoReader* createGeoReaderAbc()
@@ -695,5 +700,5 @@ namespace
 		return new GeoReaderAbc();
 	}
 
-	const bool registered = FileIORegistry::instance().registerGeoReader("abc", createGeoReaderAbc);
+	const bool registered = Imagine::FileIORegistry::instance().registerGeoReader("abc", createGeoReaderAbc);
 }

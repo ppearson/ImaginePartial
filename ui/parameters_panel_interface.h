@@ -21,11 +21,16 @@
 
 #include <string>
 
+namespace Imagine
+{
+
 class ParametersPanelInterface
 {
 public:
 
 	virtual void controlChanged(const std::string& name) = 0;
 };
+
+} // namespace Imagine
 
 #endif // PARAMETERS_PANEL_INTERFACE_H

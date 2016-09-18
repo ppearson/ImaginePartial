@@ -26,6 +26,9 @@
 #include "utils/hints.h"
 #include "utils/time_counter.h"
 
+namespace Imagine
+{
+
 class ImageTextureFileHandle
 {
 public:
@@ -168,7 +171,10 @@ public:
 		eHalf,
 		eUInt32,
 		eUInt16,
-		eUInt8
+		eUInt8,
+		eInt32,
+		eInt16,
+		eInt8
 	};
 
 	enum ImageWrapMode
@@ -288,6 +294,7 @@ public:
 	// passed in pointer to memory which will be big enough for the tile dimensions and the image type / num channels
 	// Note: it is important that all channels are read fully and the data copied to pData. ImageTextureCache is responsible
 	//       for partial reading of values and determining what channels are actually needed for each request
+	// TODO: this (all channels being allocated for) may change in the future...
 	unsigned char* pData;
 
 protected:
@@ -303,6 +310,7 @@ protected:
 	// to a non-NULL value, after which ImageTextureCache then owns and controls the handle object
 	bool	m_allowedToLeaveFileHandleOpen;
 
+	// whether timing stats during the readImageTile() call are wanted...
 	bool	m_wantStats;
 };
 
@@ -311,7 +319,7 @@ class ImageTextureTileReadResults
 {
 public:
 	__finline ImageTextureTileReadResults() : m_pNewFileHandle(NULL), m_existingFileHandleUpdated(false), m_openedFile(false),
-		m_tileWasConstant(false), m_pConstantData(NULL)
+		m_tileWasConstant(false), m_pConstantData(NULL), m_rawBytesRead(0)
 	{
 	}
 
@@ -394,6 +402,10 @@ protected:
 	TimerCounter		m_fileOpenTimer;
 	TimerCounter		m_fileSeekTimer;
 	TimerCounter		m_fileReadTimer;
+
+	size_t				m_rawBytesRead; // optional counter for number of compressed (not final) bytes read off disk / from network
 };
+
+} // namespace Imagine
 
 #endif // IMAGE_TEXTURE_COMMON_H

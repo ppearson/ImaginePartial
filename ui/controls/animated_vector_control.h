@@ -28,6 +28,9 @@
 
 #include "widgets/double_spin_box_ex.h"
 
+namespace Imagine
+{
+
 class AnimatedVectorControl : public Control
 {
 public:
@@ -61,5 +64,7 @@ protected:
 
 	QSignalMapper*	m_signalMapper;
 };
+
+} // namespace Imagine
 
 #endif // ANIMATED_VECTOR_CONTROL_H

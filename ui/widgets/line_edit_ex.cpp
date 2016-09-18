@@ -24,6 +24,9 @@
 
 #include <QMimeData>
 
+namespace Imagine
+{
+
 LineEditEx::LineEditEx(QWidget *parent) : QLineEdit(parent)
 {
 }
@@ -58,3 +61,5 @@ void LineEditEx::dropEvent(QDropEvent* event)
 
 	event->acceptProposedAction();
 }
+
+} // namespace Imagine

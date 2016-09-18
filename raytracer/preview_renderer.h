@@ -21,6 +21,9 @@
 
 #include "full_renderer.h"
 
+namespace Imagine
+{
+
 //! preview progressive renderer
 
 template <typename Integrator, typename Accumulator, typename TimeCounter>
@@ -41,5 +44,7 @@ public:
 protected:
 
 };
+
+} // namespace Imagine
 
 #endif // PREVIEW_RENDERER_H

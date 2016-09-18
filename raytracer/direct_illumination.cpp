@@ -18,8 +18,6 @@
 
 #include "direct_illumination.h"
 
-#include <assert.h>
-
 #include "raytracer.h"
 #include "scene.h"
 
@@ -42,10 +40,16 @@
 #include "utils/maths/rng.h"
 #include "utils/params.h"
 
+namespace Imagine
+{
+
 #define USE_SAMPLED_AO 1
 
+// old original raytracer, which is effectively direct lighting + ambient occlusion
+
 template <typename Accumulator>
-DirectIllumination<Accumulator>::DirectIllumination(Raytracer& rt, const Params& settings) : Renderer(rt, settings), m_rtAmbientOcclusion(getScene()),
+DirectIllumination<Accumulator>::DirectIllumination(Raytracer& rt, const Params& settings) : Renderer(rt, settings),
+	m_rtAmbientOcclusion(&getScene(), &rt),
 	m_ambientOnly(false), m_totalTasks(0), m_tasksDone(0), m_roughSampleBundle(0.0f, 0.0f)
 {
 	uint32_t rngSeed = getTimeSeed();
@@ -140,7 +144,6 @@ template <typename Accumulator>
 bool DirectIllumination<Accumulator>::doProgressiveTask(RenderTask* pTask, unsigned int threadID)
 {
 	OutputImageTile* pOurImage = m_raytracer.m_aThreadTempImages[threadID];
-
 	pOurImage->resetSamples();
 
 	unsigned int startX = pTask->getStartX();
@@ -328,6 +331,9 @@ bool DirectIllumination<Accumulator>::doProgressiveTask(RenderTask* pTask, unsig
 
 						Ray viewRay = pCamRayCreator->createCameraRay(fPixelXPos, fPixelYPos, samples, sample);
 
+						if (viewRay.type == RAY_UNDEFINED)
+							continue;
+
 						PathState pathState(getBounceLimitOverall());
 
 						colour += processRayRecurse(*pRenderThreadCtx, shadingContext, viewRay, RENDER_AMBIENT_OCCLUSION, pathState, rng, samples, sample);
@@ -497,9 +503,7 @@ Colour4f DirectIllumination<Accumulator>::processRayRecurse(RenderThreadContext&
 	float t = ray.tMax;
 
 	Ray localRay(ray);
-
-	localRay.calculateInverseDirection();
-	localRay.tMin = getRayEpsilon();
+	localRay.tMin = std::max(getRayEpsilon(), localRay.tMin);
 
 	const Object* pHitObject;
 
@@ -516,7 +520,6 @@ Colour4f DirectIllumination<Accumulator>::processRayRecurse(RenderThreadContext&
 	pHitObject = hitResult.pObject;
 
 	const Material* pMaterial = pHitObject->getMaterial();
-	assert(pMaterial);
 
 	BakedBSDF availableBSDF;
 
@@ -532,9 +535,9 @@ Colour4f DirectIllumination<Accumulator>::processRayRecurse(RenderThreadContext&
 
 		ambMatColour *= m_raytracer.m_ambientColour;
 #if USE_SAMPLED_AO
-		float occlusion = m_rtAmbientOcclusion.getOcclusionAtPointExistingSamples(lastRayIntersection, hitResult.shaderNormal, samples, sampleIndex);
+		float occlusion = m_rtAmbientOcclusion.getOcclusionAtPointExistingSamples(hitResult, samples, sampleIndex);
 #else
-		float occlusion = m_rtAmbientOcclusion.getOcclusionAtPoint(lastRayIntersection, hitResult.shaderNormal, rng);
+		float occlusion = m_rtAmbientOcclusion.getOcclusionAtPoint(hitResult, rng);
 #endif
 		ambMatColour *= (1.0f - occlusion);
 
@@ -551,9 +554,12 @@ Colour4f DirectIllumination<Accumulator>::processRayRecurse(RenderThreadContext&
 		colour += ambMatColour;
 	}
 */
+
+	unsigned int bsdfEvalFlags = getBSDFEvalFlags();
+
 	if (flags & RENDER_NORMAL && m_numLights)
 	{
-		colour += Renderer::calculateFinalLighting(rtc, shadingContext, hitResult, localRay, samples, sampleIndex, pathState.bounceLevel);
+		colour += Renderer::calculateFinalLighting(rtc, shadingContext, hitResult, localRay, samples, sampleIndex, pathState.bounceLevel, bsdfEvalFlags);
 	}
 
 	float reflection = pMaterial->getReflection();
@@ -658,8 +664,41 @@ Colour4f DirectIllumination<Accumulator>::processRayRecurse(RenderThreadContext&
 		colour += refractedColour;
 	}
 
-	// this needs to go last
-	colour.a = 1.0f;
+	// TODO: could probably combine this with above, but for legacy's sake, let's leave it as is currently...
+
+	// see if it should be transmissive (transparent) - because this is direct lighting, we're assuming only a few rays per pixel
+	// so we can't use stochastic transparency, so need to use continuation rays
+	bool continueThroughObject = false;
+	float alphaValue = 1.0f;
+	if (pHitObject->hasFlag(OBJECT_FLAG_HAS_ALPHA_TEXTURE))
+	{
+		// we should only reach here if alpha was non-0.0f - areas with 0.0f would not have registered
+		// as hit events
+		const Texture* pAlphaTexture = pMaterial->getAlphaTexture();
+		if (pAlphaTexture)
+		{
+			continueThroughObject = true;
+			alphaValue = pAlphaTexture->getFloatBlend(hitResult, 0);
+		}
+	}
+
+	if (continueThroughObject)
+	{
+		Ray continuationRay(hitResult.hitPoint, ray.direction, RAY_REFRACTION);
+
+		Colour4f continuedColour = processRayRecurse(rtc, shadingContext, continuationRay, flags, pathState, rng, samples, sampleIndex);
+
+		// assume disassociated alpha for the moment
+		continuedColour *= (1.0f - alphaValue);
+		colour += continuedColour;
+
+		colour.a += alphaValue;
+	}
+	else
+	{
+		// this needs to go last
+		colour.a = 1.0f;
+	}
 
 	return colour;
 }
@@ -685,3 +724,5 @@ float DirectIllumination<Accumulator>::calculateProgress() const
 
 	return percentDone;
 }
+
+} // namespace Imagine

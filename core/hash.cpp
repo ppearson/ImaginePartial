@@ -23,6 +23,9 @@
 
 #include "point.h"
 
+namespace Imagine
+{
+
 static const unsigned long long kCRCTab64[256] = {
 	0x0000000000000000ULL, 0x7ad870c830358979ULL, 0xf5b0e190606b12f2ULL,
 	0x8f689158505e9b8bULL, 0xc038e5739841b68fULL, 0xbae095bba8743ff6ULL,
@@ -183,11 +186,6 @@ HashValue Hash::hashPoint(const Point& point)
 	return newHash.m_hash;
 }
 
-HashValue Hash::stringHash(const std::string& string)
-{
-	return HashValue();
-}
-
 HashValue Hash::stringHashJenkins(const std::string& string)
 {
 	uint32_t hash = 0;
@@ -226,3 +224,5 @@ HashValue Hash::hashData(const unsigned char* buffer, unsigned int length)
 
 	return crc;
 }
+
+} // namespace Imagine

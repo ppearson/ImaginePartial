@@ -24,6 +24,9 @@
 
 #include "file_io_registry.h"
 
+namespace Imagine
+{
+
 class Object;
 class Material;
 
@@ -66,5 +69,7 @@ public:
 
 	virtual bool readFile(const std::string& path, const SceneReaderOptions& options, SceneReaderResults& results) = 0;
 };
+
+} // namespace Imagine
 
 #endif // SCENE_READER_H

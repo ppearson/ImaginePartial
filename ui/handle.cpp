@@ -35,6 +35,9 @@
 
 #include "view_context.h"
 
+namespace Imagine
+{
+
 Cylinder* Handle::pObjectXTranslateHandleLine = NULL;
 Cylinder* Handle::pObjectYTranslateHandleLine = NULL;
 Cylinder* Handle::pObjectZTranslateHandleLine = NULL;
@@ -553,3 +556,5 @@ void Handle::drawFaceHandleForSelection(const Point& position, const Normal& nor
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
 }
+
+} // namespace Imagine

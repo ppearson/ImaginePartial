@@ -21,6 +21,9 @@
 
 #include "io/image_reader.h"
 
+namespace Imagine
+{
+
 class ImageReaderTGA : public ImageReader
 {
 public:
@@ -71,5 +74,7 @@ protected:
 	bool readData(const std::string& filePath, TGAInfra& infra);
 	void extractPixelValues(unsigned char* pixel, TGAPixel* finalPixels, unsigned int bytes);
 };
+
+} // namespace Imagine
 
 #endif // IMAGE_READER_TGA_H

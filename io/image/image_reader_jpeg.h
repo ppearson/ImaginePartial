@@ -21,6 +21,9 @@
 
 #include "io/image_reader.h"
 
+namespace Imagine
+{
+
 class ImageReaderJPEG : public ImageReader
 {
 public:
@@ -36,5 +39,7 @@ public:
 		return true;
 	}
 };
+
+} // namespace Imagine
 
 #endif // IMAGE_READER_JPEG_H

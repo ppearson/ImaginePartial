@@ -26,6 +26,9 @@
 class QComboBox;
 class QVBoxLayout;
 
+namespace Imagine
+{
+
 class Material;
 
 class SimpleParametersPanel;
@@ -67,5 +70,7 @@ protected:
 
 	std::vector<unsigned int>	m_aMaterialIDs;
 };
+
+} // namespace Imagine
 
 #endif // MATERIAL_WIDGET_H

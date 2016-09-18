@@ -18,6 +18,9 @@
 
 #include "spin_box_ex.h"
 
+namespace Imagine
+{
+
 SpinBoxEx::SpinBoxEx(QWidget *parent) :
     QSpinBox(parent)
 {
@@ -38,3 +41,5 @@ void SpinBoxEx::wheelEvent(QWheelEvent *event)
 
 	editingFinished();
 }
+
+} // namespace Imagine

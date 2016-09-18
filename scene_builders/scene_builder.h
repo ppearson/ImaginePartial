@@ -23,6 +23,9 @@
 
 #include "parameter.h"
 
+namespace Imagine
+{
+
 class Scene;
 class Object;
 
@@ -47,5 +50,7 @@ public:
 
 	virtual bool hasParameterUndo() const { return false; }
 };
+
+} // namespace Imagine
 
 #endif // SCENE_BUILDER_H

@@ -26,6 +26,9 @@
 #include "core/point.h"
 #include "core/boundary_box.h"
 
+namespace Imagine
+{
+
 class RNG;
 class CompoundObject;
 class Object;
@@ -50,7 +53,7 @@ protected:
 	struct TestPosInfo
 	{
 		TestPosInfo() : pNewCO(NULL), pCurrentSelectedObject(NULL), pSrcCOForBakedInstances(NULL),
-			 createdCount(0), testedCount(0), switchCount(0), altMaterialIndex(0)
+			 altMaterialIndex(0), createdCount(0), testedCount(0), switchCount(0)
 		{
 
 		}
@@ -119,5 +122,7 @@ protected:
 	bool			m_alternatingMaterials;
 	unsigned int	m_numMaterials;
 };
+
+} // namespace Imagine
 
 #endif // INSTANCE_SURFACE_SCATTER_BUILDER_H

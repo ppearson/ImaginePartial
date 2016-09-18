@@ -21,6 +21,9 @@
 #include "object.h"
 #include "scene.h"
 
+namespace Imagine
+{
+
 SceneBuilder::SceneBuilder() : ParametersInterface()
 {
 }
@@ -34,3 +37,5 @@ void SceneBuilder::addObject(Scene& scene, Object* pObject)
 	pObject->constructGeometry();
 	scene.addObject(pObject, false, true); // don't set name, but set object ID
 }
+
+} // namespace Imagine

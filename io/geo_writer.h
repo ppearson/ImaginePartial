@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2012 Peter Pearson.
+ Copyright 2011-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -23,8 +23,12 @@
 
 #include "file_io_registry.h"
 
+namespace Imagine
+{
+
 class Object;
 class EditableGeometryInstance;
+class StandardGeometryInstance;
 
 struct GeoWriterOptions
 {
@@ -48,5 +52,7 @@ public:
 	void preProcess();
 
 };
+
+} // namespace Imagine
 
 #endif // GEO_WRITER_H

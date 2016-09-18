@@ -21,6 +21,9 @@
 
 #include "io/geo_writer.h"
 
+namespace Imagine
+{
+
 class Matrix4;
 
 class GeoWriterObj : public GeoWriter
@@ -30,11 +33,20 @@ public:
 
 	virtual bool writeFile(Object* pObject, const std::string& path, const GeoWriterOptions& options);
 
-	unsigned int writeGeoInstancePoints(EditableGeometryInstance* pGeoInstance, std::fstream& stream, Matrix4* pMatrix);
-	unsigned int writeGeoInstanceUVs(EditableGeometryInstance* pGeoInstance, std::fstream& stream);
+protected:
+	unsigned int writeGeoInstanceEditablePoints(EditableGeometryInstance* pGeoInstance, std::fstream& stream, Matrix4* pMatrix);
+	unsigned int writeGeoInstanceEditableUVs(EditableGeometryInstance* pGeoInstance, std::fstream& stream);
 
-	void writeGeoInstanceFaces(EditableGeometryInstance* pGeoInstance, std::fstream& stream, unsigned int pointOffset,
+	void writeGeoInstanceEditableFaces(EditableGeometryInstance* pGeoInstance, std::fstream& stream, unsigned int pointOffset,
+							   unsigned int uvOffset, bool writeUVs);
+
+	unsigned int writeGeoInstanceStandardPoints(StandardGeometryInstance* pGeoInstance, std::fstream& stream, Matrix4* pMatrix);
+	unsigned int writeGeoInstanceStandardUVs(StandardGeometryInstance* pGeoInstance, std::fstream& stream);
+
+	void writeGeoInstanceStandardFaces(StandardGeometryInstance* pGeoInstance, std::fstream& stream, unsigned int pointOffset,
 							   unsigned int uvOffset, bool writeUVs);
 };
+
+} // namespace Imagine
 
 #endif // GEO_WRITER_OBJ_H

@@ -23,6 +23,9 @@
 
 #include <map>
 
+namespace Imagine
+{
+
 class Control;
 
 class ControlConnectionProxy : public QObject
@@ -61,5 +64,7 @@ protected:
 	std::map<QObject*, unsigned int>	m_aButtonIndexes;
 	std::map<QObject*, unsigned int>	m_aDeltaChangeIndexes;
 };
+
+} // namespace Imagine
 
 #endif // CONTROL_CONNECTION_PROXY_H

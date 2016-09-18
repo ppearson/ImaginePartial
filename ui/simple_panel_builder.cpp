@@ -33,6 +33,9 @@
 #include "controls/file_control.h"
 #include "controls/texture_control.h"
 
+namespace Imagine
+{
+
 SimplePanelBuilder::SimplePanelBuilder()
 {
 }
@@ -136,7 +139,8 @@ SimpleParametersPanel* SimplePanelBuilder::buildParametersPanel(Parameters& para
 				pControl = new FileControl(name, pTypedParam->getPairedValue(), label, category);
 				break;
 			}
-			case eParameterTexture:
+			case eParameterTexture1f:
+			case eParameterTexture3f:
 			{
 				BasicParameter<TextureParameters>* pTypedParam = static_cast<BasicParameter<TextureParameters>*>(pParam);
 
@@ -154,3 +158,5 @@ SimpleParametersPanel* SimplePanelBuilder::buildParametersPanel(Parameters& para
 
 	return pSPP;
 }
+
+} // namespace Imagine

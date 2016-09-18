@@ -25,6 +25,9 @@
 
 #include "colour/colour_space.h"
 
+namespace Imagine
+{
+
 ImageReaderTGA::ImageReaderTGA() : ImageReader()
 {
 }
@@ -519,12 +522,14 @@ void ImageReaderTGA::extractPixelValues(unsigned char* pixel, TGAPixel* finalPix
 }
 
 
+} // namespace Imagine
+
 namespace
 {
-	ImageReader* createImageReaderTGA()
+	Imagine::ImageReader* createImageReaderTGA()
 	{
-		return new ImageReaderTGA();
+		return new Imagine::ImageReaderTGA();
 	}
 
-	const bool registered = FileIORegistry::instance().registerImageReader("tga", createImageReaderTGA);
+	const bool registered = Imagine::FileIORegistry::instance().registerImageReader("tga", createImageReaderTGA);
 }

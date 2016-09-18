@@ -23,6 +23,9 @@
 
 #include "core/point.h"
 
+namespace Imagine
+{
+
 class Object;
 class Vector;
 
@@ -63,5 +66,7 @@ public:
 protected:
 	Vector&		m_pairedValue;
 };
+
+} // namespace Imagine
 
 #endif // MANIPULATOR_HANDLE_H

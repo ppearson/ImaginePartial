@@ -21,6 +21,9 @@
 
 #include "io/volume_reader.h"
 
+namespace Imagine
+{
+
 class VolumeReaderIVV : public VolumeReader
 {
 public:
@@ -31,5 +34,7 @@ public:
 	virtual VolumeInstance* readVolume(const std::string& filePath, unsigned int flags, BoundaryBox& bbox);
 
 };
+
+} // namespace Imagine
 
 #endif // VOLUME_READER_IVV_H

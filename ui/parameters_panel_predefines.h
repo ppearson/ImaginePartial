@@ -19,6 +19,9 @@
 #ifndef PARAMETERS_PANEL_PREDEFINES_H
 #define PARAMETERS_PANEL_PREDEFINES_H
 
+namespace Imagine
+{
+
 //#include "parameters_panel.h"
 
 class StringControl;
@@ -32,5 +35,7 @@ class VectorControl;
 class AnimatedVectorControl;
 class MaterialControl;
 class FileControl;
+
+} // namespace Imagine
 
 #endif // PARAMETERS_PANEL_PREDEFINES_H

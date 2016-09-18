@@ -21,6 +21,9 @@
 
 #include <math.h>
 
+namespace Imagine
+{
+
 class Vector2
 {
 public:
@@ -107,5 +110,7 @@ public:
 	float x;
 	float y;
 };
+
+} // namespace Imagine
 
 #endif // VECTOR2_H

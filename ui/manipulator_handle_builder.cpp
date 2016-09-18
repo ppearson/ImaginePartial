@@ -23,6 +23,9 @@
 #include "manipulator.h"
 #include "manipulator_handle.h"
 
+namespace Imagine
+{
+
 ManipulatorHandleBuilder::ManipulatorHandleBuilder()
 {
 }
@@ -54,3 +57,5 @@ bool ManipulatorHandleBuilder::buildManipulatorHandles(Manipulators& manipulator
 
 	return !manHandles.empty();
 }
+
+} // namespace Imagine

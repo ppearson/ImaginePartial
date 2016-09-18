@@ -18,6 +18,9 @@
 
 #include "ray_visibility_control.h"
 
+namespace Imagine
+{
+
 RayVisibilityControl::RayVisibilityControl(const std::string& name, unsigned char* pairedValue, std::string label)
 	: Control(name, label), m_pVisibilityButton(NULL)
 {
@@ -48,3 +51,5 @@ void RayVisibilityControl::refreshFromValue()
 {
 	m_pVisibilityButton->setStateFromBitmask(*m_pairedValue);
 }
+
+} // namespace Imagine

@@ -18,6 +18,9 @@
 
 #include "mutex.h"
 
+namespace Imagine
+{
+
 Mutex::Mutex() : m_created(true)
 {
 #ifdef _MSC_VER
@@ -64,3 +67,5 @@ void Mutex::unlock()
 	pthread_mutex_unlock(&m_mutex);
 #endif
 }
+
+} // namespace Imagine

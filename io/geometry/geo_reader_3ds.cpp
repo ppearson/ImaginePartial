@@ -28,6 +28,9 @@
 #include "objects/compound_object.h"
 #include "materials/standard_material.h"
 
+namespace Imagine
+{
+
 GeoReader3ds::GeoReader3ds() : GeoReader()
 {
 }
@@ -610,12 +613,14 @@ unsigned char GeoReader3ds::readChar(std::fstream& stream)
 	return value;
 }
 
+} // namespace Imagine
+
 namespace
 {
-	GeoReader* createGeoReader3ds()
+	Imagine::GeoReader* createGeoReader3ds()
 	{
-		return new GeoReader3ds();
+		return new Imagine::GeoReader3ds();
 	}
 
-	const bool registered = FileIORegistry::instance().registerGeoReader("3ds", createGeoReader3ds);
+	const bool registered = Imagine::FileIORegistry::instance().registerGeoReader("3ds", createGeoReader3ds);
 }

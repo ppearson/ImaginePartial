@@ -37,6 +37,9 @@
 
 #include "utils/maths/rng.h"
 
+namespace Imagine
+{
+
 const char* sscatterDistributionOptions[] = { "Poisson-disc", "Stratified", "Random", "Grid", 0 };
 
 InstanceSurfaceScatterBuilder::InstanceSurfaceScatterBuilder() : m_lastObjectSwitchover(0), m_alternatingMaterials(false), m_numMaterials(3)
@@ -455,12 +458,14 @@ bool InstanceSurfaceScatterBuilder::testPositionPickAndAddObject(Scene& scene, c
 	return true;
 }
 
+} // namespace Imagine
+
 namespace
 {
-	SceneBuilder* createInstanceSurfaceScatterBuilder()
+	Imagine::SceneBuilder* createInstanceSurfaceScatterBuilder()
 	{
-		return new InstanceSurfaceScatterBuilder();
+		return new Imagine::InstanceSurfaceScatterBuilder();
 	}
 
-	const bool registered = SceneBuilderFactory::instance().registerSceneBuilder(6, "Instance Surface Scatter", createInstanceSurfaceScatterBuilder);
+	const bool registered = Imagine::SceneBuilderFactory::instance().registerSceneBuilder(6, "Instance Surface Scatter", createInstanceSurfaceScatterBuilder);
 }

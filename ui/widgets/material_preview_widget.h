@@ -35,6 +35,9 @@ class QImage;
 
 #include "utils/threads/mutex.h"
 
+namespace Imagine
+{
+
 class MaterialPreviewWidget;
 
 class MaterialPreviewRenderThread : public QThread
@@ -190,5 +193,7 @@ protected:
 	QAction*			m_actionCheckeredBackground;
 	QAction*			m_actionGlobalIllumination;
 };
+
+} // namespace Imagine
 
 #endif // MATERIAL_PREVIEW_WIDGET_H

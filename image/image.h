@@ -23,6 +23,9 @@
 
 #include "core/hash.h"
 
+namespace Imagine
+{
+
 class Image : public RefCountCallback
 {
 public:
@@ -80,5 +83,7 @@ protected:
 	unsigned int		m_width;
 	unsigned int		m_height;
 };
+
+} // namespace Imagine
 
 #endif // IMAGE_H

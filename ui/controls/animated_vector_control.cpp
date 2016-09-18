@@ -24,6 +24,9 @@
 
 #include "ui/widgets/push_button_ex.h"
 
+namespace Imagine
+{
+
 AnimatedVectorControl::AnimatedVectorControl(const std::string& name, AnimatedVector* pairedValue, float min, float max, std::string label) : Control(name, label)
 {
 	QWidget* mainWidget = new QWidget();
@@ -245,3 +248,5 @@ void AnimatedVectorControl::setInterpolationTypeChecked(unsigned int index)
 			break;
 	}
 }
+
+} // namespace Imagine

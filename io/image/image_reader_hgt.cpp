@@ -26,6 +26,9 @@
 
 #include "utils/maths/maths.h"
 
+namespace Imagine
+{
+
 ImageReaderHGT::ImageReaderHGT()
 {
 
@@ -86,12 +89,14 @@ Image* ImageReaderHGT::readGreyscaleImage(const std::string& filePath, unsigned 
 }
 
 
+} // namespace Imagine
+
 namespace
 {
-	ImageReader* createImageReaderHGT()
+	Imagine::ImageReader* createImageReaderHGT()
 	{
-		return new ImageReaderHGT();
+		return new Imagine::ImageReaderHGT();
 	}
 
-	const bool registered = FileIORegistry::instance().registerImageReader("hgt", createImageReaderHGT);
+	const bool registered = Imagine::FileIORegistry::instance().registerImageReader("hgt", createImageReaderHGT);
 }

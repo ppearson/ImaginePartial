@@ -21,6 +21,9 @@
 
 #include <stdint.h>
 
+namespace Imagine
+{
+
 template <typename T, int tagSize>
 class TaggedPointer
 {
@@ -80,5 +83,7 @@ private:
 		uintptr_t	m_tag;
 	};
 };
+
+} // namespace Imagine
 
 #endif // TAGGED_POINTER_H

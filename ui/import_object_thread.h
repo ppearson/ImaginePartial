@@ -27,6 +27,9 @@
 #include "objects/mesh.h"
 #include "io/geo_reader.h"
 
+namespace Imagine
+{
+
 class Scene;
 
 class ImportObjectThread : public QThread
@@ -48,5 +51,7 @@ protected:
 	GeoReaderOptions	m_importOptions;
 	Scene*				m_pScene;
 };
+
+} // namespace Imagine
 
 #endif // IMPORT_OBJECT_THREAD_H

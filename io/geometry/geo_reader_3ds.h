@@ -23,6 +23,9 @@
 
 #include <stdio.h>
 
+namespace Imagine
+{
+
 class Mesh;
 
 class GeoReader3ds : public GeoReader
@@ -51,5 +54,7 @@ protected:
 	Mesh*			m_pNewMesh;
 	std::vector<Object*> m_aSubObjects;
 };
+
+} // namespace Imagine
 
 #endif // GEO_READER_3DS_H

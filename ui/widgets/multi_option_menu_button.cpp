@@ -23,6 +23,9 @@
 #include <QStyleOptionButton>
 #include <QMouseEvent>
 
+namespace Imagine
+{
+
 MultiOptionMenuButton::MultiOptionMenuButton(const std::vector<std::string>& options, const std::vector<std::string>* pAlternativeOptions, QWidget* parent)
 	: QPushButton(parent), m_aOptions(options)
 {
@@ -241,3 +244,5 @@ void MultiOptionMenuButton::menuSelected(int index)
 
 	updateTitleFromOptions();
 }
+
+} // namespace Imagine

@@ -25,6 +25,9 @@
 
 #include "view_context.h"
 
+namespace Imagine
+{
+
 ParametersPanel::ParametersPanel(ParametersInterface* pParent, ParameterPanelType type) : m_pParent(pParent), m_type(type)
 {
 	m_form = new QWidget();
@@ -244,3 +247,5 @@ bool ParametersPanel::doesParentSupportParameterUndos() const
 {
 	return m_pParent->hasParameterUndo();
 }
+
+} // namespace Imagine

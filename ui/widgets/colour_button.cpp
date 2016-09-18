@@ -27,7 +27,10 @@
 
 #include "colour_chooser_popup.h"
 
-static const int dropArrowX = 30;
+namespace Imagine
+{
+
+static const int kDropArrowX = 30;
 
 ColourButton::ColourButton(QWidget* parent) : QPushButton(parent), m_popupActive(false), m_popup(NULL)
 {
@@ -41,6 +44,8 @@ ColourButton::ColourButton(QWidget* parent) : QPushButton(parent), m_popupActive
 
 //	setMouseTracking(true);
 	setFocusPolicy(Qt::NoFocus);
+
+	setAttribute(Qt::WA_TranslucentBackground, true);
 
 	setToolTip("Scrub individual colour components with mouse, or hold down Ctrl to gang all three.");
 }
@@ -146,14 +151,14 @@ void ColourButton::updateInternalsForResize()
 	QRect rect = style()->subElementRect(QStyle::SE_PushButtonFocusRect, &style_option, this);
 	QRect popupArea(rect);
 
-	int splitPos = rect.width() - dropArrowX;
+	int splitPos = rect.width() - kDropArrowX;
 	popupArea.adjust(splitPos, 0, 0, 0);
 
 	m_rectPopup = popupArea;
 
 	QRect mainArea = style()->subElementRect(QStyle::SE_PushButtonContents, &style_option, this);
 	QRect colourArea(mainArea);
-	colourArea.adjust(5, 3, -dropArrowX, -3);
+	colourArea.adjust(5, 3, -kDropArrowX, -3);
 
 	m_rectColourArea = colourArea;
 
@@ -310,12 +315,13 @@ void ColourButton::updateInternalColourValues()
 void ColourButton::updateBackBuffer()
 {
 	QRect localColourRect(m_rectColourArea);
-	localColourRect.adjust(-m_rectColourArea.left(), -m_rectColourArea.top(), -m_rectColourArea.left(), -m_rectColourArea.top());
+	localColourRect.adjust(-m_rectColourArea.left(), -m_rectColourArea.top(), -m_rectColourArea.left(), -m_rectColourArea.top() - 1);
 
 	QRect pixmapSize(localColourRect);
-	pixmapSize.adjust(0, 0, 2, 2); // for some reason, we need to padd this to get the full size...
+	pixmapSize.adjust(0, 0, 1, 1); // for some reason, we need to padd this to get the full size...
 	m_backBuffer = QPixmap(pixmapSize.size());
-	m_backBuffer.fill(this, 0, 0);
+//	m_backBuffer.fill(palette().color(QPalette::Base));
+	m_backBuffer.fill(Qt::transparent);
 
 	QPainter painter(&m_backBuffer);
 	painter.initFrom(this);
@@ -338,8 +344,14 @@ void ColourButton::updateBackBuffer()
 
 	unsigned int offsetX = m_rectColourArea.left();
 
+	// QPainter origin is top left...
 	unsigned int textX = localColourRect.left();
 	unsigned int textY = localColourRect.top() + metrics.height() - 1;
+	if (localColourRect.height() < metrics.height())
+	{
+		// on some Linux envs with KDE, metrics is actually a weird value which doesn't make sense, so bodge it for the moment
+		textY -= 4;
+	}
 
 	// set text colour appropriate for background colour
 	float luminance = m_colour.lightnessF();
@@ -352,6 +364,7 @@ void ColourButton::updateBackBuffer()
 		painter.setPen(Qt::black);
 	}
 
+
 	textX = m_rectRed.center().x() - (redWidth / 2) - offsetX;
 	painter.drawText(textX, textY, m_strRed);
 
@@ -363,3 +376,5 @@ void ColourButton::updateBackBuffer()
 
 	update();
 }
+
+} // namespace Imagine

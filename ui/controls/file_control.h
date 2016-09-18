@@ -26,6 +26,9 @@
 #include <QLineEdit>
 #include <QPushButton>
 
+namespace Imagine
+{
+
 class FileControl : public Control
 {
 public:
@@ -56,5 +59,7 @@ protected:
 
 	std::string		m_lastValue;
 };
+
+} // namespace Imagine
 
 #endif // FILE_CONTROL_H

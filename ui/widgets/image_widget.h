@@ -28,6 +28,9 @@
 
 #include "ui/render_view_update_thread.h"
 
+namespace Imagine
+{
+
 class OutputImage;
 
 class ImageWidget : public QAbstractScrollArea
@@ -105,5 +108,7 @@ protected:
 
 	bool			m_haveNormalisedRawImage;
 };
+
+} // namespace Imagine
 
 #endif // IMAGE_WIDGET_H

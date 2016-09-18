@@ -21,6 +21,9 @@
 
 #include <cstdio>
 
+namespace Imagine
+{
+
 class Light;
 
 struct LightsAndSamples
@@ -39,5 +42,7 @@ struct LightsAndSamples
 	unsigned int	sampleMultiplier;
 	float			rcpMultiplier;
 };
+
+} // namespace Imagine
 
 #endif // RAYTRACER_MISC_H

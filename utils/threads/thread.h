@@ -28,6 +28,9 @@
 
 #include "mutex.h"
 
+namespace Imagine
+{
+
 class Thread
 {
 public:
@@ -86,5 +89,7 @@ private:
 	Thread(const Thread& rhs);
 	Thread& operator=(const Thread& rhs);
 };
+
+} // namespace Imagine
 
 #endif

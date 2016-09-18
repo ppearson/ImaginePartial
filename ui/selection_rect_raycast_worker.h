@@ -25,6 +25,9 @@
 
 #include "accel/acceleration_structure.h"
 
+namespace Imagine
+{
+
 class Camera;
 
 class Object;
@@ -69,5 +72,7 @@ protected:
 
 	std::vector<SelectedObjects*>	m_aFinalSelectedObjects;
 };
+
+} // namespace Imagine
 
 #endif // SELECTION_RECT_RAYCAST_WORKER_H

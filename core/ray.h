@@ -26,6 +26,9 @@
 
 #include "utils/hints.h"
 
+namespace Imagine
+{
+
 // done as bitmask so we can quickly check if they match
 enum RayType
 {
@@ -138,5 +141,7 @@ public:
 	void*			pCustPayload1;
 	float			custValue1;
 };
+
+} // namespace Imagine
 
 #endif // RAY_H

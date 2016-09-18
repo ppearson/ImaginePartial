@@ -21,6 +21,10 @@
 
 #include <string>
 #include <map>
+#include <set>
+
+namespace Imagine
+{
 
 class GeoReader;
 class GeoWriter;
@@ -63,18 +67,22 @@ public:
 	bool registerGeoReader(const std::string& extension, CreateGeoReaderCallback createReaderCB);
 	bool registerGeoWriter(const std::string& extension, CreateGeoWriterCallback createWriterCB);
 	bool registerSceneReader(const std::string& extension, CreateSceneReaderCallback createReaderCB);
-	bool registerImageReader(const std::string& extension, CreateImageReaderCallback createReaderCB);
+	bool registerImageReader(const std::string& extension, CreateImageReaderCallback createReaderCB,
+							 bool supportsPartialReads = false);
 	// extensions separated by ";" char
-	bool registerImageReaderMultipleExtensions(const std::string& extensions, CreateImageReaderCallback createReaderCB);
+	bool registerImageReaderMultipleExtensions(const std::string& extensions, CreateImageReaderCallback createReaderCB,
+											   bool supportsPartialReads = false);
 	bool registerImageWriter(const std::string& extension, CreateImageWriterCallback createWriterCB);
 	bool registerVolumeReader(const std::string& extension, CreateVolumeReaderCallback createReaderCB);
 
-	GeoReader* createGeometryReaderForExtension(const std::string& extension);
-	GeoWriter* createGeometryWriterForExtension(const std::string& extension);
-	SceneReader* createSceneReaderForExtension(const std::string& extension);
-	ImageReader* createImageReaderForExtension(const std::string& extension);
-	ImageWriter* createImageWriterForExtension(const std::string& extension);
-	VolumeReader* createVolumeReaderForExtension(const std::string& extension);
+	GeoReader* createGeometryReaderForExtension(const std::string& extension) const;
+	GeoWriter* createGeometryWriterForExtension(const std::string& extension) const;
+	SceneReader* createSceneReaderForExtension(const std::string& extension) const;
+	ImageReader* createImageReaderForExtension(const std::string& extension) const;
+	ImageWriter* createImageWriterForExtension(const std::string& extension) const;
+	VolumeReader* createVolumeReaderForExtension(const std::string& extension) const;
+
+	bool doesImageReaderSupportPartialReads(const std::string& extension) const;
 
 	template <typename T>
 	static std::string getQtFileBrowserFilterForCallbackMap(const std::map<std::string, T>& map1)
@@ -101,6 +109,7 @@ public:
 	std::string getQtFileBrowserFilterForRegisteredGeometryReaders() const;
 	std::string getQtFileBrowserFilterForRegisteredSceneReaders() const;
 	std::string getQtFileBrowserFilterForRegisteredImageReaders() const;
+	std::string getQtFileBrowserFilterForRegisteredImageWriters() const;
 	std::string getQtFileBrowserFilterForRegisteredVolumeReaders() const;
 
 protected:
@@ -110,6 +119,10 @@ protected:
 	SceneReaderCallbacks		m_sceneReaders;
 
 	ImageReaderCallbacks		m_imageReaders;
+
+	// list of extensions that can support partial reading for texture caching
+	std::set<std::string>		m_imageReadersPartialRead;
+
 	ImageWriterCallbacks		m_imageWriters;
 
 	VolumeReaderCallbacks		m_volumeReaders;
@@ -122,5 +135,7 @@ private:
 
 	FileIORegistry& operator=(const FileIORegistry& vc);
 };
+
+} // namespace Imagine
 
 #endif // FILE_IO_REGISTRY_H

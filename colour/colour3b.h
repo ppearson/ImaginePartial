@@ -19,6 +19,9 @@
 #ifndef COLOUR3B_H
 #define COLOUR3B_H
 
+namespace Imagine
+{
+
 class Colour3b
 {
 public:
@@ -102,5 +105,7 @@ public:
 	unsigned char	b;
 };
 
+
+} // namespace Imagine
 
 #endif // COLOUR3B_H

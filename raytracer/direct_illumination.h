@@ -26,6 +26,9 @@
 
 #include "sampling/sampler_common.h"
 
+namespace Imagine
+{
+
 class RNG;
 class Params;
 class RenderThreadContext;
@@ -79,5 +82,7 @@ protected:
 
 	SampleBundle		m_roughSampleBundle;
 };
+
+} // namespace Imagine
 
 #endif // DIRECT_ILLUMINATION_H

@@ -18,6 +18,9 @@
 
 #include "storage_helpers.h"
 
+namespace Imagine
+{
+
 void storeString(const std::string& string, std::fstream& stream)
 {
 	int size = string.size();
@@ -134,3 +137,5 @@ void loadBool(bool& value, std::fstream& stream)
 {
 	stream.read((char*)&value, sizeof(bool));
 }
+
+} // namespace Imagine

@@ -22,6 +22,9 @@
 
 #include "utils/string_helpers.h"
 
+namespace Imagine
+{
+
 bool FileIORegistry::registerGeoReader(const std::string& extension, CreateGeoReaderCallback createReaderCB)
 {
 	m_geoReaders.insert(GeoReaderCallbacks::value_type(extension, createReaderCB));
@@ -40,13 +43,21 @@ bool FileIORegistry::registerSceneReader(const std::string& extension, CreateSce
 	return true;
 }
 
-bool FileIORegistry::registerImageReader(const std::string& extension, CreateImageReaderCallback createReaderCB)
+bool FileIORegistry::registerImageReader(const std::string& extension, CreateImageReaderCallback createReaderCB,
+										 bool supportsPartialReads)
 {
 	m_imageReaders.insert(ImageReaderCallbacks::value_type(extension, createReaderCB));
+
+	if (supportsPartialReads)
+	{
+		m_imageReadersPartialRead.insert(extension);
+	}
+
 	return true;
 }
 
-bool FileIORegistry::registerImageReaderMultipleExtensions(const std::string& extensions, CreateImageReaderCallback createReaderCB)
+bool FileIORegistry::registerImageReaderMultipleExtensions(const std::string& extensions, CreateImageReaderCallback createReaderCB,
+														   bool supportsPartialReads)
 {
 	std::vector<std::string> extensionsItems;
 
@@ -57,6 +68,11 @@ bool FileIORegistry::registerImageReaderMultipleExtensions(const std::string& ex
 	{
 		const std::string& extension = *itExt;
 
+		if (supportsPartialReads)
+		{
+			m_imageReadersPartialRead.insert(extension);
+		}
+
 		m_imageReaders.insert(ImageReaderCallbacks::value_type(extension, createReaderCB));
 	}
 
@@ -66,6 +82,7 @@ bool FileIORegistry::registerImageReaderMultipleExtensions(const std::string& ex
 bool FileIORegistry::registerImageWriter(const std::string& extension, CreateImageWriterCallback createWriterCB)
 {
 	m_imageWriters.insert(ImageWriterCallbacks::value_type(extension, createWriterCB));
+
 	return true;
 }
 
@@ -75,18 +92,18 @@ bool FileIORegistry::registerVolumeReader(const std::string& extension, CreateVo
 	return true;
 }
 
-GeoReader* FileIORegistry::createGeometryReaderForExtension(const std::string& extension)
+GeoReader* FileIORegistry::createGeometryReaderForExtension(const std::string& extension) const
 {
-	GeoReaderCallbacks::iterator itFind = m_geoReaders.find(extension);
+	GeoReaderCallbacks::const_iterator itFind = m_geoReaders.find(extension);
 	if (itFind != m_geoReaders.end())
 		return (itFind->second)();
 
 	return NULL;
 }
 
-GeoWriter* FileIORegistry::createGeometryWriterForExtension(const std::string& extension)
+GeoWriter* FileIORegistry::createGeometryWriterForExtension(const std::string& extension) const
 {
-	GeoWriterCallbacks::iterator itFind = m_geoWriters.find(extension);
+	GeoWriterCallbacks::const_iterator itFind = m_geoWriters.find(extension);
 	if (itFind != m_geoWriters.end())
 		return (itFind->second)();
 
@@ -94,9 +111,9 @@ GeoWriter* FileIORegistry::createGeometryWriterForExtension(const std::string& e
 }
 
 
-SceneReader* FileIORegistry::createSceneReaderForExtension(const std::string& extension)
+SceneReader* FileIORegistry::createSceneReaderForExtension(const std::string& extension) const
 {
-	SceneReaderCallbacks::iterator itFind = m_sceneReaders.find(extension);
+	SceneReaderCallbacks::const_iterator itFind = m_sceneReaders.find(extension);
 	if (itFind != m_sceneReaders.end())
 		return (itFind->second)();
 
@@ -104,31 +121,38 @@ SceneReader* FileIORegistry::createSceneReaderForExtension(const std::string& ex
 }
 
 
-ImageReader* FileIORegistry::createImageReaderForExtension(const std::string& extension)
+ImageReader* FileIORegistry::createImageReaderForExtension(const std::string& extension) const
 {
-	ImageReaderCallbacks::iterator itFind = m_imageReaders.find(extension);
+	ImageReaderCallbacks::const_iterator itFind = m_imageReaders.find(extension);
 	if (itFind != m_imageReaders.end())
 		return (itFind->second)();
 
 	return NULL;
 }
 
-ImageWriter* FileIORegistry::createImageWriterForExtension(const std::string& extension)
+ImageWriter* FileIORegistry::createImageWriterForExtension(const std::string& extension) const
 {
-	ImageWriterCallbacks::iterator itFind = m_imageWriters.find(extension);
+	ImageWriterCallbacks::const_iterator itFind = m_imageWriters.find(extension);
 	if (itFind != m_imageWriters.end())
 		return (itFind->second)();
 
 	return NULL;
 }
 
-VolumeReader* FileIORegistry::createVolumeReaderForExtension(const std::string& extension)
+VolumeReader* FileIORegistry::createVolumeReaderForExtension(const std::string& extension) const
 {
-	VolumeReaderCallbacks::iterator itFind = m_volumeReaders.find(extension);
+	VolumeReaderCallbacks::const_iterator itFind = m_volumeReaders.find(extension);
 	if (itFind != m_volumeReaders.end())
 		return (itFind->second)();
 
 	return NULL;
+}
+
+bool FileIORegistry::doesImageReaderSupportPartialReads(const std::string& extension) const
+{
+	std::set<std::string>::const_iterator itFind = m_imageReadersPartialRead.find(extension);
+
+	return itFind != m_imageReadersPartialRead.end();
 }
 
 std::string FileIORegistry::getQtFileBrowserFilterForRegisteredGeometryReaders() const
@@ -191,6 +215,26 @@ std::string FileIORegistry::getQtFileBrowserFilterForRegisteredImageReaders() co
 	return finalString;
 }
 
+std::string FileIORegistry::getQtFileBrowserFilterForRegisteredImageWriters() const
+{
+	std::string finalString;
+	ImageWriterCallbacks::const_iterator it = m_imageWriters.begin();
+	unsigned int count = 0;
+	for (; it != m_imageWriters.end(); ++it, count++)
+	{
+		const std::string& extension = (*it).first;
+
+		if (count > 0)
+		{
+			finalString += " ";
+		}
+
+		finalString += "*." + extension;
+	}
+
+	return finalString;
+}
+
 std::string FileIORegistry::getQtFileBrowserFilterForRegisteredVolumeReaders() const
 {
 	std::string finalString;
@@ -211,3 +255,5 @@ std::string FileIORegistry::getQtFileBrowserFilterForRegisteredVolumeReaders() c
 	return finalString;
 }
 
+
+} // namespace Imagine

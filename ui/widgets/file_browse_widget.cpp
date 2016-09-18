@@ -30,6 +30,9 @@
 
 #include "settings.h"
 
+namespace Imagine
+{
+
 FileBrowseWidget::FileBrowseWidget(const std::string& path, QWidget *parent) : QWidget(parent), m_pLineEdit(NULL), m_pBrowseButton(NULL),
 	m_directoriesOnly(true), m_acceptTokens(false), m_save(false)
 {
@@ -333,3 +336,5 @@ void FileBrowseWidget::textChanged()
 		emit pathHasChanged();
 	}
 }
+
+} // namespace Imagine

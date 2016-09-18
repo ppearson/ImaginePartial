@@ -21,6 +21,9 @@
 
 #include "control.h"
 
+namespace Imagine
+{
+
 class Material;
 
 class MaterialWidget;
@@ -39,5 +42,7 @@ public:
 protected:
 	MaterialWidget*	m_pActualWidget;
 };
+
+} // namespace Imagine
 
 #endif // MATERIAL_EDIT_CONTROL_H

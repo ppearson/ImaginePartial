@@ -23,6 +23,9 @@
 
 #include "utils/maths/maths.h"
 
+namespace Imagine
+{
+
 // we can't really use a templated class for this, as special-casing is needed
 // for some of the functions in order to make sure we stay within half precision/range bounds...
 
@@ -129,5 +132,7 @@ public:
 	half	g;
 	half	b;
 };
+
+} // namespace Imagine
 
 #endif // COLOUR3H_H

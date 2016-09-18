@@ -23,6 +23,9 @@
 #include <QStyleOptionButton>
 #include <QMouseEvent>
 
+namespace Imagine
+{
+
 RayVisibilityButton::RayVisibilityButton(QWidget* parent) :	QPushButton(parent)
 {
 	setFocusPolicy(Qt::NoFocus);
@@ -260,3 +263,5 @@ std::string RayVisibilityButton::getUnselectedList() const
 
 	return itemsList;
 }
+
+} // namespace Imagine

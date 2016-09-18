@@ -21,6 +21,9 @@
 
 #include "io/image_reader.h"
 
+namespace Imagine
+{
+
 struct PNGInfra;
 
 class ImageReaderPNG : public ImageReader
@@ -49,5 +52,7 @@ protected:
 	ImageType readData(const std::string& filePath, PNGInfra& infra, bool wantAlpha);
 
 };
+
+} // namespace Imagine
 
 #endif // IMAGE_READER_PNG_H

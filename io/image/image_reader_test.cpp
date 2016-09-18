@@ -20,6 +20,9 @@
 
 #include "colour/colour3f.h"
 
+namespace Imagine
+{
+
 ImageReaderTXT::ImageReaderTXT()
 {
 }
@@ -75,29 +78,41 @@ bool ImageReaderTXT::readImageTile(const ImageTextureTileReadParams& readParams,
 
 	float mipMapRatio = maxRat * (float)(readParams.mipmapLevel);
 
-	Colour3f* pColourData = (Colour3f*)readParams.pData;
-
-	for (unsigned int y = 0; y < 32; y++)
+	bool doConstant = false;
+	if (doConstant)
 	{
-		Colour3f* pRow = pColourData + (tileSize * y);
+		Colour3f* pNewData = new Colour3f(ratioX, ratioY, 0.0f);
 
-		for (unsigned int x = 0; x < 32; x++)
+		readResults.setTileConstant((unsigned char*)pNewData);
+	}
+	else
+	{
+		Colour3f* pColourData = (Colour3f*)readParams.pData;
+
+		for (unsigned int y = 0; y < tileSize; y++)
 		{
-	//		*pRow = Colour3f(ratioX, ratioY, 0.0f);
-			*pRow = Colour3f(mipMapRatio, mipMapRatio, mipMapRatio);
-			pRow++;
+			Colour3f* pRow = pColourData + (tileSize * y);
+
+			for (unsigned int x = 0; x < tileSize; x++)
+			{
+		//		*pRow = Colour3f(ratioX, ratioY, 0.0f);
+				*pRow = Colour3f(mipMapRatio, mipMapRatio, mipMapRatio);
+				pRow++;
+			}
 		}
 	}
 
 	return true;
 }
 
+} // namespace Imagine
+
 namespace
 {
-	ImageReader* createImageReaderTXT()
+	Imagine::ImageReader* createImageReaderTXT()
 	{
-		return new ImageReaderTXT();
+		return new Imagine::ImageReaderTXT();
 	}
 
-	const bool registered = FileIORegistry::instance().registerImageReader("txt", createImageReaderTXT);
+	const bool registered = Imagine::FileIORegistry::instance().registerImageReader("txt", createImageReaderTXT);
 }

@@ -30,12 +30,15 @@
 #include "textures/image/image_texture_1f.h"
 #include "textures/image/image_texture_factory.h"
 
-#include "textures/procedural_2d/noise.h"
+#include "textures/procedural_2d/noise_2d.h"
 
 #include "scene_builders/ocean_sim.h"
 
 #include "io/file_io_registry.h"
 #include "io/image_reader.h"
+
+namespace Imagine
+{
 
 const char* heightSourceOptions[] = { "Image", "Noise", "Ocean", 0 };
 
@@ -89,7 +92,7 @@ void TerrainBuilder::createScene(Scene& scene)
 	}
 	else if (m_heightSource == eNoise)
 	{
-		Noise* pNoiseTexture = new Noise();
+		Noise2D* pNoiseTexture = new Noise2D();
 		pHeightMapTexture = pNoiseTexture;
 	}
 	else if (m_heightSource == eOcean)
@@ -375,12 +378,14 @@ bool TerrainBuilder::controlChanged(const std::string& name, PostChangedActions&
 	return false;
 }
 
+} // namespace Imagine
+
 namespace
 {
-	SceneBuilder* createTerrainBuilder()
+	Imagine::SceneBuilder* createTerrainBuilder()
 	{
-		return new TerrainBuilder();
+		return new Imagine::TerrainBuilder();
 	}
 
-	const bool registered = SceneBuilderFactory::instance().registerSceneBuilder(4, "Terrain", createTerrainBuilder);
+	const bool registered = Imagine::SceneBuilderFactory::instance().registerSceneBuilder(4, "Terrain", createTerrainBuilder);
 }

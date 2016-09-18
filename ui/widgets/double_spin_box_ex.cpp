@@ -20,6 +20,9 @@
 
 #include <QLineEdit>
 
+namespace Imagine
+{
+
 DoubleSpinBoxEx::DoubleSpinBoxEx(int precision) : QDoubleSpinBox(NULL), m_decimalPlacesToShow(0)
 {
 	setDecimals(precision);
@@ -430,3 +433,5 @@ void DoubleSpinBoxEx::editReturnPressed()
 	// reset flag turning off trailing zero trimming
 	resetDecimalPlacesToShow();
 }
+
+} // namespace Imagine

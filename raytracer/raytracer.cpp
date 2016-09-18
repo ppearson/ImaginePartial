@@ -22,6 +22,7 @@
 #include <ctime>
 #include <limits>
 #include <algorithm>
+#include <assert.h>
 
 #include "scene_interface.h"
 #include "scene.h"
@@ -80,6 +81,9 @@
 
 #include "utils/time_counter.h"
 #include "utils/system.h"
+
+namespace Imagine
+{
 
 RenderTask::RenderTask(unsigned int startX, unsigned int startY, unsigned int width, unsigned int height, TileState state, unsigned int taskIndex)
 	: m_state(state), m_startX(startX), m_startY(startY), m_width(width), m_height(height), m_extraChannelsDone(false), m_iterationCount(0),
@@ -335,7 +339,7 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 
 	if (initOnThreads)
 	{
-		RenderThreadInitHelper threadInitHelper(m_numberOfThreads, true);
+		RenderThreadInitHelper threadInitHelper(m_numberOfThreads, true, this, &m_scene);
 
 		if (threadInitHelper.init1(m_tileSize, m_tileSize, imageFlags, m_pFilter))
 		{
@@ -390,7 +394,7 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 			if (pNewImage)
 				m_aThreadTempImages.push_back(pNewImage);
 
-			RenderThreadContext* pNewRenderThreadContext = new RenderThreadContext(i);
+			RenderThreadContext* pNewRenderThreadContext = new RenderThreadContext(this, &m_scene, i);
 
 			if (pNewRenderThreadContext)
 			{
@@ -1107,7 +1111,7 @@ void Raytracer::setupRenderThreadContextLightSampling()
 
 	if (initOnThreads)
 	{
-		RenderThreadInitHelper threadInitHelper(m_numberOfThreads, true);
+		RenderThreadInitHelper threadInitHelper(m_numberOfThreads, true, this, &m_scene);
 
 		unsigned int taskLocalisedSampleCount = localisedSampleCount;
 		// hacky - make this 0 if type != eLSSampleLightsRadianceLocalised
@@ -1195,3 +1199,5 @@ bool Raytracer::doTask(Task* pTask, unsigned int threadID)
 
 	return ret;
 }
+
+} // namespace Imagine

@@ -27,6 +27,9 @@
 #include "ui/widgets/push_button_ex.h"
 #include "ui/widgets/scrub_button.h"
 
+namespace Imagine
+{
+
 AnimatedFloatControl::AnimatedFloatControl(const std::string& name, AnimationCurve* pairedValue, float min, float max, std::string label,
 										   bool scrubHandle) : Control(name, label), m_minimum(min), m_maximum(max)
 {
@@ -291,3 +294,5 @@ bool AnimatedFloatControl::deltaChange(float delta, unsigned int index)
 
 	return changed;
 }
+
+} // namespace Imagine

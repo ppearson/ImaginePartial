@@ -18,6 +18,9 @@
 
 #include "geo_writer.h"
 
+namespace Imagine
+{
+
 GeoWriter::GeoWriter()
 {
 }
@@ -31,3 +34,5 @@ void GeoWriter::preProcess()
 {
 
 }
+
+} // namespace Imagine

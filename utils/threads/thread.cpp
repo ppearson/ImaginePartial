@@ -35,6 +35,9 @@
 
 #include "utils/maths/maths.h"
 
+namespace Imagine
+{
+
 Thread::Thread(ThreadPriority priority) : m_thread(0), m_isRunning(false), m_autoDestruct(false), m_priority(priority),
 	m_affinity(-1)
 {
@@ -287,3 +290,5 @@ void Thread::setRunning(bool running)
 	m_isRunning = running;
 	m_mutex.unlock();
 }
+
+} // namespace Imagine

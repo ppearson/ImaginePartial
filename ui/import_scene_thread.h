@@ -26,6 +26,9 @@
 
 #include "io/scene_reader.h"
 
+namespace Imagine
+{
+
 class Scene;
 
 class ImportSceneThread : public QThread
@@ -47,5 +50,7 @@ protected:
 	std::vector<std::string>	m_paths;
 	SceneReaderOptions			m_importOptions;
 };
+
+} // namespace Imagine
 
 #endif // IMPORT_SCENE_THREAD_H

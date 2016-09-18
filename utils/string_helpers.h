@@ -23,6 +23,9 @@
 #include <vector>
 #include <stdint.h>
 
+namespace Imagine
+{
+
 struct StringToken
 {
 	StringToken()
@@ -55,5 +58,7 @@ std::string formatNumberThousandsSeparator(size_t value);
 std::string formatTimePeriodSeconds(double seconds, bool keepAsSeconds = false);
 std::string formatTimePeriod(uint64_t time);
 
+
+} // namespace Imagine
 
 #endif // STRING_HELPERS_H

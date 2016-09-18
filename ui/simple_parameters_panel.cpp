@@ -28,6 +28,9 @@
 
 #include "view_context.h"
 
+namespace Imagine
+{
+
 SimpleParametersPanel::SimpleParametersPanel(ParametersInterface* pParent) : m_pParent(pParent),
 	m_pTextureWidget(NULL), m_pMaterialWidget(NULL)
 {
@@ -140,3 +143,5 @@ void SimpleParametersPanel::refreshControl(const std::string& name)
 
 	pControl->refreshFromValue();
 }
+
+} // namespace Imagine

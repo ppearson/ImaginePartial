@@ -24,6 +24,9 @@
 #include "manipulator.h"
 #include "manipulator_handle.h"
 
+namespace Imagine
+{
+
 class ManipulatorHandleBuilder
 {
 public:
@@ -31,5 +34,7 @@ public:
 
 	static bool buildManipulatorHandles(Manipulators& manipulators, std::vector<ManipulatorHandle*>& manHandles);
 };
+
+} // namespace Imagine
 
 #endif // MANIPULATOR_HANDLE_BUILDER_H

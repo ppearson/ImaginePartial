@@ -31,6 +31,9 @@
 
 #include "materials/standard_material.h"
 
+namespace Imagine
+{
+
 GeoHelperObj::GeoHelperObj()
 {
 }
@@ -238,7 +241,6 @@ void GeoHelperObj::copyPointsToGeometry(std::vector<Point>& points, std::set<uns
 			unsigned int vertexIndex = face.getVertexPosition(i);
 
 			std::map<unsigned int, unsigned int>::iterator it1 = aMapToFaceVertices.find(vertexIndex);
-			assert(it1 != aMapToFaceVertices.end());
 
 			unsigned int newIndex = aMapToFaceVertices[vertexIndex];
 
@@ -297,7 +299,7 @@ void GeoHelperObj::copyUVsToGeometry(std::vector<UV>& uvs, std::set<unsigned int
 			unsigned int UVIndex = face.getVertexUV(i);
 
 			std::map<unsigned int, unsigned int>::iterator it1 = aMapToFaceUVs.find(UVIndex);
-			assert(it1 != aMapToFaceUVs.end());
+//			assert(it1 != aMapToFaceUVs.end());
 
 			unsigned int newIndex = aMapToFaceUVs[UVIndex];
 
@@ -389,3 +391,5 @@ void GeoHelperObj::copyUVItemsToGeometry(std::vector<UV>& uvs, std::set<unsigned
 		pUVI++;
 	}
 }
+
+} // namespace Imagine

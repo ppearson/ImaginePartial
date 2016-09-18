@@ -30,6 +30,9 @@
 
 #include "utils/file_helpers.h"
 
+namespace Imagine
+{
+
 // TODO: there's a fair bit of duplicate code here and it could be re-written in a more compact way, but it's written
 //       with as few branches as possible (i.e. not within loops) in the hope compilers might be able to vectorise it more easily
 
@@ -1209,12 +1212,14 @@ bool ImageReaderTIFF::readImageTile(const ImageTextureTileReadParams& readParams
 	return true;
 }
 
+} // namespace Imagine
+
 namespace
 {
-	ImageReader* createImageReaderTIFF()
+	Imagine::ImageReader* createImageReaderTIFF()
 	{
 		return new ImageReaderTIFF();
 	}
 
-	const bool registered = FileIORegistry::instance().registerImageReaderMultipleExtensions("tif;tiff;tex;tx", createImageReaderTIFF, true);
+	const bool registered = Imagine::FileIORegistry::instance().registerImageReaderMultipleExtensions("tif;tiff;tex;tx", createImageReaderTIFF, true);
 }

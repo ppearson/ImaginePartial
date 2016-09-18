@@ -21,6 +21,9 @@
 
 #include "camera_ray_creator.h"
 
+namespace Imagine
+{
+
 class CamRayCreatorFishEye : public CameraRayCreator
 {
 public:
@@ -54,6 +57,8 @@ public:
 		Ray ray1(Point(), newDirection, RAY_CAMERA);
 		ray1 = m_transform.transform(ray1);
 		ray1.direction.normalise();
+
+		ray1.tMin = m_nearClippingPlane;
 
 		if (m_createDifferentials)
 		{
@@ -97,6 +102,8 @@ public:
 		Ray ray1(Point(), newDirection, RAY_CAMERA);
 		ray1 = m_transform.transform(ray1);
 		ray1.direction.normalise();
+
+		ray1.tMin = m_nearClippingPlane;
 
 		if (m_createDifferentials)
 		{
@@ -177,6 +184,8 @@ public:
 		ray1 = m_transform.transform(ray1);
 		ray1.direction.normalise();
 
+		ray1.tMin = m_nearClippingPlane;
+
 		if (m_createDifferentials)
 		{
 			Normal diffXDir;
@@ -235,6 +244,8 @@ public:
 		ray1 = ssT.m_transform.transform(ray1);
 		ray1.direction.normalise();
 
+		ray1.tMin = m_nearClippingPlane;
+
 		if (m_createDifferentials)
 		{
 			Normal diffXDir;
@@ -252,6 +263,8 @@ public:
 		return ray1;
 	}
 };
+
+} // namespace Imagine
 
 #endif // CAM_RAY_CREATOR_FISHEYE_H
 

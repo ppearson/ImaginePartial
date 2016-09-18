@@ -23,6 +23,9 @@
 #include "image_1f.h"
 #include "image_1h.h"
 
+namespace Imagine
+{
+
 ImageUtils::ImageUtils()
 {
 }
@@ -220,3 +223,5 @@ void ImageUtils::flipImageVertically(Image1h* pImage, unsigned int scanlines, un
 	}
 }
 
+
+} // namespace Imagine

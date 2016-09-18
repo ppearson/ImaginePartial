@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2012-2015 Peter Pearson.
+ Copyright 2012-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -19,16 +19,24 @@
 #include "file_helpers.h"
 
 #include <algorithm>
+
 #include <stdio.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <dirent.h>
+#include <unistd.h>
 
 #include "global_context.h"
 
+namespace Imagine
+{
+
 #ifndef _MSC_VER
-#define DIR_SEP '/'
+static const char* kDirSep = "/";
+#define kDirSepChar '/'
 #else
-#define DIR_SEP '\\'
+#define kDirSepChar '\\'
+static const char* kDirSep = "\\";
 #endif
 
 FileHelpers::FileHelpers()
@@ -55,14 +63,9 @@ bool FileHelpers::findPathWithSearchPaths(const std::string& originalPath, const
 	std::vector<std::string>::const_iterator it = searchPaths.begin();
 	for (; it != searchPaths.end(); ++it)
 	{
-		std::string searchPathDir = *it;
-		// make sure it's got a separator on the end
-		if (searchPathDir[searchPathDir.length() - 1] != DIR_SEP)
-		{
-			searchPathDir += DIR_SEP;
-		}
+		const std::string& searchPathDir = *it;
 
-		std::string checkPath = searchPathDir + fileName;
+		std::string checkPath = combinePaths(searchPathDir, fileName);
 		if (FileHelpers::doesFileExist(checkPath))
 		{
 			foundPath = checkPath;
@@ -98,10 +101,8 @@ std::string FileHelpers::getFileExtension(const std::string& path)
 
 std::string FileHelpers::getFileDirectory(const std::string& path)
 {
-	char seperator = DIR_SEP;
-
 	std::string directory;
-	size_t slashPos = path.find_last_of(seperator, path.length());
+	size_t slashPos = path.find_last_of(kDirSepChar, path.length());
 	if (slashPos != std::string::npos)
 		directory = path.substr(0, slashPos + 1);
 
@@ -110,10 +111,8 @@ std::string FileHelpers::getFileDirectory(const std::string& path)
 
 std::string FileHelpers::getFileName(const std::string& path)
 {
-	char seperator = DIR_SEP;
-
 	std::string directory;
-	size_t slashPos = path.find_last_of(seperator, path.length());
+	size_t slashPos = path.find_last_of(kDirSepChar, path.length());
 	if (slashPos != std::string::npos)
 		directory = path.substr(slashPos + 1);
 
@@ -173,3 +172,85 @@ bool FileHelpers::doesDirectoryExist(const std::string& directoryPath)
 
 	return false;
 }
+
+std::string FileHelpers::combinePaths(const std::string& path0, const std::string& path1)
+{
+	std::string final = path0;
+
+	if (strcmp(final.substr(final.size() - 1, 1).c_str(), kDirSep) != 0)
+	{
+		final += kDirSep;
+	}
+
+	final += path1;
+
+	return final;
+}
+
+bool FileHelpers::getFilesInDirectory(const std::string& directoryPath, const std::string& extension, std::vector<std::string>& files)
+{
+	// Note: opendir() is used on purpose here, as scandir() and lsstat() don't reliably support S_ISLNK on symlinks over NFS,
+	//       whereas opendir() allows this
+	DIR* dir = opendir(directoryPath.c_str());
+	if (!dir)
+		return false;
+
+	struct dirent* dirEnt = NULL;
+	char tempBuffer[4096];
+
+	while ((dirEnt = readdir(dir)) != NULL)
+	{
+		// ignore directories for the moment
+		if (dirEnt->d_type == DT_DIR)
+			continue;
+
+		// cope with symlinks by working out what they point at
+		if (dirEnt->d_type == DT_LNK)
+		{
+			std::string fullAbsolutePath = combinePaths(directoryPath, dirEnt->d_name);
+			if (readlink(fullAbsolutePath.c_str(), tempBuffer, 4096) == -1)
+			{
+				// something went wrong, so ignore...
+				continue;
+			}
+			else
+			{
+				// on the assumption that the target of the symlink is not another symlink (if so, this won't work over NFS)
+				// check what type it is
+				struct stat statState;
+				int ret = lstat(tempBuffer, &statState);
+
+				if (ret == -1 || S_ISDIR(statState.st_mode))
+				{
+					// ignore for the moment...
+					continue;
+				}
+				else
+				{
+					// TODO: do we need to check this is a full absolute path?
+					// TODO: do de-duplication on target, as opposed to original symlink in dir listing
+
+					if (getFileExtension(dirEnt->d_name) == extension)
+					{
+						files.push_back(fullAbsolutePath);
+					}
+				}
+			}
+		}
+		else
+		{
+			// it's hopefully a file
+			std::string fullAbsolutePath = combinePaths(directoryPath, dirEnt->d_name);
+			if (getFileExtension(dirEnt->d_name) == extension)
+			{
+				files.push_back(fullAbsolutePath);
+			}
+		}
+	}
+
+	closedir(dir);
+
+	return !files.empty();
+}
+
+} // namespace Imagine

@@ -21,6 +21,9 @@
 
 #include "control.h"
 
+namespace Imagine
+{
+
 class TextureWidget;
 class TextureParameters;
 
@@ -38,5 +41,7 @@ protected:
 	TextureWidget*		m_pTextureWidget;
 	TextureParameters*	m_pairedValue;
 };
+
+} // namespace Imagine
 
 #endif // TEXTURE_CONTROL_H

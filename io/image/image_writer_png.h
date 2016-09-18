@@ -21,6 +21,9 @@
 
 #include "io/image_writer.h"
 
+namespace Imagine
+{
+
 class ImageWriterPNG : public ImageWriter
 {
 public:
@@ -28,5 +31,7 @@ public:
 
 	virtual bool writeImage(const std::string& filePath, const OutputImage& image, unsigned int channels, unsigned int flags);
 };
+
+} // namespace Imagine
 
 #endif // IMAGE_WRITER_PNG_H

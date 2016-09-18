@@ -30,6 +30,9 @@
 
 #include "core/hash.h"
 
+namespace Imagine
+{
+
 using namespace Alembic::AbcGeom;
 
 class GeoReaderAbc : public GeoReader
@@ -72,5 +75,7 @@ protected:
 
 	GeoInstanceMap		m_aGeoInstances;
 };
+
+} // namespace Imagine
 
 #endif // GEO_READER_ABC_H

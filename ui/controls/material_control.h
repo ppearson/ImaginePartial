@@ -29,6 +29,9 @@
 
 #include "control.h"
 
+namespace Imagine
+{
+
 class Object;
 class SelectionManager;
 class Material;
@@ -69,5 +72,7 @@ protected:
 
 	bool				m_shiftPressed;
 };
+
+} // namespace Imagine
 
 #endif // MATERIAL_CONTROL_H

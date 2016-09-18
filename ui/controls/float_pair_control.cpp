@@ -25,6 +25,9 @@
 #include "widgets/double_spin_box_ex.h"
 #include "ui/widgets/scrub_button.h"
 
+namespace Imagine
+{
+
 FloatPairControl::FloatPairControl(const std::string& name, float* pairedValue1, float* pairedValue2, float min, float max, std::string label,
 			 unsigned int flags) : Control(name, label), m_minimum1(min), m_maximum1(max), m_minimum2(min), m_maximum2(max)
 {
@@ -250,3 +253,5 @@ void FloatPairControl::setTooltips(const std::string& tooltip1, const std::strin
 	m_doubleSpin1->setToolTip(tooltip1.c_str());
 	m_doubleSpin2->setToolTip(tooltip2.c_str());
 }
+
+} // namespace Imagine

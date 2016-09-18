@@ -20,6 +20,9 @@
 
 #include "ui/widgets/float_slider_widget.h"
 
+namespace Imagine
+{
+
 FloatSliderControl::FloatSliderControl(const std::string& name, float* pairedValue, float min, float max, std::string label,
 									   bool editControl, bool logScaleSlider, bool highPrecision) :
 	Control(name, label), m_pSlider(NULL)
@@ -80,3 +83,5 @@ void FloatSliderControl::refreshFromValue()
 
 	m_pSlider->setValue(m_lastValue);
 }
+
+} // namespace Imagine

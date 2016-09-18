@@ -21,6 +21,9 @@
 
 #include "utils/io/stream.h"
 
+namespace Imagine
+{
+
 struct UV
 {
 	UV()
@@ -97,5 +100,7 @@ struct UV
 	float u;
 	float v;
 };
+
+} // namespace Imagine
 
 #endif // UV_H

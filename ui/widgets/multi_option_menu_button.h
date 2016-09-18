@@ -27,6 +27,9 @@
 class QSignalMapper;
 class QAction;
 
+namespace Imagine
+{
+
 class MultiOptionMenuButton : public QPushButton
 {
 	Q_OBJECT
@@ -69,5 +72,7 @@ protected:
 	QSignalMapper*				m_pSignalMapper;
 	std::vector<QAction*>		m_aActions;
 };
+
+} // namespace Imagine
 
 #endif // MULTI_OPTION_MENU_BUTTON_H

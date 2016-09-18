@@ -22,10 +22,13 @@
 #include "image/output_image.h"
 #include "image/output_image_tile.h"
 
+namespace Imagine
+{
+
 class Colour4fStandard
 {
 public:
-	static void addColour(Colour4f& sample, Colour4f& finalColour)
+	static void addColour(const Colour4f& sample, Colour4f& finalColour)
 	{
 		finalColour += sample;
 	}
@@ -55,7 +58,7 @@ public:
 class Colour4fStandardNoSamples
 {
 public:
-	static void addColour(Colour4f& sample, Colour4f& finalColour)
+	static void addColour(const Colour4f& sample, Colour4f& finalColour)
 	{
 		finalColour += sample;
 	}
@@ -84,7 +87,7 @@ public:
 class Colour4fFiltered
 {
 public:
-	static void addColour(Colour4f& sample, Colour4f& finalColour)
+	static void addColour(const Colour4f& sample, Colour4f& finalColour)
 	{
 		// do nothing
 	}
@@ -111,7 +114,7 @@ public:
 class Colour4fFilteredNoSamples
 {
 public:
-	static void addColour(Colour4f& sample, Colour4f& finalColour)
+	static void addColour(const Colour4f& sample, Colour4f& finalColour)
 	{
 		// do nothing
 	}
@@ -138,7 +141,7 @@ public:
 class Colour4fFilteredClamp
 {
 public:
-	static void addColour(Colour4f& sample, Colour4f& finalColour)
+	static void addColour(const Colour4f& sample, Colour4f& finalColour)
 	{
 		// do nothing
 	}
@@ -172,7 +175,7 @@ public:
 
 	}
 
-	static void addColour(Colour4f& sample, Colour4f& finalColour)
+	static void addColour(const Colour4f& sample, Colour4f& finalColour)
 	{
 		// do nothing
 	}
@@ -201,5 +204,7 @@ public:
 protected:
 	float		m_luminanceThreshold;
 };
+
+} // namespace Imagine
 
 #endif // ACCUMULATORS_H

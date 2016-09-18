@@ -21,6 +21,9 @@
 
 #include <QPushButton>
 
+namespace Imagine
+{
+
 class ColourChooserPopup;
 
 class ColourButton : public QPushButton
@@ -88,5 +91,7 @@ protected:
 
 	QPixmap				m_backBuffer;
 };
+
+} // namespace Imagine
 
 #endif // COLOUR_BUTTON_H

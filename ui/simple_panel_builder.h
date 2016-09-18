@@ -21,6 +21,9 @@
 
 #include "parameter.h"
 
+namespace Imagine
+{
+
 class Parameters;
 class SimpleParametersPanel;
 class QWidget;
@@ -34,5 +37,7 @@ public:
 
 	static SimpleParametersPanel* buildParametersPanel(Parameters& parameters, ParametersInterface* pParent, ParameterPanelType panelType);
 };
+
+} // namespace Imagine
 
 #endif // SIMPLE_PANEL_BUILDER_H

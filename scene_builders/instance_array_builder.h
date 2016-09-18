@@ -21,6 +21,9 @@
 
 #include "scene_builder.h"
 
+namespace Imagine
+{
+
 class InstanceArrayBuilder : public SceneBuilder
 {
 public:
@@ -52,5 +55,7 @@ protected:
 
 	bool			m_useBakedInstances;
 };
+
+} // namespace Imagine
 
 #endif // INSTANCE_ARRAY_BUILDER_H

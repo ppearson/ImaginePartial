@@ -25,6 +25,9 @@
 
 #include "ui/widgets/scrub_button.h"
 
+namespace Imagine
+{
+
 FloatControl::FloatControl(const std::string& name, float* pairedValue, float min, float max, std::string label, unsigned int flags)
 	: Control(name, label), m_minimum(min), m_maximum(max)
 {
@@ -155,3 +158,5 @@ bool FloatControl::deltaChange(float delta, unsigned int index)
 
 	return changed;
 }
+
+} // namespace Imagine

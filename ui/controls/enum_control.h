@@ -23,6 +23,9 @@
 
 #include <QComboBox>
 
+namespace Imagine
+{
+
 class EnumControl : public Control
 {
 public:
@@ -37,5 +40,7 @@ protected:
 	QComboBox*			m_comboBox;
 	unsigned char*		m_pairedValue;
 };
+
+} // namespace Imagine
 
 #endif // ENUM_CONTROL_H

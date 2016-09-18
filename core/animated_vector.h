@@ -22,6 +22,9 @@
 #include "animation_curve.h"
 #include "vector.h"
 
+namespace Imagine
+{
+
 class AnimatedVector
 {
 public:
@@ -62,5 +65,7 @@ protected:
 	AnimationCurve		y;
 	AnimationCurve		z;
 };
+
+} // namespace Imagine
 
 #endif // ANIMATED_VECTOR_H

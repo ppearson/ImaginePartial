@@ -23,6 +23,9 @@
 
 #include <QCheckBox>
 
+namespace Imagine
+{
+
 class BoolControl : public Control
 {
 public:
@@ -37,5 +40,7 @@ protected:
 	QCheckBox*			m_checkBox;
 	bool*				m_pairedValue;
 };
+
+} // namespace Imagine
 
 #endif // BOOL_CONTROL_H

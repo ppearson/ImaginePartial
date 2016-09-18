@@ -32,6 +32,9 @@
 
 #include "geometry/baked/baked_geometry_gathered.h"
 
+namespace Imagine
+{
+
 InstanceArrayBuilder::InstanceArrayBuilder() : SceneBuilder(), m_width(10), m_depth(10), m_height(1),
 	m_gapX(2.0f), m_gapY(2.0f), m_gapZ(2.0f), m_alternatingMaterials(false), m_numMaterials(3), m_drawAsBBox(false),
 	m_addToGroup(false), m_useBakedInstances(false)
@@ -213,13 +216,15 @@ void InstanceArrayBuilder::createScene(Scene& scene)
 //	scene.deleteObject(pCurrentSelObject);
 }
 
+} // namespace Imagine
+
 namespace
 {
-	SceneBuilder* createInstanceArrayBuilderSceneBuilder()
+	Imagine::SceneBuilder* createInstanceArrayBuilderSceneBuilder()
 	{
-		return new InstanceArrayBuilder();
+		return new Imagine::InstanceArrayBuilder();
 	}
 
-	const bool registered = SceneBuilderFactory::instance().registerSceneBuilder(3, "Instance Array", createInstanceArrayBuilderSceneBuilder);
+	const bool registered = Imagine::SceneBuilderFactory::instance().registerSceneBuilder(3, "Instance Array", createInstanceArrayBuilderSceneBuilder);
 }
 

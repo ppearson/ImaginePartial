@@ -21,6 +21,9 @@
 
 #include "io/image_reader.h"
 
+namespace Imagine
+{
+
 class ImageReaderTXT : public ImageReader
 {
 public:
@@ -45,5 +48,7 @@ public:
 
 	virtual bool readImageTile(const ImageTextureTileReadParams& readParams, ImageTextureTileReadResults& readResults) const;
 };
+
+} // namespace Imagine
 
 #endif // IMAGE_READER_TEST_H

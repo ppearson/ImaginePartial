@@ -21,8 +21,12 @@
 
 #include <QWidget>
 
-class DoubleSpinBoxEx;
 class QSlider;
+
+namespace Imagine
+{
+
+class DoubleSpinBoxEx;
 
 class FloatSliderWidget : public QWidget
 {
@@ -43,6 +47,7 @@ signals:
 public slots:
 	void spinChanged();
 	void sliderChanged(int position);
+	void sliderActionTriggered(int actionTriggered);
 
 protected:
 	float getLinearValue(float x) const;
@@ -66,5 +71,7 @@ protected:
 	// used to get floating point value from an int Widget
 	double				m_converter;
 };
+
+} // namespace Imagine
 
 #endif // FLOAT_SLIDER_WIDGET_H

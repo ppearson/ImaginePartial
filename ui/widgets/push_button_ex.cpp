@@ -24,6 +24,9 @@
 #include <QStyleOptionButton>
 #include <QMouseEvent>
 
+namespace Imagine
+{
+
 PushButtonEx::PushButtonEx(QWidget *parent) : QPushButton(parent)
 {
 }
@@ -48,3 +51,5 @@ void PushButtonEx::mousePressEvent(QMouseEvent *e)
 
 	QAbstractButton::mousePressEvent(e);
 }
+
+} // namespace Imagine

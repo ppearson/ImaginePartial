@@ -19,6 +19,9 @@
 #ifndef IMAGE_COMMON_H
 #define IMAGE_COMMON_H
 
+namespace Imagine
+{
+
 enum ImageComponentFlags
 {
 	COMPONENT_RGBA				= 1 << 0,
@@ -34,5 +37,7 @@ enum ImageComponentFlags
 
 	COMPONENT_DEPTH				= COMPONENT_DEPTH_NORMALISED | COMPONENT_DEPTH_REAL
 };
+
+} // namespace Imagine
 
 #endif // IMAGE_COMMON_H

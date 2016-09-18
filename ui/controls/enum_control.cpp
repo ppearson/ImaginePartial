@@ -18,6 +18,9 @@
 
 #include "enum_control.h"
 
+namespace Imagine
+{
+
 EnumControl::EnumControl(const std::string& name, unsigned char* pairedValue, const char** options, std::string label) : Control(name, label)
 {
 	m_comboBox = new QComboBox();
@@ -58,3 +61,5 @@ void EnumControl::refreshFromValue()
 {
 	m_comboBox->setCurrentIndex((int)*m_pairedValue);
 }
+
+} // namespace Imagine

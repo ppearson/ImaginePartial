@@ -25,6 +25,9 @@
 #include <QSlider>
 #include <QHBoxLayout>
 
+namespace Imagine
+{
+
 class UIntControl : public Control
 {
 public:
@@ -46,5 +49,7 @@ protected:
 	unsigned int		m_minimum;
 	unsigned int		m_maximum;
 };
+
+} // namespace Imagine
 
 #endif // UINT_CONTROL_H

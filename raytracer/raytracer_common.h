@@ -28,6 +28,9 @@
 #include "core/ray.h"
 #include "core/frame.h"
 
+namespace Imagine
+{
+
 class Object;
 class Medium;
 class RenderTriangleHolder;
@@ -127,7 +130,7 @@ protected:
 
 struct HitResult
 {
-	__finline HitResult() : triID(-1), haveDerivatives(false), time(0.0f), originType(RAY_UNDEFINED), raySharpness(0.0f), shadingFlags(0),
+	__finline HitResult() : triID(-1), haveDerivatives(false), time(0.0f), originType(RAY_UNDEFINED), rayWidth(0.0f), shadingFlags(0),
 		intersectionError(0.0f), pObject(NULL),	pMedium(NULL), pLight(NULL), pBakedBSDF(NULL), pTriangleHolder(NULL),
 		pCustom1(NULL), pShadingContext(NULL)
 	{
@@ -153,12 +156,12 @@ struct HitResult
 		dpdx = Vector();
 		dpdy = Vector();
 
-		dPdu = Vector();
-		dPdv = Vector();
+		dpdu = Vector();
+		dpdv = Vector();
 
 		time = 0.0f;
 		originType = RAY_UNDEFINED;
-		raySharpness = 0.0f;
+		rayWidth = 0.0f;
 		shadingFlags = 0;
 		intersectionError = 0.0f;
 		pObject = NULL;
@@ -185,26 +188,32 @@ struct HitResult
 		return (shadingFlags & SURFACE_IS_BACKFACING);
 	}
 
-	void calculateUVTangents()
+	void calculateInitialDerivatives()
 	{
 		const float determinant = dUV1u * dUV2v - dUV2u * dUV1v;
 
 		if (determinant == 0.0f)
 		{
 			FrameOrthoBasis frame(geometryNormal);
-			dPdu = frame.getTangentU();
-			dPdv = frame.getTangentV();
+			dpdu = frame.getTangentU();
+			dpdv = frame.getTangentV();
+
+			// don't do anything for normal derivatives, leave them as is (at 0,0,0)
 		}
 		else
 		{
 			const float invDet = 1.0f / determinant;
 
 			// interpolate the tangents
-			dPdu = (dP1 * dUV2v - dP2 * dUV1v);
-			dPdv = (dP1 * -dUV2u - dP2 * dUV1u);
+			dpdu = (dp10 * dUV2v - dp20 * dUV1v);
+			dpdv = (dp10 * -dUV2u + dp20 * dUV1u);
 
-			dPdu *= invDet;
-			dPdv *= invDet;
+			dpdu *= invDet;
+			dpdv *= invDet;
+
+			// normal derivatives
+			dndu = (dn1 * dUV2v - dn2 * dUV1v) * invDet;
+			dndv = (dn1 * -dUV2u + dn2 * dUV1u) * invDet;
 		}
 	}
 
@@ -213,25 +222,33 @@ struct HitResult
 	float						beta;  // Barycentric u coordinate
 	float						gamma; // Barycentric v coordinate
 
-	Point						hitPoint;
+	Point						hitPoint; // hit point in world space
 	Normal						geometryNormal;
 	Normal						shaderNormal;
 	UV							uv;
 
 	// Edges
-	Vector						dP1;
-	Vector						dP2;
+	Vector						dp10;
+	Vector						dp20;
 
+	// used for working out final partial dertivatives - in the future these could
+	// be calculated on-the-fly
 	float						dUV1u;
 	float						dUV1v;
 	float						dUV2u;
 	float						dUV2v;
 
-	// surface derivative wrt U param
-	Vector						dPdu;
-	// surface derivative wrt V param
-	Vector						dPdv;
+	// used for working out final partial dertivatives - in the future these could
+	// be calculated on-the-fly
+	Normal						dn1;
+	Normal						dn2;
 
+	// surface partial derivative wrt U param
+	Vector						dpdu;
+	// surface partial derivative wrt V param
+	Vector						dpdv;
+
+	// normal partial derivatives
 	Normal						dndu;
 	Normal						dndv;
 
@@ -251,7 +268,7 @@ struct HitResult
 	float						time;
 
 	RayType						originType; // the type of ray which created the hit result
-	float						raySharpness; // pretty crap hack, but... camera rays are 0.0f, the rougher surfaces are the more this increases
+	float						rayWidth; // pretty crap hack, but... camera rays are 1.0f, the rougher surfaces are the more this increases
 
 	unsigned int				shadingFlags;
 
@@ -285,5 +302,7 @@ struct SelectionHitResult
 	unsigned int	m_faceIndex;
 };
 
+
+} // namespace Imagine
 
 #endif // RAYTRACER_COMMON_H

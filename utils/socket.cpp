@@ -20,6 +20,9 @@
 #include <errno.h>
 #include <unistd.h>
 
+namespace Imagine
+{
+
 const int MAX_SEND_LENGTH = 1024;
 const int MAX_RECV_LENGTH = 4096;
 
@@ -345,3 +348,5 @@ bool Socket::cleanupWinsocks()
 #endif
 	return true;
 }
+
+} // namespace Imagine

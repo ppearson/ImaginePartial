@@ -20,6 +20,9 @@
 
 #include <QHBoxLayout>
 
+namespace Imagine
+{
+
 VectorControl::VectorControl(const std::string& name, Vector* pairedValue, float min, float max, std::string label) : Control(name, label)
 {
 	QWidget* mainWidget = new QWidget();
@@ -73,3 +76,5 @@ void VectorControl::refreshFromValue()
 	m_Spins[1]->setValue((*m_pairedValue)[1]);
 	m_Spins[2]->setValue((*m_pairedValue)[2]);
 }
+
+} // namespace Imagine

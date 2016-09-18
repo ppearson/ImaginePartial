@@ -43,6 +43,9 @@
 
 #include "utils/bitset.h"
 
+namespace Imagine
+{
+
 System::System()
 {
 }
@@ -344,3 +347,5 @@ bool System::getLinuxProcessMemInfo(ProcessMemInfo& memInfo)
 	return true;
 }
 #endif
+
+} // namespace Imagine

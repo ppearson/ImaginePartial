@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2012-2015 Peter Pearson.
+ Copyright 2012-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -22,6 +22,9 @@
 #include <vector>
 #include <string>
 
+namespace Imagine
+{
+
 class FileHelpers
 {
 public:
@@ -42,6 +45,12 @@ public:
 	static bool isTokenFile(const std::string& filePath);
 	static bool doesFileExist(const std::string& filePath);
 	static bool doesDirectoryExist(const std::string& directoryPath);
+
+	static std::string combinePaths(const std::string& path0, const std::string& path1);
+
+	static bool getFilesInDirectory(const std::string& directoryPath, const std::string& extension, std::vector<std::string>& files);
 };
+
+} // namespace Imagine
 
 #endif // FILE_HELPERS_H

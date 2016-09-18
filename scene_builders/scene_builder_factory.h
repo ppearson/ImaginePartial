@@ -22,6 +22,9 @@
 #include <map>
 #include <string>
 
+namespace Imagine
+{
+
 class SceneBuilder;
 
 class SceneBuilderFactory
@@ -44,7 +47,7 @@ public:
 public:
 	bool registerSceneBuilder(unsigned char id, std::string description, CreateSceneBuilderCallback createSceneBuilderCB);
 
-	SceneBuilder* createSceneBuilderForTypeID(unsigned char typeID);
+	Imagine::SceneBuilder* createSceneBuilderForTypeID(unsigned char typeID);
 
 	SceneBuilderNames::iterator sceneBuilderNamesBegin() { return m_names.begin(); }
 	SceneBuilderNames::iterator sceneBuilderNamesEnd() { return m_names.end(); }
@@ -61,5 +64,7 @@ private:
 
 	SceneBuilderFactory& operator=(const SceneBuilderFactory& vc);
 };
+
+} // namespace Imagine
 
 #endif // SCENE_BUILDER_FACTORY_H

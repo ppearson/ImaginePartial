@@ -21,6 +21,9 @@
 
 #include <sys/time.h>
 
+namespace Imagine
+{
+
 // TODO: it should be possible to remove the non-subclassed (i.e. ones with no vfunctions) with no penalty,
 //       as the compiler should be able to optimise out the virtual function - need to test this though
 
@@ -141,7 +144,7 @@ public:
 	virtual uint64_t getTimeCount() const = 0;
 };
 
-class ThreadTimeCounterReal
+class ThreadTimeCounterReal : public ThreadTimeCounter
 {
 public:
 	ThreadTimeCounterReal() : m_count(0)
@@ -190,7 +193,7 @@ protected:
 	uint64_t		m_count;
 };
 
-class ThreadTimeCounterNull
+class ThreadTimeCounterNull : public ThreadTimeCounter
 {
 public:
 	ThreadTimeCounterNull()
@@ -222,5 +225,7 @@ public:
 		return 0;
 	}
 };
+
+} // namespace Imagine
 
 #endif // TIME_COUNTER_H

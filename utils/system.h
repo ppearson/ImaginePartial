@@ -21,6 +21,9 @@
 
 #include <string>
 
+namespace Imagine
+{
+
 class System
 {
 public:
@@ -77,5 +80,7 @@ private:
 
 	static bool getLinuxProcessMemInfo(ProcessMemInfo& memInfo);
 };
+
+} // namespace Imagine
 
 #endif // SYSTEM_H

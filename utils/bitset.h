@@ -25,6 +25,9 @@
 #include <stdio.h>
 #include <string.h>
 
+namespace Imagine
+{
+
 class Bitset
 {
 public:
@@ -73,5 +76,7 @@ protected:
 
 	unsigned int				m_numChars;
 };
+
+} // namespace Imagine
 
 #endif // BITSET_H

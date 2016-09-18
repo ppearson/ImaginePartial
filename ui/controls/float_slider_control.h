@@ -21,6 +21,9 @@
 
 #include "control.h"
 
+namespace Imagine
+{
+
 class FloatSliderWidget;
 
 class FloatSliderControl : public Control
@@ -41,5 +44,7 @@ protected:
 
 	float				m_lastValue;
 };
+
+} // namespace Imagine
 
 #endif // FLOAT_SLIDER_CONTROL_H

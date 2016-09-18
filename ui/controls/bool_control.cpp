@@ -18,6 +18,9 @@
 
 #include "bool_control.h"
 
+namespace Imagine
+{
+
 BoolControl::BoolControl(const std::string& name, bool* pairedValue, std::string label) : Control(name, label)
 {
 	m_checkBox = new QCheckBox();
@@ -48,3 +51,5 @@ void BoolControl::refreshFromValue()
 {
 	m_checkBox->setChecked(*m_pairedValue);
 }
+
+} // namespace Imagine

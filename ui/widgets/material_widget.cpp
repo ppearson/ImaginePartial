@@ -29,6 +29,9 @@
 #include "ui/simple_parameters_panel.h"
 #include "ui/simple_panel_builder.h"
 
+namespace Imagine
+{
+
 MaterialWidget::MaterialWidget(Material** pPairedMaterial, QWidget* parent) : QWidget(parent), m_pParamsPanel(NULL)
 {
 	if (pPairedMaterial)
@@ -86,7 +89,18 @@ MaterialWidget::MaterialWidget(Material** pPairedMaterial, QWidget* parent) : QW
 		showMaterial(m_pMaterial);
 	}
 
+	if (m_pActualMaterial)
+	{
+		// block signals so we don't end up creating a new material on creation (so when switching materials)
+		m_pMaterialType->blockSignals(true);
+	}
+
 	m_pMaterialType->setCurrentIndex(currentlySelectedIndex);
+
+	if (m_pActualMaterial)
+	{
+		m_pMaterialType->blockSignals(false);
+	}
 }
 
 MaterialWidget::~MaterialWidget()
@@ -215,3 +229,5 @@ void MaterialWidget::materialTypeChanged(int index)
 
 	emit changed();
 }
+
+} // namespace Imagine

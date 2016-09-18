@@ -21,6 +21,9 @@
 
 #include "control.h"
 
+namespace Imagine
+{
+
 class DoubleSpinBoxEx;
 
 // TODO: templatise this with FloatControl<2>
@@ -64,5 +67,7 @@ protected:
 
 	float				m_delta;
 };
+
+} // namespace Imagine
 
 #endif // FLOAT_PAIR_CONTROL_H

@@ -23,6 +23,9 @@
 #include <cstdio>		// needed for NULL
 #include <stdint.h>		// needed for uintptr_t
 
+namespace Imagine
+{
+
 class Stream;
 
 enum CurveInterpolationType
@@ -166,5 +169,7 @@ protected:
 		uintptr_t			m_tag;
 	};
 };
+
+} // namespace Imagine
 
 #endif // ANIMATION_CURVE_H

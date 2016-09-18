@@ -21,6 +21,9 @@
 
 #include <QPushButton>
 
+namespace Imagine
+{
+
 class ScrubButton : public QPushButton
 {
 	Q_OBJECT
@@ -49,5 +52,7 @@ protected:
 
 	int				m_index;
 };
+
+} // namespace Imagine
 
 #endif // SCRUB_BUTTON_H

@@ -22,6 +22,9 @@
 #include <assert.h>
 #include <algorithm>
 
+namespace Imagine
+{
+
 void split(const std::string &str, std::vector<std::string> &tokens, const std::string &sep, int startPos)
 {
 	int lastPos = str.find_first_not_of(sep, startPos);
@@ -234,3 +237,5 @@ std::string formatTimePeriod(uint64_t time)
 
 	return formatTimePeriodSeconds(seconds);
 }
+
+} // namespace Imagine

@@ -26,6 +26,9 @@
 #include <QList>
 #include <QRect>
 
+namespace Imagine
+{
+
 class ColourButton;
 
 class ColourChooserPopup : public QWidget
@@ -57,5 +60,7 @@ protected:
 	std::vector<QColor>	m_aColours;
 	std::vector<QRect>	m_aBoxes;
 };
+
+} // namespace Imagine
 
 #endif // COLOUR_CHOOSER_POPUP_H

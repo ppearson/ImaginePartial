@@ -18,6 +18,9 @@
 
 #include "scene_builder_factory.h"
 
+namespace Imagine
+{
+
 bool SceneBuilderFactory::registerSceneBuilder(unsigned char id, std::string description, CreateSceneBuilderCallback createSceneBuilderCB)
 {
 	m_sceneBuilders.insert(SceneBuilderCallbacks::value_type(id, createSceneBuilderCB));
@@ -33,3 +36,5 @@ SceneBuilder* SceneBuilderFactory::createSceneBuilderForTypeID(unsigned char typ
 
 	return NULL;
 }
+
+} // namespace Imagine

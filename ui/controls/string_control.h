@@ -23,6 +23,9 @@
 
 #include <QLineEdit>
 
+namespace Imagine
+{
+
 class StringControl : public Control
 {
 public:
@@ -40,5 +43,7 @@ protected:
 	QLineEdit*		m_lineEdit;
 	std::string*	m_pairedValue;
 };
+
+} // namespace Imagine
 
 #endif // STRING_CONTROL_H

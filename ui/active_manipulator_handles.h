@@ -22,6 +22,9 @@
 #include <map>
 #include <vector>
 
+namespace Imagine
+{
+
 class ManipulatorHandle;
 
 class ActiveManipulatorHandles
@@ -42,5 +45,7 @@ public:
 protected:
 	std::map<unsigned int, ManipulatorHandle*>	m_aManipulatorHandles;
 };
+
+} // namespace Imagine
 
 #endif // ACTIVE_MANIPULATOR_HANDLES_H

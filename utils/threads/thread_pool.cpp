@@ -22,6 +22,9 @@
 #include <string.h> // for memset
 #include <assert.h>
 
+namespace Imagine
+{
+
 Task::Task() : m_pThreadPool(NULL)
 {
 }
@@ -685,3 +688,5 @@ unsigned int ThreadPool::getNextTaskBundleInternal(TaskBundle* pBundle)
 		return 0;
 	}
 }
+
+} // namespace Imagine

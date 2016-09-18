@@ -30,6 +30,9 @@
 
 #include "io/image_writer.h"
 
+namespace Imagine
+{
+
 ImageWidget::ImageWidget(QWidget *parent) : QAbstractScrollArea(parent), m_pQImage(NULL), m_pRawImage(NULL), m_pDisplayImage(NULL),
 	m_zoomLevel(1.0f), m_gotDimensions(false), m_displayChannel(eRGB), m_gain(1.0f), m_haveNormalisedRawImage(false)
 {
@@ -510,3 +513,5 @@ void ImageWidget::saveImageDeep()
 {
 	saveImage(ImageWriter::DEEP, 0);
 }
+
+} // namespace Imagine

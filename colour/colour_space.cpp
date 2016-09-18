@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2012-2014 Peter Pearson.
+ Copyright 2012-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@
 #include "colour_space.h"
 
 #include "utils/maths/maths.h"
+
+namespace Imagine
+{
 
 bool ColourSpace::m_SRGBLutTableInit = false;
 bool ColourSpace::m_byteToFloatLutTableInit = false;
@@ -91,6 +94,75 @@ Colour3f ColourSpace::convertByteSRGBToLinearLUT(const Colour3b& colour)
 	return convertSRGBToLinearLUT(colour.r, colour.g, colour.b);
 }
 
+// based off: http://stackoverflow.com/questions/3018313/algorithm-to-convert-rgb-to-hsv-and-hsv-to-rgb-in-range-0-255-for-both
+Colour3f ColourSpace::convertByteHSVToLinearRGB(unsigned char H, unsigned char S, unsigned char V)
+{
+	if (S == 0)
+	{
+		// TODO:
+		return Colour3f(0.0f);
+	}
+
+	unsigned char p;
+	unsigned char q;
+	unsigned char t;
+
+	// do this at full int precision to prevent overflow...
+	unsigned int h = H;
+	unsigned int s = S;
+	unsigned int v = V;
+
+	unsigned char region = h / 43;
+	unsigned int remainder = (h - (region * 43)) * 6;
+
+	p = (v * (255 - s)) >> 8;
+	q = (v * (255 - ((s * remainder) >> 8))) >> 8;
+	t = (v * (255 - ((s * (255 - remainder)) >> 8))) >> 8;
+
+	Colour3b rgb;
+
+	switch (region)
+	{
+		case 0:
+			rgb.r = v;
+			rgb.g = t;
+			rgb.b = p;
+			break;
+		case 1:
+			rgb.r = q;
+			rgb.g = v;
+			rgb.b = p;
+			break;
+		case 2:
+			rgb.r = p;
+			rgb.g = v;
+			rgb.b = t;
+			break;
+		case 3:
+			rgb.r = p;
+			rgb.g = q;
+			rgb.b = v;
+			break;
+		case 4:
+			rgb.r = t;
+			rgb.g = p;
+			rgb.b = v;
+			break;
+		default:
+			rgb.r = v;
+			rgb.g = p;
+			rgb.b = q;
+			break;
+	}
+
+	return convertSRGBToLinearLUT(rgb.r, rgb.g, rgb.b);
+}
+
+Colour3f ColourSpace::convertLinearHSVToLinearRGB(float H, float S, float V)
+{
+	return Colour3f(0.0f);
+}
+
 void ColourSpace::initLUTs()
 {
 	if (!m_SRGBLutTableInit)
@@ -113,3 +185,5 @@ void ColourSpace::initLUTs()
 		}
 	}
 }
+
+} // namespace Imagine

@@ -27,6 +27,9 @@
 
 #include "ui/opengl_ex.h"
 
+namespace Imagine
+{
+
 void Position3DManipulatorHandle::draw()
 {
 	glDisable(GL_LIGHTING);
@@ -61,3 +64,5 @@ Point Position3DManipulatorHandle::getCentreOfPosition()
 {
 	return (Point)m_pairedValue;
 }
+
+} // namespace Imagine

@@ -29,6 +29,9 @@
 
 #include "settings.h"
 
+namespace Imagine
+{
+
 FileControl::FileControl(const std::string& name, std::string* pairedValue, std::string label, FileCategory category) : Control(name, label),
 	m_category(category)
 {
@@ -165,3 +168,5 @@ std::string FileControl::getValue()
 	return m_pLineEdit->text().toStdString();
 }
 
+
+} // namespace Imagine

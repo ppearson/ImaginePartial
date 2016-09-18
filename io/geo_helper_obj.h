@@ -26,6 +26,9 @@
 
 #include "io/geo_reader.h"
 
+namespace Imagine
+{
+
 class TriangleGeometryInstance;
 class StandardGeometryInstance;
 
@@ -62,5 +65,7 @@ public:
 
 	static void copyUVItemsToGeometry(std::vector<UV>& uvs, std::set<unsigned int>& vertexUVsRequired, StandardGeometryInstance* pGeoInstance);
 };
+
+} // namespace Imagine
 
 #endif // GEO_HELPER_OBJ_H

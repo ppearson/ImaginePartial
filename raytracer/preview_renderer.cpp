@@ -39,6 +39,9 @@
 #include "utils/params.h"
 #include "utils/time_counter.h"
 
+namespace Imagine
+{
+
 //! preview progressive renderer
 
 template <typename Integrator, typename Accumulator, typename TimeCounter>
@@ -198,3 +201,5 @@ template bool PreviewRenderer<PathVolume, Colour4fStandard, TimerCounter>::proce
 
 template bool PreviewRenderer<Path, Colour4fStandard, TimerCounterNull>::processTask(RenderTask* pRTask, unsigned int threadID);
 template bool PreviewRenderer<PathVolume, Colour4fStandard, TimerCounterNull>::processTask(RenderTask* pRTask, unsigned int threadID);
+
+} // namespace Imagine

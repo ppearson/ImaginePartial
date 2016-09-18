@@ -25,6 +25,9 @@
 
 #include "utils/threads/thread_pool.h"
 
+namespace Imagine
+{
+
 class GeometryInstanceGathered;
 class Vector;
 class Object;
@@ -106,8 +109,11 @@ protected:
 	ObjectType		m_objectType;
 	bool			m_drawAsBBox;
 	bool			m_addToGroup;
+	bool			m_useBakedInstances;
 	float			m_gap;
 	bool			m_parallelBuild;
 };
+
+} // namespace Imagine
 
 #endif // INSTANCE_SHAPE_BUILDER_H

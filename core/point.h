@@ -26,6 +26,9 @@
 
 #include "utils/io/stream.h"
 
+namespace Imagine
+{
+
 class Point
 {
 public:
@@ -293,5 +296,7 @@ public:
 	double z;
 };
 
+
+} // namespace Imagine
 
 #endif // POINT_H

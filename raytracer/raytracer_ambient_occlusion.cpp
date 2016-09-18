@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2015 Peter Pearson.
+ Copyright 2011-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 */
 
 #include "raytracer_ambient_occlusion.h"
+#include "render_thread_context.h"
+#include "raytracer.h"
 
 #include "core/ray.h"
 #include "core/normal.h"
@@ -28,13 +30,21 @@
 
 #include "scene_interface.h"
 
-RaytracerAmbientOcclusion::RaytracerAmbientOcclusion(const SceneInterface& scene) : m_scene(scene)
+namespace Imagine
+{
+
+RaytracerAmbientOcclusion::RaytracerAmbientOcclusion() : m_pScene(NULL), m_pRaytracer(NULL)
+{
+	m_distanceAttenuation = 0.25f;
+}
+
+RaytracerAmbientOcclusion::RaytracerAmbientOcclusion(const SceneInterface* scene, const Raytracer* rt) : m_pScene(scene), m_pRaytracer(rt)
 {
 	m_numSamples = 64;
 	m_distanceAttenuation = 0.25f;
 }
 
-float RaytracerAmbientOcclusion::getOcclusionAtPoint(const Point& point, const Normal& normal, RNG& rng)
+float RaytracerAmbientOcclusion::getOcclusionAtPoint(const HitResult& hitResult, RNG& rng)
 {
 	std::vector<Sample2D> aHemisphereSamples;
 	m_sampler.generate2DSamples(aHemisphereSamples, rng);
@@ -42,18 +52,20 @@ float RaytracerAmbientOcclusion::getOcclusionAtPoint(const Point& point, const N
 	unsigned int numObstructed = 0;
 	float fNumObstructed = 0.0f;
 
+	const float tMin = hitResult.intersectionError * m_pRaytracer->getRayEpsilon();
+
 	for (unsigned int i = 0; i < m_totalSamples; i++)
 	{
 		const Sample2D& sample = aHemisphereSamples[i];
 
-		const Normal sampleNormal = uniformSampleHemisphereN(sample.x, sample.y, normal);
+		const Normal sampleNormal = uniformSampleHemisphereN(sample.x, sample.y, hitResult.shaderNormal);
 
-		Ray occlusionRay(point, sampleNormal, RAY_ALL);
-		occlusionRay.tMin = 0.0001f;
+		Ray occlusionRay(hitResult.hitPoint, sampleNormal, RAY_ALL);
+		occlusionRay.tMin = tMin;
 		// Ray needs inverse direction for BBox testing
 		occlusionRay.calculateInverseDirection();
 
-		if (m_scene.doesOcclude(occlusionRay))
+		if (m_pScene->doesOcclude(occlusionRay))
 		{
 			numObstructed ++;
 
@@ -68,7 +80,7 @@ float RaytracerAmbientOcclusion::getOcclusionAtPoint(const Point& point, const N
 	return occVal;
 }
 
-float RaytracerAmbientOcclusion::getOcclusionAtPointExistingSamples(const Point& point, const Normal& normal,
+float RaytracerAmbientOcclusion::getOcclusionAtPointExistingSamples(const HitResult& hitResult,
 																	SampleBundle& samples, unsigned int sampleIndex) const
 {
 	unsigned int aoSampleIndexStart = sampleIndex * m_totalSamples;
@@ -78,18 +90,59 @@ float RaytracerAmbientOcclusion::getOcclusionAtPointExistingSamples(const Point&
 
 	unsigned int aoSampleIndex = aoSampleIndexStart;
 
+	const float tMin = hitResult.intersectionError * m_pRaytracer->getRayEpsilon();
+
 	for (unsigned int i = 0; i < m_totalSamples; i++)
 	{
 		const Sample2D& sample = samples.getDirectionSample(aoSampleIndex++);
 
-		const Normal sampleNormal = uniformSampleHemisphereN(sample.x, sample.y, normal);
+		const Normal sampleNormal = uniformSampleHemisphereN(sample.x, sample.y, hitResult.shaderNormal);
 
-		Ray occlusionRay(point, sampleNormal, RAY_ALL);
-		occlusionRay.tMin = 0.0001f;
+		Ray occlusionRay(hitResult.hitPoint, sampleNormal, RAY_ALL);
+		occlusionRay.tMin = tMin;
 		// Ray needs inverse direction for BBox testing
 		occlusionRay.calculateInverseDirection();
 
-		if (m_scene.doesOcclude(occlusionRay))
+		if (m_pScene->doesOcclude(occlusionRay))
+		{
+			numObstructed ++;
+
+			fNumObstructed += 1.0f;
+		}
+	}
+
+	if (numObstructed == 0)
+		return 0.0f;
+
+	float occVal = fNumObstructed * m_fInvTotalSamples;
+	return occVal;
+}
+
+float RaytracerAmbientOcclusion::getOcclusionAtPointStandAlone(const HitResult& hitResult, RNG& rng) const
+{
+	std::vector<Sample2D> aHemisphereSamples;
+	m_sampler.generate2DSamples(aHemisphereSamples, rng);
+
+	unsigned int numObstructed = 0;
+	float fNumObstructed = 0.0f;
+
+	const Raytracer* pRT = hitResult.getShadingContext()->getRenderThreadContext()->getRaytracer();
+	const SceneInterface* pSI = hitResult.getShadingContext()->getRenderThreadContext()->getSceneInterface();
+
+	const float tMin = hitResult.intersectionError * pRT->getRayEpsilon();
+
+	for (unsigned int i = 0; i < m_totalSamples; i++)
+	{
+		const Sample2D& sample = aHemisphereSamples[i];
+
+		const Normal sampleNormal = uniformSampleHemisphereN(sample.x, sample.y, hitResult.shaderNormal);
+
+		Ray occlusionRay(hitResult.hitPoint, sampleNormal, RAY_ALL);
+		occlusionRay.tMin = tMin;
+		// Ray needs inverse direction for BBox testing
+		occlusionRay.calculateInverseDirection();
+
+		if (pSI->doesOcclude(occlusionRay))
 		{
 			numObstructed ++;
 
@@ -114,3 +167,5 @@ void RaytracerAmbientOcclusion::setSampleCount(unsigned int samples)
 
 	m_sampler.generateCache(m_totalSamples);
 }
+
+} // namespace Imagine

@@ -22,11 +22,15 @@
 #include <fstream>
 
 #include "geometry/editable_geometry_instance.h"
+#include "geometry/standard_geometry_instance.h"
 
 #include "geometry/editable_geometry_operations.h"
 #include "object.h"
 #include "objects/compound_object.h"
 #include "objects/mesh.h"
+
+namespace Imagine
+{
 
 GeoWriterObj::GeoWriterObj()
 {
@@ -62,21 +66,39 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 	{
 		GeometryInstanceGathered* pGeoInstance = pObject->getGeometryInstance();
 
-		if (!pGeoInstance || pGeoInstance->getTypeID() != 1)
+		if (!pGeoInstance || (pGeoInstance->getTypeID() != 1 && pGeoInstance->getTypeID() != 3))
 			return false;
 
-		EditableGeometryInstance* pEditableGeoInstance = reinterpret_cast<EditableGeometryInstance*>(pGeoInstance);
-
-		writeUVs = writeUVs && pEditableGeoInstance->hasPerVertexUVs();
-
-		writeGeoInstancePoints(pEditableGeoInstance, fileStream, &overallTransform);
-
-		if (writeUVs)
+		if (pGeoInstance->getTypeID() == 1)
 		{
-			writeGeoInstanceUVs(pEditableGeoInstance, fileStream);
-		}
+			EditableGeometryInstance* pEditableGeoInstance = reinterpret_cast<EditableGeometryInstance*>(pGeoInstance);
 
-		writeGeoInstanceFaces(pEditableGeoInstance, fileStream, 0, 0, writeUVs);
+			writeUVs = writeUVs && pEditableGeoInstance->hasPerVertexUVs();
+
+			writeGeoInstanceEditablePoints(pEditableGeoInstance, fileStream, &overallTransform);
+
+			if (writeUVs)
+			{
+				writeGeoInstanceEditableUVs(pEditableGeoInstance, fileStream);
+			}
+
+			writeGeoInstanceEditableFaces(pEditableGeoInstance, fileStream, 0, 0, writeUVs);
+		}
+		else if (pGeoInstance->getTypeID() == 3)
+		{
+			StandardGeometryInstance* pStandardGeoInstance = reinterpret_cast<StandardGeometryInstance*>(pGeoInstance);
+
+			writeUVs = writeUVs && pStandardGeoInstance->hasPerVertexUVs();
+
+			writeGeoInstanceStandardPoints(pStandardGeoInstance, fileStream, &overallTransform);
+
+			if (writeUVs)
+			{
+				writeGeoInstanceStandardUVs(pStandardGeoInstance, fileStream);
+			}
+
+			writeGeoInstanceStandardFaces(pStandardGeoInstance, fileStream, 0, 0, writeUVs);
+		}
 	}
 	else
 	{
@@ -93,7 +115,7 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 
 				Matrix4 subObjectTransform;
 				subObjectTransform.translate(pSubObject->getPosition());
-				subObjectTransform.rotate(pSubObject->getRotation());
+				subObjectTransform.rotate(pSubObject->getRotation().x, pSubObject->getRotation().y, pSubObject->getRotation().z, Matrix4::eYXZ);
 				float scale = pSubObject->getUniformScale();
 				subObjectTransform.scale(scale, scale, scale);
 
@@ -102,30 +124,57 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 
 				GeometryInstanceGathered* pGeoInstance = pSubObject->getGeometryInstance();
 
-				if (!pGeoInstance || pGeoInstance->getTypeID() != 1)
+				if (!pGeoInstance || (pGeoInstance->getTypeID() != 1 && pGeoInstance->getTypeID() != 3))
 					continue;
 
-				EditableGeometryInstance* pEditableGeoInstance = reinterpret_cast<EditableGeometryInstance*>(pGeoInstance);
-
-				fileStream << "\n# Object\n" << "g OBJECT\n";
-
-				unsigned int pointsWritten = writeGeoInstancePoints(pEditableGeoInstance, fileStream, &combinedSubObjectTransform);
-
-				if (writeUVs && pEditableGeoInstance->hasPerVertexUVs())
+				if (pGeoInstance->getTypeID() == 1)
 				{
-					unsigned int uvsWritten = writeGeoInstanceUVs(pEditableGeoInstance, fileStream);
+					EditableGeometryInstance* pEditableGeoInstance = reinterpret_cast<EditableGeometryInstance*>(pGeoInstance);
 
-					writeGeoInstanceFaces(pEditableGeoInstance, fileStream, pointOffsetCount, uvsOffsetCount, true);
+					fileStream << "\n# Object\n" << "g OBJECT\n";
 
-					uvsOffsetCount += uvsWritten;
+					unsigned int pointsWritten = writeGeoInstanceEditablePoints(pEditableGeoInstance, fileStream, &combinedSubObjectTransform);
+
+					if (writeUVs && pEditableGeoInstance->hasPerVertexUVs())
+					{
+						unsigned int uvsWritten = writeGeoInstanceEditableUVs(pEditableGeoInstance, fileStream);
+
+						writeGeoInstanceEditableFaces(pEditableGeoInstance, fileStream, pointOffsetCount, uvsOffsetCount, true);
+
+						uvsOffsetCount += uvsWritten;
+					}
+					else
+					{
+						// don't write UVs
+						writeGeoInstanceEditableFaces(pEditableGeoInstance, fileStream, pointOffsetCount, 0, false);
+					}
+
+					pointOffsetCount += pointsWritten;
 				}
 				else
 				{
-					// don't write UVs
-					writeGeoInstanceFaces(pEditableGeoInstance, fileStream, pointOffsetCount, 0, false);
-				}
+					StandardGeometryInstance* pStandardGeoInstance = reinterpret_cast<StandardGeometryInstance*>(pGeoInstance);
 
-				pointOffsetCount += pointsWritten;
+					fileStream << "\n# Object\n" << "g OBJECT\n";
+
+					unsigned int pointsWritten = writeGeoInstanceStandardPoints(pStandardGeoInstance, fileStream, &combinedSubObjectTransform);
+
+					if (writeUVs && pStandardGeoInstance->hasPerVertexUVs())
+					{
+						unsigned int uvsWritten = writeGeoInstanceStandardUVs(pStandardGeoInstance, fileStream);
+
+						writeGeoInstanceStandardFaces(pStandardGeoInstance, fileStream, pointOffsetCount, uvsOffsetCount, true);
+
+						uvsOffsetCount += uvsWritten;
+					}
+					else
+					{
+						// don't write UVs
+						writeGeoInstanceStandardFaces(pStandardGeoInstance, fileStream, pointOffsetCount, 0, false);
+					}
+
+					pointOffsetCount += pointsWritten;
+				}
 			}
 		}
 		else // otherwise, combine them all together into one object
@@ -143,7 +192,7 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 
 				Matrix4 subObjectTransform;
 				subObjectTransform.translate(pSubObject->getPosition());
-				subObjectTransform.rotate(pSubObject->getRotation());
+				subObjectTransform.rotate(pSubObject->getRotation().x, pSubObject->getRotation().y, pSubObject->getRotation().z, Matrix4::eYXZ);
 				float scale = pSubObject->getUniformScale();
 				subObjectTransform.scale(scale, scale, scale);
 
@@ -152,25 +201,25 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 
 				GeometryInstanceGathered* pGeoInstance = pSubObject->getGeometryInstance();
 
-				if (!pGeoInstance || pGeoInstance->getTypeID() != 1)
+				if (!pGeoInstance || (pGeoInstance->getTypeID() != 1 && pGeoInstance->getTypeID() != 3))
 					continue;
 
 				EditableGeometryInstance* pEditableGeoInstance = reinterpret_cast<EditableGeometryInstance*>(pGeoInstance);
 
-				unsigned int pointsWritten = writeGeoInstancePoints(pEditableGeoInstance, fileStream, &combinedSubObjectTransform);
+				unsigned int pointsWritten = writeGeoInstanceEditablePoints(pEditableGeoInstance, fileStream, &combinedSubObjectTransform);
 
 				if (writeUVs && pEditableGeoInstance->hasPerVertexUVs())
 				{
-					unsigned int uvsWritten = writeGeoInstanceUVs(pEditableGeoInstance, fileStream);
+					unsigned int uvsWritten = writeGeoInstanceEditableUVs(pEditableGeoInstance, fileStream);
 
-					writeGeoInstanceFaces(pEditableGeoInstance, fileStream, pointOffsetCount, uvsOffsetCount, true);
+					writeGeoInstanceEditableFaces(pEditableGeoInstance, fileStream, pointOffsetCount, uvsOffsetCount, true);
 
 					uvsOffsetCount += uvsWritten;
 				}
 				else
 				{
 					// don't write UVs
-					writeGeoInstanceFaces(pEditableGeoInstance, fileStream, pointOffsetCount, 0, false);
+					writeGeoInstanceEditableFaces(pEditableGeoInstance, fileStream, pointOffsetCount, 0, false);
 				}
 
 				pointOffsetCount += pointsWritten;
@@ -183,7 +232,7 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 	return true;
 }
 
-unsigned int GeoWriterObj::writeGeoInstancePoints(EditableGeometryInstance* pGeoInstance, std::fstream& stream, Matrix4* pMatrix)
+unsigned int GeoWriterObj::writeGeoInstanceEditablePoints(EditableGeometryInstance* pGeoInstance, std::fstream& stream, Matrix4* pMatrix)
 {
 	// write out the points
 	stream << "# Points\n";
@@ -219,7 +268,7 @@ unsigned int GeoWriterObj::writeGeoInstancePoints(EditableGeometryInstance* pGeo
 	return pointsWritten;
 }
 
-unsigned int GeoWriterObj::writeGeoInstanceUVs(EditableGeometryInstance* pGeoInstance, std::fstream& stream)
+unsigned int GeoWriterObj::writeGeoInstanceEditableUVs(EditableGeometryInstance* pGeoInstance, std::fstream& stream)
 {
 	// write out the UVs
 	stream << "# UVs\n";
@@ -241,7 +290,7 @@ unsigned int GeoWriterObj::writeGeoInstanceUVs(EditableGeometryInstance* pGeoIns
 	return uvsWritten;
 }
 
-void GeoWriterObj::writeGeoInstanceFaces(EditableGeometryInstance* pGeoInstance, std::fstream& stream, unsigned int pointOffset,
+void GeoWriterObj::writeGeoInstanceEditableFaces(EditableGeometryInstance* pGeoInstance, std::fstream& stream, unsigned int pointOffset,
 										 unsigned int uvOffset, bool writeUVs)
 {
 	stream << "\n\n# Faces\n";
@@ -291,12 +340,110 @@ void GeoWriterObj::writeGeoInstanceFaces(EditableGeometryInstance* pGeoInstance,
 	}
 }
 
-namespace
+unsigned int GeoWriterObj::writeGeoInstanceStandardPoints(StandardGeometryInstance* pGeoInstance, std::fstream& stream, Matrix4* pMatrix)
 {
-	GeoWriter* createGeoWriterObj()
+	// write out the points
+	stream << "# Points\n";
+
+	std::vector<Point>& points = pGeoInstance->getPoints();
+	std::vector<Point>::const_iterator it = points.begin();
+
+	unsigned int pointsWritten = 0;
+
+	if (pMatrix)
 	{
-		return new GeoWriterObj();
+		for (; it != points.end(); ++it)
+		{
+			Point point = pMatrix->transform(*it);
+
+			stream << std::setprecision(6) << "v " << point.x << " " << point.y << " " << point.z << "\n";
+
+			pointsWritten++;
+		}
+	}
+	else
+	{
+		for (; it != points.end(); ++it)
+		{
+			const Point& point = *it;
+
+			stream << std::setprecision(6) << "v " << point.x << " " << point.y << " " << point.z << "\n";
+
+			pointsWritten++;
+		}
 	}
 
-	const bool registered = FileIORegistry::instance().registerGeoWriter("obj", createGeoWriterObj);
+	return pointsWritten;
+}
+
+unsigned int GeoWriterObj::writeGeoInstanceStandardUVs(StandardGeometryInstance* pGeoInstance, std::fstream& stream)
+{
+	// write out the UVs
+	stream << "# UVs\n";
+
+	std::vector<UV>& uvs = pGeoInstance->getUVs();
+	std::vector<UV>::const_iterator it = uvs.begin();
+
+	unsigned int uvsWritten = 0;
+
+	for (; it != uvs.end(); ++it)
+	{
+		const UV& uv = *it;
+
+		stream << std::setprecision(6) << "vt " << uv.u << " " << uv.v << "\n";
+
+		uvsWritten++;
+	}
+
+	return uvsWritten;
+}
+
+void GeoWriterObj::writeGeoInstanceStandardFaces(StandardGeometryInstance* pGeoInstance, std::fstream& stream, unsigned int pointOffset,
+										 unsigned int uvOffset, bool writeUVs)
+{
+	stream << "\n\n# Faces\n";
+
+	if (!writeUVs)
+	{
+		const std::vector<uint32_t>& aPolyOffsets = pGeoInstance->getPolygonOffsets();
+		const std::vector<uint32_t>& aPolyIndices = pGeoInstance->getPolygonIndices();
+
+		unsigned int lastOffset = 0;
+
+		std::vector<uint32_t>::const_iterator itPolyOffset = aPolyOffsets.begin();
+		for (; itPolyOffset != aPolyOffsets.end(); ++itPolyOffset)
+		{
+			const uint32_t& offset = *itPolyOffset;
+
+			unsigned int numVertices = offset - lastOffset;
+
+			stream << "f";
+			for (unsigned int i = lastOffset; i < offset; i++)
+			{
+				unsigned int vertexIndex = aPolyIndices[i];
+
+				stream << " " << vertexIndex + 1 + pointOffset;
+			}
+
+			stream << "\n";
+
+			lastOffset += numVertices;
+		}
+	}
+	else
+	{
+
+	}
+}
+
+} // namespace Imagine
+
+namespace
+{
+	Imagine::GeoWriter* createGeoWriterObj()
+	{
+		return new Imagine::GeoWriterObj();
+	}
+
+	const bool registered = Imagine::FileIORegistry::instance().registerGeoWriter("obj", createGeoWriterObj);
 }

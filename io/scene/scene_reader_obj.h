@@ -25,6 +25,9 @@
 
 #include "io/geo_reader.h"
 
+namespace Imagine
+{
+
 class SceneReaderObj : public SceneReader
 {
 public:
@@ -32,5 +35,7 @@ public:
 
 	virtual bool readFile(const std::string& path, const SceneReaderOptions& options, SceneReaderResults& results);
 };
+
+} // namespace Imagine
 
 #endif // SCENE_READER_OBJ_H

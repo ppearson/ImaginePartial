@@ -21,6 +21,9 @@
 
 #include "io/image_writer.h"
 
+namespace Imagine
+{
+
 class ImageWriterEXR : public ImageWriter
 {
 public:
@@ -33,5 +36,7 @@ public:
 
 	bool writeDeepImage(const std::string& filePath, const OutputImage& image, unsigned int channels);
 };
+
+} // namespace Imagine
 
 #endif // IMAGE_WRITER_EXR_H

@@ -25,8 +25,13 @@
 
 #include "core/hash.h"
 
+#include "geometry/standard_geometry_instance.h"
+
 #include "utils/maths/fixed.h"
 #include "utils/maths/fixed.cpp"
+
+namespace Imagine
+{
 
 GeoReader::GeoReader() : m_newObject(NULL), m_pScene(NULL)
 {
@@ -218,32 +223,49 @@ void GeoReader::applyMatrixToMesh(Matrix4& matrix, Mesh* pMesh, bool recalculate
 {
 	GeometryInstanceGathered* pGeoInstance = pMesh->getGeometryInstance();
 
-	if (!pGeoInstance || pGeoInstance->getTypeID() != 1)
+	if (!pGeoInstance)
 		return;
 
-	EditableGeometryInstance* pEditableGeoInstance = reinterpret_cast<EditableGeometryInstance*>(pGeoInstance);
-
-	std::deque<Point>& aPoints = pEditableGeoInstance->getPoints();
-	std::deque<Face>& aFaces = pEditableGeoInstance->getFaces();
-
-	std::deque<Point>::iterator it = aPoints.begin();
-	std::deque<Point>::iterator itEnd = aPoints.end();
-
-	for (; it != itEnd; ++it)
+	if (pGeoInstance->getTypeID() == 1)
 	{
-		Point& point = *it;
-		point = matrix.transform(point);
+		EditableGeometryInstance* pEditableGeoInstance = reinterpret_cast<EditableGeometryInstance*>(pGeoInstance);
+
+		std::deque<Point>& aPoints = pEditableGeoInstance->getPoints();
+		std::deque<Face>& aFaces = pEditableGeoInstance->getFaces();
+
+		std::deque<Point>::iterator it = aPoints.begin();
+		std::deque<Point>::iterator itEnd = aPoints.end();
+
+		for (; it != itEnd; ++it)
+		{
+			Point& point = *it;
+			point = matrix.transform(point);
+		}
+
+		if (!recalculateNormals)
+			return;
+
+		// recalculate the face normals due to the change
+		std::deque<Face>::iterator itFace = aFaces.begin();
+		for (; itFace != aFaces.end(); ++itFace)
+		{
+			Face& face = *itFace;
+			face.calculateNormal(pEditableGeoInstance);
+		}
 	}
-
-	if (!recalculateNormals)
-		return;
-
-	// recalculate the face normals due to the change
-	std::deque<Face>::iterator itFace = aFaces.begin();
-	for (; itFace != aFaces.end(); ++itFace)
+	else if (pGeoInstance->getTypeID() == 3)
 	{
-		Face& face = *itFace;
-		face.calculateNormal(pEditableGeoInstance);
+		StandardGeometryInstance* pStandardGeoInstance = reinterpret_cast<StandardGeometryInstance*>(pGeoInstance);
+
+		std::vector<Point>& aPoints = pStandardGeoInstance->getPoints();
+
+		std::vector<Point>::iterator itPoint = aPoints.begin();
+		for (; itPoint != aPoints.end(); ++itPoint)
+		{
+			Point& point = *itPoint;
+
+			point = matrix.transform(point);
+		}
 	}
 }
 
@@ -294,3 +316,5 @@ std::deque<UV>& GeoReader::getSubObjectVertexUVs(Mesh* subObject)
 	EditableGeometryInstance* pEditableGeoInstance = reinterpret_cast<EditableGeometryInstance*>(subObject->getGeometryInstance());
 	return pEditableGeoInstance->getUVs();
 }
+
+} // namespace Imagine

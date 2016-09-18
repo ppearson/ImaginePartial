@@ -26,6 +26,9 @@
 #include "mutex.h"
 #include "event.h"
 
+namespace Imagine
+{
+
 #define MAX_THREADS 128
 #define TASK_BUNDLE_SIZE 4
 
@@ -198,5 +201,7 @@ protected:
 	float				m_fOriginalNumberOfTasks;
 	float				m_invOriginalNumTasks;
 };
+
+} // namespace Imagine
 
 #endif
