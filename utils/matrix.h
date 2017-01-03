@@ -69,7 +69,7 @@ public:
 	{
 		if (m_pData)
 		{
-			// TODO: won't match when using operator new
+			// TODO: won't match when using operator new - used tagged pointer to tell?
 			delete [] m_pData;
 		}
 	}

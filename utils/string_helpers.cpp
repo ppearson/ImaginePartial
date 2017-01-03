@@ -25,7 +25,7 @@
 namespace Imagine
 {
 
-void split(const std::string &str, std::vector<std::string> &tokens, const std::string &sep, int startPos)
+void split(const std::string& str, std::vector<std::string>& tokens, const std::string& sep, int startPos)
 {
 	int lastPos = str.find_first_not_of(sep, startPos);
 	int pos = str.find_first_of(sep, lastPos);
@@ -117,8 +117,10 @@ void splitInTwo(const std::string& str, std::string& str1, std::string& str2, co
 bool stringCompare(const char* str1, const char* str2, unsigned int length, unsigned int startIndex)
 {
 	while (startIndex--)
+	{
 		if (*str1)
 			str1++;
+	}
 
 	while (length--)
 	{
@@ -236,6 +238,52 @@ std::string formatTimePeriod(uint64_t time)
 	double seconds = (double)time / 1000000.0;
 
 	return formatTimePeriodSeconds(seconds);
+}
+
+std::string tabulateColumnStrings(const std::vector<std::string>& column0, const std::vector<std::string>& column1)
+{
+	// the assumption here is the second column is numeric units, so should be right-aligned, such that it's easy
+	// to compare numbers
+
+	if (column0.size() != column1.size())
+		return "";
+
+	size_t maxLeftWidth = 0;
+
+	std::vector<std::string>::const_iterator itCol0 = column0.begin();
+	for (; itCol0 != column0.end(); ++itCol0)
+	{
+		const std::string& stringItem = *itCol0;
+		maxLeftWidth = std::max(stringItem.size(), maxLeftWidth);
+	}
+
+	size_t maxRightWidth = 0;
+	std::vector<std::string>::const_iterator itCol1 = column1.begin();
+	for (; itCol1 != column1.end(); ++itCol1)
+	{
+		const std::string& stringItem = *itCol1;
+		maxRightWidth = std::max(stringItem.size(), maxRightWidth);
+	}
+
+	size_t fullWidth = maxLeftWidth + maxRightWidth + 3;
+
+	std::string finalResult;
+
+	char szTemp[2048];
+
+	for (unsigned int i = 0; i < column0.size(); i++)
+	{
+		const std::string& leftItem = column0[i];
+		const std::string& rightItem = column1[i];
+
+		unsigned int paddingSize = (unsigned int)(fullWidth - leftItem.size() - rightItem.size());
+
+		sprintf(szTemp, "%s%*s %s\n", leftItem.c_str(), paddingSize, "", rightItem.c_str());
+
+		finalResult += szTemp;
+	}
+
+	return finalResult;
 }
 
 } // namespace Imagine

@@ -58,6 +58,8 @@ std::string formatNumberThousandsSeparator(size_t value);
 std::string formatTimePeriodSeconds(double seconds, bool keepAsSeconds = false);
 std::string formatTimePeriod(uint64_t time);
 
+std::string tabulateColumnStrings(const std::vector<std::string>& column0, const std::vector<std::string>& column1);
+
 
 } // namespace Imagine
 

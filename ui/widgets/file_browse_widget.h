@@ -34,8 +34,8 @@ class FileBrowseWidget : public QWidget
 	Q_OBJECT
 public:
 	// TODO: this is crap...
-	FileBrowseWidget(const std::string& path, QWidget *parent = 0);
-	FileBrowseWidget(QString& path, QWidget *parent = 0);
+	FileBrowseWidget(const std::string& path, QWidget* parent = 0);
+	FileBrowseWidget(QString& path, QWidget* parent = 0);
 	virtual ~FileBrowseWidget();
 
 	void setPath(const std::string& path);

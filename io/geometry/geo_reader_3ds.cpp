@@ -588,28 +588,28 @@ void GeoReader3ds::copyVerticeIndexesToUVIndexes(Mesh* pMesh)
 float GeoReader3ds::readFloat(std::fstream& stream)
 {
 	float value;
-	stream.read((char *) &value, sizeof(float));
+	stream.read((char*)&value, sizeof(float));
 	return value;
 }
 
 unsigned short GeoReader3ds::readShort(std::fstream& stream)
 {
 	unsigned short value;
-	stream.read((char *) &value, sizeof(unsigned short));
+	stream.read((char*)&value, sizeof(unsigned short));
 	return value;
 }
 
 unsigned long GeoReader3ds::readLong(std::fstream& stream)
 {
 	uint32_t value;
-	stream.read((char *) &value, sizeof(uint32_t));
+	stream.read((char*)&value, sizeof(uint32_t));
 	return (unsigned long)value;
 }
 
 unsigned char GeoReader3ds::readChar(std::fstream& stream)
 {
 	unsigned char value;
-	stream.read((char *) &value, sizeof(unsigned char));
+	stream.read((char*)&value, sizeof(unsigned char));
 	return value;
 }
 

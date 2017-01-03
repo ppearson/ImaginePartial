@@ -27,16 +27,16 @@
 namespace Imagine
 {
 
-PushButtonEx::PushButtonEx(QWidget *parent) : QPushButton(parent)
+PushButtonEx::PushButtonEx(QWidget* parent) : QPushButton(parent)
 {
 }
 
-PushButtonEx::PushButtonEx(const QIcon& icon, const QString &text, QWidget *parent) : QPushButton(icon, text, parent)
+PushButtonEx::PushButtonEx(const QIcon& icon, const QString& text, QWidget* parent) : QPushButton(icon, text, parent)
 {
 
 }
 
-void PushButtonEx::mousePressEvent(QMouseEvent *e)
+void PushButtonEx::mousePressEvent(QMouseEvent* e)
 {
 	QStyleOptionButton style_option;
 	style_option.init(this);

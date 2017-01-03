@@ -46,27 +46,27 @@ enum RayType
 class Ray
 {
 public:
-	__finline Ray() : type(RAY_UNDEFINED), flags(0), importance(1.0f), width(0.0f), time(0.0f), tMin(0.0f),
-		tMax(std::numeric_limits<float>::max()), pCustPayload1(NULL), custValue1(0.0f)
+	__finline Ray() : type(RAY_UNDEFINED), flags(0), importance(1.0f), width(0.0f), time(0.0f), timeFull(0.0f),
+	    tMin(0.0f),	tMax(std::numeric_limits<float>::max()), pCustPayload1(NULL), custValue1(0.0f)
 	{
 	}
 
 	__finline Ray(const Point& startPos, const Normal& dir, const RayType& rayType)
 		: type(rayType), startPosition(startPos), direction(dir), flags(0), importance(1.0f), width(0.0f), time(0.0f),
-			tMin(0.0f), tMax(std::numeric_limits<float>::max()),
+			timeFull(0.0f), tMin(0.0f), tMax(std::numeric_limits<float>::max()),
 			pCustPayload1(NULL), custValue1(0.0f)
 	{
 	}
 
-	__finline Ray(const Point& startPos, const Normal& dir, float timet, const RayType& rayType)
-		: type(rayType), startPosition(startPos), direction(dir), flags(0), importance(1.0f), width(0.0f), time(timet),
+	__finline Ray(const Point& startPos, const Normal& dir, float timet, float timeFullt, const RayType& rayType)
+		: type(rayType), startPosition(startPos), direction(dir), flags(0), importance(1.0f), width(0.0f), time(timet), timeFull(timeFullt),
 			tMin(0.0f), tMax(std::numeric_limits<float>::max()), pCustPayload1(NULL), custValue1(0.0f)
 	{
 	}
 
 	__finline Ray(const Ray& ray) : type(ray.type), startPosition(ray.startPosition), direction(ray.direction), inverseDirection(ray.inverseDirection),
 			diffXStartPos(ray.diffXStartPos), diffYStartPos(ray.diffYStartPos), diffXDirection(ray.diffXDirection), diffYDirection(ray.diffYDirection),
-			flags(ray.flags), importance(ray.importance), width(ray.width), time(ray.time),
+			flags(ray.flags), importance(ray.importance), width(ray.width), time(ray.time), timeFull(ray.timeFull),
 			tMin(ray.tMin), tMax(ray.tMax), pCustPayload1(NULL), custValue1(0.0f)
 	{
 	}
@@ -133,7 +133,8 @@ public:
 	// basically a roughness, 0.0f - 1.0f - camera rays are 0.0f
 	float			width;
 
-	float			time;
+	float			time; // time normalised between 0.0f and 1.0f - so for 0.25 shutter open, this value is 0.0f on shutter open, 1.0f on shutter close
+	float			timeFull; // time not normalised between shutter open and shutter close, so 0.25f is shutter open - for use on raw time samples (triangles)
 
 	float			tMin;
 	float			tMax;

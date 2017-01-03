@@ -197,7 +197,7 @@ bool Socket::send(const std::string& data) const
 	return true;
 }
 
-int Socket::recv(std::string &data) const
+int Socket::recv(std::string& data) const
 {
 	if (!isValid())
 		return -1;

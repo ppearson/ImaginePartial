@@ -94,7 +94,7 @@ std::string FileHelpers::getFileExtension(const std::string& path)
 	size_t dotPos = path.find_last_of('.');
 	extension = path.substr(dotPos + 1);
 
-	std::transform(extension.begin(), extension.end(),	extension.begin(), tolower);
+	std::transform(extension.begin(), extension.end(), extension.begin(), tolower);
 
 	return extension;
 }

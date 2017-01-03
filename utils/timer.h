@@ -29,7 +29,7 @@ namespace Imagine
 class Timer
 {
 public:
-	Timer(const std::string &name, bool enabled = true) : m_enabled(enabled), m_name(name)
+	Timer(const std::string& name, bool enabled = true) : m_enabled(enabled), m_name(name)
 	{
 		if (enabled)
 			gettimeofday(&m_startTime, NULL);

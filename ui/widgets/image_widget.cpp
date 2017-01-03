@@ -33,7 +33,7 @@
 namespace Imagine
 {
 
-ImageWidget::ImageWidget(QWidget *parent) : QAbstractScrollArea(parent), m_pQImage(NULL), m_pRawImage(NULL), m_pDisplayImage(NULL),
+ImageWidget::ImageWidget(QWidget* parent) : QAbstractScrollArea(parent), m_pQImage(NULL), m_pRawImage(NULL), m_pDisplayImage(NULL),
 	m_zoomLevel(1.0f), m_gotDimensions(false), m_displayChannel(eRGB), m_gain(1.0f), m_haveNormalisedRawImage(false)
 {
 	adjustScrollbars();
@@ -255,12 +255,12 @@ void ImageWidget::contextMenuEvent(QContextMenuEvent* event)
 	m->addAction(m_saveFullFloatEvent);
 	m->addSeparator();
 
-	if (m_pRawImage->components() & COMPONENT_DEEP)
+	if (m_pRawImage->getComponents() & COMPONENT_DEEP)
 	{
 		m->addAction(m_saveDeepEvent);
 	}
-	else if (m_pRawImage->components() & COMPONENT_NORMAL || m_pRawImage->components() & COMPONENT_WPP ||
-			 m_pRawImage->components() & COMPONENT_DEPTH || m_pRawImage->components() & COMPONENT_SHADOWS)
+	else if (m_pRawImage->getComponents() & COMPONENT_NORMAL || m_pRawImage->getComponents() & COMPONENT_WPP ||
+			 m_pRawImage->getComponents() & COMPONENT_DEPTH || m_pRawImage->getComponents() & COMPONENT_SHADOWS)
 	{
 		m->addAction(m_saveNormalsEvent);
 		m->addAction(m_saveNormalsFullFloatEvent);

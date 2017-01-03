@@ -89,9 +89,9 @@ void Handle::initAxisHandleObjects()
 	Handle::pObjectYTranslateHandleHead = new Cone(0.2f, 0.07f, 8);
 	Handle::pObjectZTranslateHandleHead = new Cone(0.2f, 0.07f, 8);
 
-	Cylinder *pX = Handle::pObjectXTranslateHandleLine;
-	Cylinder *pY = Handle::pObjectYTranslateHandleLine;
-	Cylinder *pZ = Handle::pObjectZTranslateHandleLine;
+	Cylinder* pX = Handle::pObjectXTranslateHandleLine;
+	Cylinder* pY = Handle::pObjectYTranslateHandleLine;
+	Cylinder* pZ = Handle::pObjectZTranslateHandleLine;
 
 	pX->setObjectID(eXTranslate);
 	pX->setPosition(Point(0.6f, 0.0f, 0.0f));

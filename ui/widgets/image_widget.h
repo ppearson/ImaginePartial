@@ -37,7 +37,7 @@ class ImageWidget : public QAbstractScrollArea
 {
 	Q_OBJECT
 public:
-	ImageWidget(QWidget *parent = 0);
+	ImageWidget(QWidget* parent = 0);
 	virtual ~ImageWidget();
 
 	enum DisplayChannel

@@ -55,7 +55,7 @@ class BackgroundWorkerThread : public QThread
 {
 	Q_OBJECT
 public:
-	BackgroundWorkerThread(QObject *parent = 0);
+	BackgroundWorkerThread(QObject* parent = 0);
 	virtual ~BackgroundWorkerThread();
 
 	void performTask(BackgroundWorkerTask* pTask);

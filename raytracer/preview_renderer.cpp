@@ -25,7 +25,7 @@
 
 #include "raytracer/camera_ray_creators/camera_ray_creator.h"
 
-#include "sampling/sample_generator.h"
+#include "sampling/sample_generator_stratified.h"
 
 #include "raytracer/integrators/path.h"
 #include "raytracer/integrators/path_volume.h"
@@ -64,9 +64,9 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 	RenderThreadContext* pRenderThreadCtx = this->getRenderThreadContext(threadID);
 	ShadingContext shadingContext(pRenderThreadCtx);
 
-	SampleGenerator sampleGenerator(rng);
+	SampleGeneratorStratified sampleGenerator(rng);
 	SampleGenerator::SampleGeneratorRequirements sgReq(1, this->m_numLights, this->getBounceLimitOverall());
-	sgReq.flags = SampleGenerator::GENERATE_DIRECTION_SAMPLES;
+	sgReq.flags = SampleGenerator::GENERATE_DIRECTION_SAMPLES | SampleGenerator::GENERATE_SURFACE_SAMPLES;
 	if (this->hasDepthOfField())
 	{
 		sgReq.flags |= SampleGenerator::GENERATE_LENS_SAMPLES;
@@ -97,7 +97,10 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 			for (unsigned int x = 0; x < tileWidth; x++)
 			{
 				if (!pRTask->isActive())
+				{
+					pRTask->setDiscard(true);
 					return true;
+				}
 
 				colour = Colour4f();
 
@@ -109,7 +112,7 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 					continue;
 
 				SampleBundle samples(fPixelXPos, fPixelYPos);
-				sampleGenerator.generateSampleBundleStratified(samples);
+				sampleGenerator.generateSampleBundle(samples);
 
 				colour += this->m_integrator.processRay(*pRenderThreadCtx, shadingContext, viewRay, draftIntegratorState, samples, 0);
 
@@ -140,6 +143,13 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 		}
 	}
 
+	// do extra channels that can't be anti-aliased or averaged
+	if (!pRTask->extraChannelsDone())
+	{
+		this->m_raytracer.processExtraChannels(pRTask, threadID);
+		pRTask->setExtraChannelsDone(true);
+	}
+
 	sgReq.samplesPerPixel = this->m_globalIlluminationSamplesPerIteration;
 	sampleGenerator.configureSampler(sgReq, this->m_pLights, this->getLightSampleCount());
 
@@ -153,14 +163,17 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 		for (unsigned int x = 0; x < tileWidth; x++)
 		{
 			if (!pRTask->isActive())
+			{
+				pRTask->setDiscard(true);
 				return true;
+			}
 
 			colour = Colour4f();
 
 			float fPixelXPos = (float)x + startX;
 
 			SampleBundle samples(fPixelXPos, fPixelYPos);
-			sampleGenerator.generateSampleBundleStratified(samples);
+			sampleGenerator.generateSampleBundle(samples);
 
 			for (unsigned int sample = 0; sample < this->m_globalIlluminationSamplesPerIteration; sample++)
 			{

@@ -32,10 +32,10 @@ class PushButtonEx : public QPushButton
 {
 	Q_OBJECT
 public:
-	explicit PushButtonEx(QWidget *parent = 0);
-	explicit PushButtonEx(const QIcon& icon, const QString &text, QWidget *parent = 0);
+	explicit PushButtonEx(QWidget* parent = 0);
+	explicit PushButtonEx(const QIcon& icon, const QString& text, QWidget* parent = 0);
 
-	virtual void mousePressEvent(QMouseEvent *e);
+	virtual void mousePressEvent(QMouseEvent* e);
 
 signals:
 

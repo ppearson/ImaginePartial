@@ -59,7 +59,7 @@ ColourButton::~ColourButton()
 	}
 }
 
-void ColourButton::paintEvent(QPaintEvent *event)
+void ColourButton::paintEvent(QPaintEvent* event)
 {
 	QPushButton::paintEvent(event);
 

@@ -33,7 +33,7 @@ public:
 	DoubleSpinBoxEx(QWidget* parent, int precision = 4);
 
 	virtual void stepBy(int steps);
-	virtual void wheelEvent(QWheelEvent *event);
+	virtual void wheelEvent(QWheelEvent* event);
 
 	virtual QString textFromValue(double val) const;
 

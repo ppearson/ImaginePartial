@@ -113,12 +113,14 @@ public:
 
 	inline Vector operator*(float scale) const
 	{
-		return Vector(scale * x, scale * y, scale * z);
+		return Vector(x * scale, y * scale, z * scale);
 	}
 
 	inline Vector &operator*=(float scale)
 	{
-		x *= scale; y *= scale; z *= scale;
+		x *= scale;
+		y *= scale;
+		z *= scale;
 		return *this;
 	}
 

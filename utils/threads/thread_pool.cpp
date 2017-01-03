@@ -66,6 +66,40 @@ ThreadController::ThreadController(unsigned int threads) : m_numberOfThreads(thr
 	}
 }
 
+void ThreadPool::terminate()
+{
+	if (!m_isActive)
+	{
+		return;
+	}
+
+	m_wasCancelled = true;
+	m_isActive = false;
+
+	for (unsigned int i = 0; i < m_numberOfThreads; i++)
+	{
+		if (m_controller.isActive(i))
+		{
+			Thread* pThread = m_pThreads[i];
+			pThread->stop(false);
+		}
+	}
+
+	// as Thread::waitForCompletion()'s pthread_join() doesn't seem to work properly when
+	// there's already something joining on it, just delete all the tasks and wait for the threads
+	// to kill themselves
+	m_lock.lock();
+
+	std::deque<Task*>::iterator it = m_aTasks.begin();
+	for (; it != m_aTasks.end(); ++it)
+	{
+		delete *it;
+	}
+
+	m_aTasks.clear();
+	m_lock.unlock();
+}
+
 bool ThreadController::isActive(unsigned int thread)
 {
 	m_lock.lock();
@@ -510,6 +544,104 @@ void ThreadPool::startPoolAndWaitForCompletion()
 	m_isActive = false;
 }
 
+void ThreadPool::startPool()
+{
+	deleteThreads();
+
+	int threadID = -1;
+
+	m_originalNumberOfTasks = m_aTasks.size();
+	m_fOriginalNumberOfTasks = (float)m_originalNumberOfTasks;
+	m_invOriginalNumTasks = 1.0f / m_fOriginalNumberOfTasks;
+
+	// don't bother creating more threads than there are tasks if that is the case...
+	unsigned int threadsToStart = std::min(m_originalNumberOfTasks, m_numberOfThreads);
+
+	unsigned int threadsCreated = 0;
+	unsigned int threadsStarted = 0;
+
+	m_wasCancelled = false;
+	m_isActive = true;
+
+	// TODO: there is a mis-match here between the thread objects created along with
+	//       the tasks popped for them, and the actual number of threads that were started
+
+	// initialise all potential threads to NULL
+	memset(m_pThreads, 0, sizeof(ThreadPoolThread*) * MAX_THREADS);
+
+	m_lock.lock();
+
+	bool shouldCreateBundleThreads = m_useBundles && (m_originalNumberOfTasks > m_numberOfThreads * 2);
+
+	Thread::ThreadPriority newThreadPriority = Thread::ePriorityNormal;
+
+	if (m_lowPriorityThreads)
+	{
+		newThreadPriority = Thread::ePriorityLow;
+	}
+
+	for (unsigned int j = 0; j < threadsToStart; j++)
+	{
+		threadID = m_controller.getThreadNoLock();
+
+		if (threadID != -1)
+		{
+			if (!m_aTasks.empty())
+			{
+				ThreadPoolThread* pThread = new ThreadPoolThread(this, threadID, newThreadPriority);
+				if (pThread)
+				{
+					if (shouldCreateBundleThreads)
+					{
+						TaskBundle* pTB = pThread->createTaskBundle();
+						unsigned int numTasks = getNextTaskBundleInternal(pTB);
+						pThread->setTaskBundleSize(numTasks);
+					}
+					else
+					{
+						Task* pTask = getNextTaskInternal();
+						pThread->setTask(pTask);
+					}
+
+					m_pThreads[threadID] = pThread;
+
+					if (m_setAffinity)
+					{
+						pThread->setAffinity(j);
+					}
+
+					threadsCreated ++;
+				}
+			}
+		}
+		else
+		{
+			// something weird happened
+
+			Thread::sleep(1);
+		}
+	}
+
+	m_lock.unlock();
+
+	// start them - this is best done in its own loop
+	for (unsigned int i = 0; i < threadsCreated; i++)
+	{
+		if (m_pThreads[i])
+		{
+			if (m_pThreads[i]->start())
+			{
+				threadsStarted++;
+			}
+			else
+			{
+				// indicate that it's not actually active
+				m_controller.freeThread(i);
+			}
+		}
+	}
+}
+
 void ThreadPool::addRequeuedTasks(RequeuedTasks& rqt)
 {
 	if (rqt.m_pTasks.empty())
@@ -554,55 +686,6 @@ void ThreadPool::deleteThreadsAndRequeuedTasks()
 	}
 }
 
-void ThreadPool::terminate()
-{
-	if (!m_isActive)
-	{
-		return;
-	}
-
-	m_wasCancelled = true;
-	m_isActive = false;
-
-	for (unsigned int i = 0; i < m_numberOfThreads; i++)
-	{
-		if (m_controller.isActive(i))
-		{
-			Thread* pThread = m_pThreads[i];
-			pThread->stop(false);
-		}
-	}
-
-	// as Thread::waitForCompletion()'s pthread_join() doesn't seem to work properly when
-	// there's already something joining on it, just delete all the tasks and wait for the threads
-	// to kill themselves
-	m_lock.lock();
-
-	std::deque<Task*>::iterator it = m_aTasks.begin();
-	for (; it != m_aTasks.end(); ++it)
-	{
-		delete *it;
-	}
-
-	m_aTasks.clear();
-	m_lock.unlock();
-}
-
-bool ThreadPool::isActive() const
-{
-	return m_isActive;
-}
-
-bool ThreadPool::wasCancelled() const
-{
-	return m_wasCancelled;
-}
-
-void ThreadPool::freeThread(unsigned int threadID)
-{
-	m_controller.freeThread(threadID);
-}
-
 void ThreadPool::deleteTask(Task* pTask, bool lockAndRemoveFromQueue)
 {
 	if (lockAndRemoveFromQueue)
@@ -623,6 +706,28 @@ void ThreadPool::deleteTask(Task* pTask, bool lockAndRemoveFromQueue)
 
 	delete pTask;
 }
+
+bool ThreadPool::isActive() const
+{
+	return m_isActive;
+}
+
+bool ThreadPool::wasCancelled() const
+{
+	return m_wasCancelled;
+}
+
+void ThreadPool::freeThread(unsigned int threadID)
+{
+	m_controller.freeThread(threadID);
+}
+
+void ThreadPool::clearTasks()
+{
+	
+}
+
+
 
 // assumes mutex is already held...
 Task* ThreadPool::getNextTaskInternal()

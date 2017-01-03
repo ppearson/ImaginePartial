@@ -31,7 +31,7 @@
 #include "lights/physical_sky.h"
 
 #include "materials/standard_material.h"
-#include "textures/procedural_2d/checkerboard.h"
+#include "textures/procedural_2d/checkerboard_2d.h"
 
 #include "raytracer/raytracer.h"
 #include "image/output_image.h"
@@ -96,7 +96,7 @@ void MaterialPreviewRenderThread::renderSceneBlock(OutputImage* pImage)
 	m_pRaytracer->setExtraChannels(0);
 	m_pRaytracer->setAmbientColour(m_pScene->getAmbientColour());
 
-	m_pRaytracer->renderScene(1.0f, m_pSettings);
+	m_pRaytracer->renderScene(1.0f, m_pSettings, true);
 
 	emit renderFinished();
 }
@@ -118,7 +118,7 @@ void MaterialPreviewRenderThread::run()
 	m_pRaytracer->setExtraChannels(0);
 	m_pRaytracer->setAmbientColour(m_pScene->getAmbientColour());
 
-	m_pRaytracer->renderScene(1.0f, m_pSettings);
+	m_pRaytracer->renderScene(1.0f, m_pSettings, true);
 
 	if (!m_pRaytracer->wasCancelled())
 	{
@@ -257,9 +257,9 @@ void MaterialPreviewWidget::setupObjectsAndLights()
 	{
 		AreaLight* pAreaLight = new AreaLight();
 		pAreaLight->setPosition(Vector(6.0f, 5.0f, 2.0f));
-		pAreaLight->setIntensity(2.4f);
+		pAreaLight->setIntensity(18.4f);
 		pAreaLight->setVisible(true);
-		pAreaLight->setDimensions(3.0f, 3.0f);
+		pAreaLight->setDimensions(2.5f, 2.5f);
 
 		pAreaLight->constructGeometry();
 

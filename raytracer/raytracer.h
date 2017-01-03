@@ -79,6 +79,11 @@ public:
 	void incrementIterations() { m_iterationCount++; }
 
 	unsigned int getTaskIndex() const { return m_taskIndex; }
+	
+	bool shouldDiscard() const { return m_discard; }
+	void setDiscard(bool discard) { m_discard = discard; }
+	
+	
 
 protected:
 	TileState		m_state;
@@ -93,6 +98,8 @@ protected:
 	unsigned int	m_iterationCount;
 
 	unsigned int	m_taskIndex;
+	
+	bool			m_discard;
 };
 
 class Raytracer : public ThreadPool
@@ -126,7 +133,9 @@ public:
 
 	void setStatisticsOutputPath(const std::string& statsOutputPath) { m_statsOutputPath = statsOutputPath; }
 
-	void renderScene(float time, const Params* pParams);
+	void renderScene(float time, const Params* pParams, bool waitForCompletion, bool isRestart = false);
+	
+	void resetForReRender();
 
 	virtual void createTileJobs();
 
@@ -134,7 +143,7 @@ public:
 
 	void processExtraChannels(RenderTask* pTask, unsigned int threadID) const;
 
-	HitResult processRayExtra(Ray& viewRay, float& t) const;
+	HitResult processRayExtra(RenderThreadContext& rtc, ShadingContext& shadingContext, Ray& viewRay, float& t) const;
 
 	void updateCameraRayCreator();
 

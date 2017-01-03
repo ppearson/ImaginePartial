@@ -33,7 +33,7 @@
 namespace Imagine
 {
 
-ImportObjectThread::ImportObjectThread(QObject *parent) : QThread(parent), m_pScene(NULL)
+ImportObjectThread::ImportObjectThread(QObject* parent) : QThread(parent), m_pScene(NULL)
 {
 }
 

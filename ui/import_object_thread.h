@@ -36,7 +36,7 @@ class ImportObjectThread : public QThread
 {
 	Q_OBJECT
 public:
-	explicit ImportObjectThread(QObject *parent = 0);
+	explicit ImportObjectThread(QObject* parent = 0);
 	virtual ~ImportObjectThread();
 
 	void importObjects(const std::vector<std::string>& aPaths, const GeoReaderOptions& options, Scene* pScene);

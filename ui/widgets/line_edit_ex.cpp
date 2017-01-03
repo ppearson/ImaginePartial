@@ -27,7 +27,7 @@
 namespace Imagine
 {
 
-LineEditEx::LineEditEx(QWidget *parent) : QLineEdit(parent)
+LineEditEx::LineEditEx(QWidget* parent) : QLineEdit(parent)
 {
 }
 

@@ -34,7 +34,7 @@
 #include "image/output_image.h"
 #include "image/output_image_tile.h"
 
-#include "sampling/sample_generator.h"
+#include "sampling/sample_generator_stratified.h"
 #include "sampling/sampler_stratified.h"
 
 #include "utils/maths/rng.h"
@@ -162,7 +162,7 @@ bool DirectIllumination<Accumulator>::doProgressiveTask(RenderTask* pTask, unsig
 
 	TileState currentState = pTask->getState();
 
-	SampleGenerator sampleGenerator(rng);
+	SampleGeneratorStratified sampleGenerator(rng);
 	unsigned int samplesPP = currentState <= eTSInitial ? 1 : m_samplesPerPixel;
 	SampleGenerator::SampleGeneratorRequirements sgReq(samplesPP, m_numLights, getBounceLimitOverall());
 	sgReq.flags = this->hasDepthOfField() ? SampleGenerator::GENERATE_LENS_SAMPLES : 0;
@@ -188,11 +188,7 @@ bool DirectIllumination<Accumulator>::doProgressiveTask(RenderTask* pTask, unsig
 		Ray viewRay = pCamRayCreator->createBasicCameraRay((float)(pixelXPos), (float)(pixelYPos));
 
 		SampleBundle samples(0.0f, 0.0f);
-#if USE_SAMPLED_AO
-		sampleGenerator.generateSampleBundleStratifiedLightweight(samples);
-#else
-		sampleGenerator.generateSampleBundleStratified(samples);
-#endif
+		sampleGenerator.generateSampleBundle(samples);
 
 		PathState pathState(getBounceLimitOverall());
 
@@ -216,11 +212,7 @@ bool DirectIllumination<Accumulator>::doProgressiveTask(RenderTask* pTask, unsig
 				float pixelXPos = (float)(x + startX) + 0.5f;
 
 				SampleBundle samples(pixelXPos, pixelYPos);
-#if USE_SAMPLED_AO
-				sampleGenerator.generateSampleBundleStratifiedLightweight(samples);
-#else
-				sampleGenerator.generateSampleBundleStratified(samples);
-#endif
+				sampleGenerator.generateSampleBundle(samples);
 
 				Ray viewRay = pCamRayCreator->createBasicCameraRay((float)(pixelXPos), (float)(pixelYPos));
 
@@ -256,11 +248,7 @@ bool DirectIllumination<Accumulator>::doProgressiveTask(RenderTask* pTask, unsig
 					float pixelXPos = (float)(x + startX);
 
 					SampleBundle samples(pixelXPos, pixelYPos);
-#if USE_SAMPLED_AO
-					sampleGenerator.generateSampleBundleStratifiedLightweight(samples);
-#else
-					sampleGenerator.generateSampleBundleStratified(samples);
-#endif
+					sampleGenerator.generateSampleBundle(samples);
 
 					Colour4f colour;
 					for (unsigned int sample = 0; sample < m_samplesPerPixel; sample++)
@@ -307,11 +295,7 @@ bool DirectIllumination<Accumulator>::doProgressiveTask(RenderTask* pTask, unsig
 				Colour4f colour;
 
 				SampleBundle samples(pixelXPos, pixelYPos);
-#if USE_SAMPLED_AO
-				sampleGenerator.generateSampleBundleStratifiedLightweight(samples);
-#else
-				sampleGenerator.generateSampleBundleStratified(samples);
-#endif
+				sampleGenerator.generateSampleBundle(samples);
 
 				if (m_antiAliasing == 1) // no anti-aliasing
 				{
@@ -377,7 +361,7 @@ bool DirectIllumination<Accumulator>::doFullTask(RenderTask* pTask, unsigned int
 	ShadingContext shadingContext(pRenderThreadCtx);
 
 	// generate the samples we need
-	SampleGenerator sampleGenerator(rng);
+	SampleGeneratorStratified sampleGenerator(rng);
 	SampleGenerator::SampleGeneratorRequirements sgReq(m_samplesPerPixel, m_numLights, getBounceLimitOverall());
 	sgReq.flags = this->hasDepthOfField() ? SampleGenerator::GENERATE_LENS_SAMPLES : 0;
 #if USE_SAMPLED_AO
@@ -406,11 +390,7 @@ bool DirectIllumination<Accumulator>::doFullTask(RenderTask* pTask, unsigned int
 				colour = Colour4f();
 
 				SampleBundle samples(pixelXPos, pixelYPos);
-#if USE_SAMPLED_AO
-				sampleGenerator.generateSampleBundleStratifiedLightweight(samples);
-#else
-				sampleGenerator.generateSampleBundleStratified(samples);
-#endif
+				sampleGenerator.generateSampleBundle(samples);
 
 				float fPixelXPos = pixelXPos + 0.5f;
 				float fPixelYPos = pixelYPos + 0.5f;
@@ -441,11 +421,7 @@ bool DirectIllumination<Accumulator>::doFullTask(RenderTask* pTask, unsigned int
 				colour = Colour4f();
 
 				SampleBundle samples(pixelXPos, pixelYPos);
-#if USE_SAMPLED_AO
-				sampleGenerator.generateSampleBundleStratifiedLightweight(samples);
-#else
-				sampleGenerator.generateSampleBundleStratified(samples);
-#endif
+				sampleGenerator.generateSampleBundle(samples);
 
 				for (unsigned int sample = 0; sample < m_samplesPerPixel; sample++)
 				{

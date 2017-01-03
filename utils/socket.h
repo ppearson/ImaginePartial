@@ -75,7 +75,7 @@ public:
 	void close();
 
 	bool send(const std::string& data) const;
-	int recv(std::string &data) const;
+	int recv(std::string& data) const;
 
 	bool send(const void* ptr, size_t size);
 	bool recv(void* ptr, size_t size);

@@ -150,10 +150,10 @@ public:
 	// TODO: this is pretty poor - other alternatives are providing pure virtual interfaces to everything,
 	// or Nuke-style registration of constructors per plugin type which return the correct pointer type...
 	IMAGINE_PLUGIN_EXPORT typedef void* (*createImaginePluginClassFP_t)();
-	
-	// this is more preverable
+
+	// this is more preferable
 	IMAGINE_PLUGIN_EXPORT typedef void* (*createImagineFilePluginClassFP_t)();
-	
+
 	// this is optional and advanced, and is only for specialising multiple plugins in one dynamic library
 	IMAGINE_PLUGIN_EXPORT typedef void* (*createImagineFilePluginClassCombinedFP_t)(int read, const char* extension); //
 

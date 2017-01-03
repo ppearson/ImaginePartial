@@ -33,7 +33,7 @@
 namespace Imagine
 {
 
-FileBrowseWidget::FileBrowseWidget(const std::string& path, QWidget *parent) : QWidget(parent), m_pLineEdit(NULL), m_pBrowseButton(NULL),
+FileBrowseWidget::FileBrowseWidget(const std::string& path, QWidget* parent) : QWidget(parent), m_pLineEdit(NULL), m_pBrowseButton(NULL),
 	m_directoriesOnly(true), m_acceptTokens(false), m_save(false)
 {
 	QHBoxLayout* layout = new QHBoxLayout(this);
@@ -61,7 +61,7 @@ FileBrowseWidget::FileBrowseWidget(const std::string& path, QWidget *parent) : Q
 	QObject::connect(m_pLineEdit, SIGNAL(textChanged(QString)), this, SLOT(textChanged()));
 }
 
-FileBrowseWidget::FileBrowseWidget(QString& path, QWidget *parent) : QWidget(parent), m_pLineEdit(NULL), m_pBrowseButton(NULL),
+FileBrowseWidget::FileBrowseWidget(QString& path, QWidget* parent) : QWidget(parent), m_pLineEdit(NULL), m_pBrowseButton(NULL),
 	m_acceptTokens(false), m_save(false)
 {
 	QHBoxLayout* layout = new QHBoxLayout(this);

@@ -26,7 +26,7 @@
 namespace Imagine
 {
 
-class HitResult;
+struct HitResult;
 class SceneInterface;
 class RNG;
 class Raytracer;

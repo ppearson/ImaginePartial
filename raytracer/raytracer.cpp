@@ -87,7 +87,7 @@ namespace Imagine
 
 RenderTask::RenderTask(unsigned int startX, unsigned int startY, unsigned int width, unsigned int height, TileState state, unsigned int taskIndex)
 	: m_state(state), m_startX(startX), m_startY(startY), m_width(width), m_height(height), m_extraChannelsDone(false), m_iterationCount(0),
-	  m_taskIndex(taskIndex)
+	  m_taskIndex(taskIndex), m_discard(false)
 {
 }
 
@@ -242,6 +242,12 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 		imageFlags |= COMPONENT_SHADOWS;
 	}
 
+	if (settings.getBool("output_ids"))
+	{
+		m_extraChannels |= COMPONENT_ID;
+		imageFlags |= COMPONENT_ID;
+	}
+
 	if (settings.getBool("deep"))
 	{
 		imageFlags |= COMPONENT_DEEP;
@@ -300,7 +306,8 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 	}
 
 	unsigned int filterType = settings.getUInt("filter_type", 0);
-	m_pFilter = FilterFactory::createFilter(filterType, 0.5f);
+	float filterScale = settings.getFloat("filter_scale", 1.0f);
+	m_pFilter = FilterFactory::createFilter(filterType, filterScale);
 
 	m_pFilter->initialise(true); // clamp negative filter lobes for the moment
 
@@ -715,8 +722,11 @@ void Raytracer::configureBackground()
 	}
 }
 
-void Raytracer::renderScene(float time, const Params* pParams)
+void Raytracer::renderScene(float time, const Params* pParams, bool waitForCompletion, bool isRestart)
 {
+	// build lights first, because createTileJobs() needs to know if there are lights for the DirectIllumination integrator
+	m_scene.buildRenderLights();
+
 	// create the tile jobs first, so that we can send stuff to remote clients to render
 	createTileJobs();
 
@@ -740,7 +750,7 @@ void Raytracer::renderScene(float time, const Params* pParams)
 		bool fastAccelBuild = false;
 		unsigned int parallelBuildLevels = 2;
 
-		bool reRender = false;
+		bool reRender = isRestart;
 
 		if (pParams)
 		{
@@ -798,7 +808,15 @@ void Raytracer::renderScene(float time, const Params* pParams)
 		// explicitly turn on affinity setting for threads...
 		m_setAffinity = true;
 
-		startPoolAndWaitForCompletion();
+		if (waitForCompletion)
+		{
+			startPoolAndWaitForCompletion();
+		}
+		else
+		{
+			startPool();
+			return;
+		}
 
 		if (m_pHost)
 		{
@@ -848,6 +866,11 @@ void Raytracer::renderScene(float time, const Params* pParams)
 			m_clientJobManager.wait();
 		}
 	}
+}
+
+void Raytracer::resetForReRender()
+{
+
 }
 
 void Raytracer::createTileJobs()
@@ -974,6 +997,9 @@ void Raytracer::processExtraChannels(RenderTask* pTask, unsigned int threadID) c
 {
 	OutputImageTile* pOurImage = m_aThreadTempImages[threadID];
 
+	RenderThreadContext* pRenderThreadCtx = m_aRenderThreadContexts[threadID];
+	ShadingContext shadingContext(pRenderThreadCtx);
+
 	if (m_extraChannels)
 	{
 		unsigned int startX = pTask->getStartX();
@@ -987,6 +1013,9 @@ void Raytracer::processExtraChannels(RenderTask* pTask, unsigned int threadID) c
 			unsigned int pixelYPos = y + startY;
 			float fPixelYPos = (float)pixelYPos + 0.5f;
 
+			if (!pTask->isActive())
+				return;
+
 			for (unsigned int x = 0; x < tileWidth; x++)
 			{
 				unsigned int pixelXPos = x + startX;
@@ -994,11 +1023,17 @@ void Raytracer::processExtraChannels(RenderTask* pTask, unsigned int threadID) c
 
 				Ray viewRay = m_pCameraRayCreator->createBasicCameraRay(fPixelXPos, fPixelYPos);
 
+				if (m_motionBlur)
+				{
+					viewRay.time = 0.5f;
+					viewRay.timeFull = 0.5f;
+				}
+
 				if (viewRay.type == RAY_UNDEFINED)
 					continue;
 
 				float depth;
-				HitResult hitResult = processRayExtra(viewRay, depth);
+				HitResult hitResult = processRayExtra(*pRenderThreadCtx, shadingContext, viewRay, depth);
 
 				if (m_extraChannels & COMPONENT_DEPTH)
 					pOurImage->setDepthAt(x, y, depth);
@@ -1014,6 +1049,11 @@ void Raytracer::processExtraChannels(RenderTask* pTask, unsigned int threadID) c
 					Colour3f wpp(hitResult.hitPoint.x, hitResult.hitPoint.y, hitResult.hitPoint.z);
 					pOurImage->setWPPAt(x, y, wpp);
 				}
+
+				if (m_extraChannels & COMPONENT_ID)
+				{
+					pOurImage->setIDAt(x, y, (float)hitResult.objID);
+				}
 			}
 		}
 
@@ -1022,9 +1062,10 @@ void Raytracer::processExtraChannels(RenderTask* pTask, unsigned int threadID) c
 	}
 }
 
-HitResult Raytracer::processRayExtra(Ray& viewRay, float& t) const
+HitResult Raytracer::processRayExtra(RenderThreadContext& rtc, ShadingContext& shadingContext, Ray& viewRay, float& t) const
 {
 	HitResult hitResult;
+	hitResult.setShadingContext(shadingContext);
 
 	t = viewRay.tMax;
 
@@ -1040,6 +1081,11 @@ HitResult Raytracer::processRayExtra(Ray& viewRay, float& t) const
 		// was hit, we get the correct material
 		pHitObject = hitResult.pObject;
 
+		if (hitResult.objID == -1)
+		{
+			hitResult.objID = pHitObject->getObjectID();
+		}
+
 		const Material* pMaterial = pHitObject->getMaterial();
 		assert(pMaterial);
 
@@ -1051,6 +1097,7 @@ HitResult Raytracer::processRayExtra(Ray& viewRay, float& t) const
 	else
 	{
 		t = 0.0f;
+		hitResult.objID = 0;
 	}
 
 	return hitResult;
@@ -1179,9 +1226,9 @@ bool Raytracer::doTask(Task* pTask, unsigned int threadID)
 
 	bool ret = m_pRenderer->processTask(pThisTask, threadID);
 #ifndef IMAGINE_EMBEDDED_MODE
-	if (m_pHost && !m_wasCancelled)
+	if (m_pHost && !m_wasCancelled && !pThisTask->shouldDiscard())
 #else
-	if (m_pHost)
+	if (m_pHost && !m_wasCancelled && !pThisTask->shouldDiscard())
 #endif
 	{
 		RaytracerHost::TileInfo tileInfo;

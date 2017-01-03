@@ -130,9 +130,9 @@ protected:
 
 struct HitResult
 {
-	__finline HitResult() : triID(-1), haveDerivatives(false), time(0.0f), originType(RAY_UNDEFINED), rayWidth(0.0f), shadingFlags(0),
-		intersectionError(0.0f), pObject(NULL),	pMedium(NULL), pLight(NULL), pBakedBSDF(NULL), pTriangleHolder(NULL),
-		pCustom1(NULL), pShadingContext(NULL)
+	__finline HitResult() : triID(-1), objID(-1), haveDerivatives(false), eta(1.0f) ,time(0.0f), originType(RAY_UNDEFINED),
+		rayWidth(0.0f), shadingFlags(0), intersectionError(0.0f), pObject(NULL),	pMedium(NULL), pLight(NULL), pBakedBSDF(NULL),
+		pTriangleHolder(NULL), pCustom1(NULL), pShadingContext(NULL)
 	{
 	}
 
@@ -146,6 +146,7 @@ struct HitResult
 	void reset()
 	{
 		triID = -1;
+		objID = -1;
 
 		hitPoint = Point();
 		geometryNormal = Normal();
@@ -159,6 +160,7 @@ struct HitResult
 		dpdu = Vector();
 		dpdv = Vector();
 
+		eta = 1.0f;
 		time = 0.0f;
 		originType = RAY_UNDEFINED;
 		rayWidth = 0.0f;
@@ -218,6 +220,7 @@ struct HitResult
 	}
 
 	uint32_t					triID;
+	uint32_t					objID;
 
 	float						beta;  // Barycentric u coordinate
 	float						gamma; // Barycentric v coordinate
@@ -264,6 +267,8 @@ struct HitResult
 	Vector						dpdy;
 
 	bool						haveDerivatives;
+
+	float						eta;
 
 	float						time;
 

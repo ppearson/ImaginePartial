@@ -51,7 +51,7 @@ void DoubleSpinBoxEx::stepBy(int steps)
 	editingFinished();
 }
 
-void DoubleSpinBoxEx::wheelEvent(QWheelEvent *event)
+void DoubleSpinBoxEx::wheelEvent(QWheelEvent* event)
 {
 	QDoubleSpinBox::wheelEvent(event);
 

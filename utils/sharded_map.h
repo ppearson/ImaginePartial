@@ -36,18 +36,19 @@ using std::tr1::unordered_map;
 
 #include "core/hash.h"
 
+//#include "utils/spin_lock.h" // is actually slower than just a standard mutex on Linux
 #include "utils/threads/mutex.h"
 
 namespace Imagine
 {
-//#include "utils/spin_lock.h" // is actually slower than just a standard mutex on Linux
 
 // A Sharded Map class, which splits the map into "shards" (I've used the DB name for
 // splitting/distributing, as opposed to 'bins' which Java's ConcurrentHashMap uses)
 // or horizontal splits, each of which contains separate maps and locks which can be
 // accessed in a distributed fashion based off the modulus of the hash value.
 // This allows orders of magnitude faster concurrent access in a multi-threaded
-// environment, as there's no single lock contention to bottleneck access.
+// environment, as there's no single lock contention to bottleneck access (assuming distributed access
+// between threads).
 
 // Currently, this is not a full implementation of a map (doesn't support all uses cases of a map)
 // and isn't a drop-in replacement, as the iterators contain locking semantics which make certain things
@@ -104,7 +105,11 @@ public:
 
 	iterator erase(const iterator itErase)
 	{
-		return m_store.erase(itErase);
+		iterator nextIt = itErase;
+		nextIt++;
+		m_store.erase(itErase);
+
+		return nextIt;
 	}
 
 protected:
@@ -219,6 +224,8 @@ public:
 
 		iterator& operator=(const iterator& rhs)
 		{
+			// TODO: check against this first?
+
 			// we intentionally transfer lock ownership here
 			m_pShardMap = rhs.m_pShardMap;
 			m_storeIt = rhs.m_storeIt;

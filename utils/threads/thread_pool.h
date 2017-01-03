@@ -148,6 +148,8 @@ public:
 
 protected:
 	void startPoolAndWaitForCompletion();
+	void startPool();
+	
 	void processTask(Task* pTask, unsigned int threadID);
 
 	virtual bool doTask(Task* pTask, unsigned int threadID) = 0;
@@ -168,6 +170,8 @@ protected:
 	unsigned int getNextTaskBundle(TaskBundle* pBundle);
 
 	void freeThread(unsigned int threadID);
+	
+	void clearTasks();
 
 	// these assume locking is done elsewhere
 	Task* getNextTaskInternal();

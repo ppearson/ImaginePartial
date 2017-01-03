@@ -275,7 +275,7 @@ protected:
 struct BVHBuildThreadState
 {
 	BVHBuildThreadState(Partitioner* pPartitioner, bool ownPartitioner, bool mallocTrimOnDelete) :
-		m_newNodeAllocator(true, mallocTrimOnDelete), m_pPartitioner(NULL), m_ownPartitioner(ownPartitioner)
+		m_newNodeAllocator(true, mallocTrimOnDelete, 32768 * 4), m_pPartitioner(pPartitioner), m_ownPartitioner(ownPartitioner)
 	{
 	}
 

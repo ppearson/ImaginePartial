@@ -24,7 +24,7 @@
 namespace Imagine
 {
 
-template <typename T, int tagSize>
+template <typename T, int alignment>
 class TaggedPointer
 {
 public:
@@ -74,7 +74,7 @@ public:
 	}
 
 private:
-	static const uintptr_t kTagMask = tagSize - 1;
+	static const uintptr_t kTagMask = alignment - 1;
 	static const uintptr_t kPointerMask = ~kTagMask;
 
 	union

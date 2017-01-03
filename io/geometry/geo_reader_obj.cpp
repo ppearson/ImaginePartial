@@ -115,7 +115,7 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 
 	std::string lastName;
 	std::string lastMaterialName;
-
+	
 	// TODO: need to handle \r\n line ending properly
 	while (fileStream.getline(buf, 2048))
 	{
@@ -162,6 +162,16 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 			// if we don't want compound objects, ignore this so we just get a single mesh
 			if (!options.importCompoundObjects)
 				continue;
+			
+			if (buf[0] == 'g')
+			{
+				// if it's a new group, see if we've got any faces already
+				if (pNewGeoInstance->getFaces().empty())
+				{
+					// if so, don't bother deleting the current object
+					continue;
+				}
+			}
 
 			line.assign(buf);
 
@@ -551,6 +561,16 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 			// if we don't want compound objects, ignore this so we just get a single mesh
 			if (!options.importCompoundObjects)
 				continue;
+			
+			if (buf[0] == 'g')
+			{
+				// if it's a new group, see if we've got any faces already
+				if (pNewGeoInstance->getPolygonOffsets().empty())
+				{
+					// if so, don't bother deleting the current object
+					continue;
+				}
+			}
 
 			line.assign(buf);
 

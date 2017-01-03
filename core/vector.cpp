@@ -22,7 +22,7 @@
 namespace Imagine
 {
 
-Vector::Vector(const Point &rhs) : x(rhs.x), y(rhs.y), z(rhs.z)
+Vector::Vector(const Point& rhs) : x(rhs.x), y(rhs.y), z(rhs.z)
 {
 
 }

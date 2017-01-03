@@ -44,7 +44,7 @@ public:
 
 	void setOpen(bool open) { m_isOpen = open; }
 
-	bool isOpen() { return m_isOpen; }
+	bool isOpen() const { return m_isOpen; }
 
 	// will be called by ImageTextureCache when it wants to free file handles...
 	// technically, we could just rely on the destructor to do the work of closing the file,
@@ -323,6 +323,7 @@ public:
 	{
 	}
 
+	// it's the reader's responsibility to set m_isOpen within pFileHandle to true (for the moment)
 	void setNewFileHandle(ImageTextureFileHandle* pFileHandle, bool updated = false)
 	{
 		m_pNewFileHandle = pFileHandle;
@@ -370,8 +371,9 @@ public:
 	const TimerCounter& getFileReadTimer() const { return m_fileReadTimer; }
 
 protected:
-	// we don't own this - a reader may optionally create a new one if allowed, and will set this pointer in that case.
-	// ImageTextureCache will then take the pointer and own it from that point on, possibly passing it in to
+	// we don't own this - a reader may optionally create a new one if allowed, and will set this pointer in that case, or
+	// if an existing cached file handle passed in to a reader is now invalid and should be replaced
+	// ImageTextureCache will then take the pointer and own it from that point on, possibly passing it in to other readers.
 	ImageTextureFileHandle*		m_pNewFileHandle;
 	// this can be set to true if m_pNewFileHandle is valid, but contains an existing item ImageTextureCache knows about
 	// but the internal file handle has been updated
