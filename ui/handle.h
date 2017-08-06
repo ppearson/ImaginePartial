@@ -26,6 +26,7 @@ class Cylinder;
 class Cone;
 class Cube;
 class Torus;
+class Plane;
 
 class Material;
 class BoundaryBox;
@@ -64,6 +65,12 @@ protected:
 	static Cone* pObjectXTranslateHandleHead;
 	static Cone* pObjectYTranslateHandleHead;
 	static Cone* pObjectZTranslateHandleHead;
+	
+	static Plane* pObjectXYTranslateHandlePlane;
+	static Plane* pObjectXZTranslateHandlePlane;
+	static Plane* pObjectYZTranslateHandlePlane;
+	
+	///// rotate handles
 
 	static Torus* pObjectXRotateHandleLoop;
 	static Torus* pObjectYRotateHandleLoop;

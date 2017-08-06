@@ -61,7 +61,7 @@ bool FileIORegistry::registerImageReaderMultipleExtensions(const std::string& ex
 {
 	std::vector<std::string> extensionsItems;
 
-	split(extensions, extensionsItems, ";", 0);
+	splitString(extensions, extensionsItems, ";", 0);
 
 	std::vector<std::string>::const_iterator itExt = extensionsItems.begin();
 	for (; itExt != extensionsItems.end(); ++itExt)

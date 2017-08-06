@@ -71,6 +71,11 @@ public:
 		float inv = 1.0f / scale;
 		return Colour3f(r * inv, g * inv, b * inv);
 	}
+	
+	Colour3f operator/(const Colour3f& rhs) const
+	{
+		return Colour3f(r / rhs.r, g / rhs.g, b / rhs.b);
+	}
 
 	Colour3f operator-(const Colour3f& rhs) const
 	{
@@ -110,6 +115,15 @@ public:
 		r *= rhs.r;
 		g *= rhs.g;
 		b *= rhs.b;
+
+		return *this;
+	}
+	
+	Colour3f& operator/=(const Colour3f& rhs)
+	{
+		r /= rhs.r;
+		g /= rhs.g;
+		b /= rhs.b;
 
 		return *this;
 	}

@@ -38,13 +38,26 @@ public:
 	Point(float X, float Y, float Z) : x(X), y(Y), z(Z)
 	{
 	}
+	
+	Point(const Point& rhs) : x(rhs.x), y(rhs.y), z(rhs.z)
+	{
+
+	}
 
 	Point(const Vector& rhs) : x(rhs.x), y(rhs.y), z(rhs.z)
 	{
 
 	}
 
-	inline Point &operator=(const Point& rhs)
+	inline Point& operator=(const Point& rhs)
+	{
+		x = rhs.x;
+		y = rhs.y;
+		z = rhs.z;
+		return *this;
+	}
+	
+	inline Point& operator=(const Vector& rhs)
 	{
 		x = rhs.x;
 		y = rhs.y;

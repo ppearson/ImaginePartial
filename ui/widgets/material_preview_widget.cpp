@@ -70,6 +70,12 @@ MaterialPreviewRenderThread::~MaterialPreviewRenderThread()
 	}
 }
 
+void MaterialPreviewRenderThread::initialise(OutputImage* pImage)
+{
+	m_pImage = pImage;
+	m_pRaytracer->initialise(m_pImage, *m_pSettings);
+}
+
 void MaterialPreviewRenderThread::renderScene(OutputImage* pImage)
 {
 	m_pImage = pImage;
@@ -87,11 +93,7 @@ void MaterialPreviewRenderThread::renderScene(OutputImage* pImage)
 
 void MaterialPreviewRenderThread::renderSceneBlock(OutputImage* pImage)
 {
-	m_pImage = pImage;
-
-	m_pImage->clearImage();
-
-	m_pRaytracer->initialise(m_pImage, *m_pSettings);
+//	m_pImage->clearImage();	
 
 	m_pRaytracer->setExtraChannels(0);
 	m_pRaytracer->setAmbientColour(m_pScene->getAmbientColour());
@@ -112,8 +114,6 @@ void MaterialPreviewRenderThread::stop()
 void MaterialPreviewRenderThread::run()
 {
 	m_pImage->clearImage();
-
-	m_pRaytracer->initialise(m_pImage, *m_pSettings);
 
 	m_pRaytracer->setExtraChannels(0);
 	m_pRaytracer->setAmbientColour(m_pScene->getAmbientColour());
@@ -258,7 +258,6 @@ void MaterialPreviewWidget::setupObjectsAndLights()
 		AreaLight* pAreaLight = new AreaLight();
 		pAreaLight->setPosition(Vector(6.0f, 5.0f, 2.0f));
 		pAreaLight->setIntensity(18.4f);
-		pAreaLight->setVisible(true);
 		pAreaLight->setDimensions(2.5f, 2.5f);
 
 		pAreaLight->constructGeometry();
@@ -270,7 +269,6 @@ void MaterialPreviewWidget::setupObjectsAndLights()
 		PhysicalSky* pPSLight = new PhysicalSky();
 		pPSLight->setIntensity(2.0);
 		pPSLight->setHemiExtend(1);
-		pPSLight->setVisible(true);
 		pPSLight->setIntensityScales(0.03f, 1.0f);
 		pPSLight->generateEnvironmentImage(0.0f);
 
@@ -422,6 +420,8 @@ void MaterialPreviewWidget::updateRaytracer()
 
 	m_lastWidth = width;
 	m_lastHeight = height;
+	
+	m_pUpdateThread->initialise(m_pRawImage);
 }
 
 void MaterialPreviewWidget::renderImage(Material* pMaterial)
@@ -513,6 +513,21 @@ void MaterialPreviewWidget::cancelRender()
 void MaterialPreviewWidget::initCamera(bool picking)
 {
 	m_pRenderCamera = m_pDefaultCamera;
+}
+
+void MaterialPreviewWidget::setupMaterials()
+{	
+	std::vector<TextureParameters*> aFinalTextures;
+
+	m_pCurrentMaterial->getMaterialSpecificTextures(aFinalTextures, Material::SPECIFIC_TEXTURE_PRE_RENDER);
+
+	std::vector<TextureParameters*>::iterator itTexture = aFinalTextures.begin();
+	for (; itTexture != aFinalTextures.end(); ++itTexture)
+	{
+		TextureParameters* pTexture = *itTexture;
+
+		pTexture->preRender();
+	}
 }
 
 void MaterialPreviewWidget::refreshOutput()

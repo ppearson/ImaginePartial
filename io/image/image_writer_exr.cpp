@@ -24,6 +24,8 @@
 #include "image/output_image.h"
 #include "colour/colour_space.h"
 
+#include "global_context.h"
+
 #include <ImfOutputFile.h>
 #include <ImfChannelList.h>
 #include <ImfFrameBuffer.h>
@@ -84,7 +86,7 @@ bool ImageWriterEXR::writeStandardImage(const std::string& filePath, const Outpu
 	Imf::Header header(width, height);
 
 	Imf::StringAttribute sourceAttribute;
-	sourceAttribute.value() = "Created with Imagine 0.98";
+	sourceAttribute.value() = "Created with Imagine 0.99";
 	header.insert("comments", sourceAttribute);
 
 	Imf::PixelType pixelType = (fullFloat) ? Imf::FLOAT : Imf::HALF;
@@ -100,14 +102,14 @@ bool ImageWriterEXR::writeStandardImage(const std::string& filePath, const Outpu
 		header.channels().insert("A", Imf::Channel(pixelType));
 
 	// if we haven't got any depth data, don't bother
-	if (!(image.components() & COMPONENT_DEPTH))
+	if (!(image.getComponents() & COMPONENT_DEPTH))
 		channels = channels & ~ImageWriter::DEPTH;
 
 	if (channels & ImageWriter::DEPTH)
 		header.channels().insert("Z", Imf::Channel(pixelType));
 
 	// if we haven't got any normal data, don't bother
-	if (!(image.components() & COMPONENT_NORMAL))
+	if (!(image.getComponents() & COMPONENT_NORMAL))
 		channels = channels & ~ImageWriter::NORMALS;
 
 	if (channels & ImageWriter::NORMALS)
@@ -118,7 +120,7 @@ bool ImageWriterEXR::writeStandardImage(const std::string& filePath, const Outpu
 	}
 
 	// if we haven't got any wpp data, don't bother
-	if (!(image.components() & COMPONENT_WPP))
+	if (!(image.getComponents() & COMPONENT_WPP))
 		channels = channels & ~ImageWriter::WPP;
 
 	if (channels & ImageWriter::WPP)
@@ -129,7 +131,7 @@ bool ImageWriterEXR::writeStandardImage(const std::string& filePath, const Outpu
 	}
 
 	// if we haven't got shadows, don't write them
-	if (!(image.components() & COMPONENT_SHADOWS))
+	if (!(image.getComponents() & COMPONENT_SHADOWS))
 		channels = channels & ~ImageWriter::SHADOWS;
 
 	if (channels & ImageWriter::SHADOWS)
@@ -257,7 +259,7 @@ bool ImageWriterEXR::writeStandardImage(const std::string& filePath, const Outpu
 
 	if (channels & ImageWriter::DEPTH)
 	{
-		fb.insert("Z", Imf::Slice(pixelType, (char *)&(*pDepth), sizeof(T), width * sizeof(T)));
+		fb.insert("Z", Imf::Slice(pixelType, (char *)pDepth, sizeof(T), width * sizeof(T)));
 	}
 
 	if (channels & ImageWriter::NORMALS)
@@ -276,7 +278,7 @@ bool ImageWriterEXR::writeStandardImage(const std::string& filePath, const Outpu
 
 	if (channels & ImageWriter::SHADOWS)
 	{
-		fb.insert("shadows.r", Imf::Slice(pixelType, (char *)&(*pShadows), sizeof(T), width * sizeof(T)));
+		fb.insert("shadows.r", Imf::Slice(pixelType, (char *)pShadows, sizeof(T), width * sizeof(T)));
 	}
 
 	Imf::OutputFile file(filePath.c_str(), header);
@@ -315,7 +317,7 @@ bool ImageWriterEXR::writeDeepImage(const std::string& filePath, const OutputIma
 	header.channels().insert("Z", Imf::Channel(Imf::HALF));
 
 	Imf::StringAttribute sourceAttribute;
-	sourceAttribute.value() = "Created with Imagine 0.98";
+	sourceAttribute.value() = "Created with Imagine 0.99";
 	header.insert("comments", sourceAttribute);
 
 #if USE_DEEPTILE

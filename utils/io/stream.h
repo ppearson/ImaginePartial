@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2012 Peter Pearson.
+ Copyright 2012-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -50,6 +50,9 @@ public:
 
 	void storeUInt(const unsigned int& uValue);
 	void loadUInt(unsigned int& uValue);
+	
+	void storeInt(const int& iValue);
+	void loadInt(int& iValue);
 
 	void storeEnum(unsigned int eValue);
 	unsigned int loadEnum();

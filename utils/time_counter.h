@@ -44,6 +44,9 @@ public:
 
 	void start()
 	{
+		//
+//		struct timespec requestStart, requestEnd;
+//		clock_gettime(CLOCK_REALTIME, &requestStart);
 		gettimeofday(&m_startTime, NULL);
 	}
 

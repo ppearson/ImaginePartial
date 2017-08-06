@@ -82,7 +82,14 @@ enum StatisticsOutputType
 enum ShadingFlags
 {
 	BSDF_IS_BACKLIT				= 1 << 0,
-	SURFACE_IS_BACKFACING		= 1 << 1
+	SURFACE_IS_BACKFACING		= 1 << 1,
+	SURFACE_SINGLE_SIDED		= 1 << 2,
+	SURFACE_DOUBLE_SIDED		= 1 << 3
+};
+
+enum OtherHitResultFlags
+{
+	HIT_RESULT_SKIP_POST_INTERSECT	= 1 << 0
 };
 
 class RaytracerHost
@@ -131,7 +138,7 @@ protected:
 struct HitResult
 {
 	__finline HitResult() : triID(-1), objID(-1), haveDerivatives(false), eta(1.0f) ,time(0.0f), originType(RAY_UNDEFINED),
-		rayWidth(0.0f), shadingFlags(0), intersectionError(0.0f), pObject(NULL),	pMedium(NULL), pLight(NULL), pBakedBSDF(NULL),
+		rayWidth(0.0f), shadingFlags(0), otherFlags(0), intersectionError(0.0f), pObject(NULL), pMedium(NULL), pLight(NULL), pBakedBSDF(NULL),
 		pTriangleHolder(NULL), pCustom1(NULL), pShadingContext(NULL)
 	{
 	}
@@ -165,6 +172,7 @@ struct HitResult
 		originType = RAY_UNDEFINED;
 		rayWidth = 0.0f;
 		shadingFlags = 0;
+		otherFlags = 0;
 		intersectionError = 0.0f;
 		pObject = NULL;
 		pMedium = NULL;
@@ -188,6 +196,16 @@ struct HitResult
 	bool isBackfacing() const
 	{
 		return (shadingFlags & SURFACE_IS_BACKFACING);
+	}
+	
+	bool isBackfacingSingleSided() const
+	{
+		return (shadingFlags & SURFACE_IS_BACKFACING) && (shadingFlags & SURFACE_SINGLE_SIDED);
+	}
+	
+	bool isBackfacingDoubleSided() const
+	{
+		return (shadingFlags & SURFACE_IS_BACKFACING) && (shadingFlags & SURFACE_DOUBLE_SIDED);
 	}
 
 	void calculateInitialDerivatives()
@@ -276,6 +294,7 @@ struct HitResult
 	float						rayWidth; // pretty crap hack, but... camera rays are 1.0f, the rougher surfaces are the more this increases
 
 	unsigned int				shadingFlags;
+	unsigned int				otherFlags;
 
 	float						intersectionError;
 

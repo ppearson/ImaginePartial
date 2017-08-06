@@ -32,6 +32,7 @@
 #include "objects/mesh.h"
 #include "objects/triangle_mesh.h"
 #include "objects/compound_object.h"
+#include "objects/compound_static_spheres.h"
 
 #include "io/geo_helper_obj.h"
 
@@ -46,13 +47,17 @@ GeoReaderObj::GeoReaderObj() : GeoReader()
 
 bool GeoReaderObj::readFile(const std::string& path, const GeoReaderOptions& options)
 {
-	if (options.meshType == GeoReaderOptions::eEditable)
+	if (options.meshType == GeoReaderOptions::eEditableMesh)
 	{
 		return readFileEditableMesh(path, options);
 	}
-	else if (options.meshType == GeoReaderOptions::eStandard)
+	else if (options.meshType == GeoReaderOptions::eStandardMesh)
 	{
 		return readFileStandardMesh(path, options);
+	}
+	else if (options.meshType == GeoReaderOptions::ePointCloud)
+	{
+		return readFilePointCloud(path, options);
 	}
 	else
 	{
@@ -115,6 +120,8 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 
 	std::string lastName;
 	std::string lastMaterialName;
+	
+	bool haveMaterialForMesh = false;
 	
 	// TODO: need to handle \r\n line ending properly
 	while (fileStream.getline(buf, 2048))
@@ -220,6 +227,8 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 				pNewMesh->setGeometryInstance(pNewGeoInstance);
 				pNewMesh->setMaterial(pDefaultMaterial);
 				pNewMesh->setName(objectName);
+				
+				haveMaterialForMesh = false;
 			}
 		}
 		else if (buf[0] == 'f')
@@ -244,7 +253,7 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 			Face newFace(4);
 			newFace.reserveUVs(4);
 
-			items = fastSplit(line, aItems, sep1, 2);
+			items = fastStringSplit(line, aItems, sep1, 2);
 
 			for (unsigned int i = 0; i < items; i++)
 			{
@@ -362,6 +371,7 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 					pNewMesh->setGeometryInstance(pNewGeoInstance);
 					pNewMesh->setMaterial(pDefaultMaterial);
 					pNewMesh->setName(lastName);
+					haveMaterialForMesh = true;
 				}
 			}
 
@@ -370,6 +380,12 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 			// ignore if necessary -- this needs to be done here so that we can break objects apart based on their material (above)
 			// but without importing the materials
 			if (!options.importMaterials)
+				continue;
+			
+			// if we're not breaking the mesh apart by material, and we already have a material
+			// for this single mesh item, skip assining this material, otherwise we get issues with
+			// Material ref-counting, and we don't need to assign it anyway..
+			if (!options.newMaterialBreaksObjectGroup && haveMaterialForMesh)
 				continue;
 
 			if (materials.hasMaterialName(mtlName))
@@ -380,6 +396,8 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 				pNewMesh->setMaterial(pMaterial);
 
 				aUsedMaterials.insert(pMaterial);
+				
+				haveMaterialForMesh = true;
 			}
 		}
 	}
@@ -509,6 +527,8 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 
 	std::string lastName;
 	std::string lastMaterialName;
+	
+	bool haveMaterialForMesh = false;
 
 	std::vector<uint32_t> aPolyOffsets;
 	std::vector<uint32_t> aPolyIndices;
@@ -633,6 +653,7 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 				pNewMesh->setGeometryInstance(pNewGeoInstance);
 				pNewMesh->setMaterial(pDefaultMaterial);
 				pNewMesh->setName(objectName);
+				haveMaterialForMesh = false;
 			}
 		}
 		else if (buf[0] == 'f')
@@ -657,7 +678,7 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 			Face newFace(4);
 			newFace.reserveUVs(4);
 
-			items = fastSplit(line, aItems, sep1, 2);
+			items = fastStringSplit(line, aItems, sep1, 2);
 
 			for (unsigned int i = 0; i < items; i++)
 			{
@@ -789,6 +810,7 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 					pNewMesh->setGeometryInstance(pNewGeoInstance);
 					pNewMesh->setMaterial(pDefaultMaterial);
 					pNewMesh->setName(lastName);
+					haveMaterialForMesh = true;
 				}
 			}
 
@@ -797,6 +819,12 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 			// ignore if necessary -- this needs to be done here so that we can break objects apart based on their material (above)
 			// but without importing the materials
 			if (!options.importMaterials)
+				continue;
+			
+			// if we're not breaking the mesh apart by material, and we already have a material
+			// for this single mesh item, skip assining this material, otherwise we get issues with
+			// Material ref-counting, and we don't need to assign it anyway..
+			if (!options.newMaterialBreaksObjectGroup && haveMaterialForMesh)
 				continue;
 
 			if (materials.hasMaterialName(mtlName))
@@ -807,6 +835,8 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 				pNewMesh->setMaterial(pMaterial);
 
 				aUsedMaterials.insert(pMaterial);
+				
+				haveMaterialForMesh = true;
 			}
 		}
 	}
@@ -985,7 +1015,7 @@ bool GeoReaderObj::readFileTriangleMesh(const std::string& path, const GeoReader
 				line += line2;
 			}
 
-			items = fastSplit(line, aItems, sep1, 2);
+			items = fastStringSplit(line, aItems, sep1, 2);
 
 //			assert(items == 3);
 
@@ -1065,6 +1095,79 @@ bool GeoReaderObj::readFileTriangleMesh(const std::string& path, const GeoReader
 
 	postProcess();
 
+	return true;
+}
+
+bool GeoReaderObj::readFilePointCloud(const std::string& path, const GeoReaderOptions& options)
+{
+	m_readOptions = options;
+
+	char buf[1024];
+	memset(buf, 0, 1024);
+
+	std::fstream fileStream(path.c_str(), std::ios::in);
+
+	std::string line;
+	line.resize(1024);
+	
+	std::vector<Point> aPointPositions;
+
+	aPointPositions.reserve(400000);
+
+//	Material* pDefaultMaterial = pNewMesh->getMaterialManager().getMaterialFromID(1);
+//	pNewMesh->setMaterial(pDefaultMaterial);
+
+	Matrix4 rotate;
+	rotate.setRotationX(-90.0f);
+
+	// TODO: need to handle \r\n line ending properly
+	while (fileStream.getline(buf, 1024))
+	{
+		if (buf[0] == 0 || buf[0] == '#')
+			continue;
+
+		if (buf[0] == 'v' && buf[1] == ' ')
+		{
+			float x;
+			float y;
+			float z;
+
+			sscanf(buf, "v %f %f %f", &x, &y, &z);
+
+			Point vertex(x, y, z);
+
+			aPointPositions.push_back(vertex);
+		}
+/*		else if (buf[0] == 'v' && buf[1] == 't')
+		{
+			float u;
+			float v;
+
+			sscanf(buf, "vt %f %f", &u, &v);
+
+			UV uv(u, v);
+
+			pUVsList->push_back(uv);
+		}
+*/		
+
+	}
+
+
+	fileStream.close();
+
+	CompoundStaticSpheres* pCompoundSpheres = new CompoundStaticSpheres();
+	if (!pCompoundSpheres)
+		return false;
+	
+	pCompoundSpheres->buildFromPositions(aPointPositions, options.pointSize);
+
+	pCompoundSpheres->setName("CompoundSpheresShape");
+
+	m_newObject = pCompoundSpheres;
+
+	postProcess();
+	
 	return true;
 }
 

@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2016 Peter Pearson.
+ Copyright 2011-2017 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -48,6 +48,7 @@ class OutputImageTile;
 class Filter;
 class Texture;
 class RendererBackground;
+class SampleGeneratorFactory;
 
 class ImageTextureCache;
 
@@ -57,7 +58,7 @@ class RenderThreadContext;
 
 class DebugPathCollection;
 
-class RenderTask : public Task
+class RenderTask : public ThreadPoolTask
 {
 public:
 	RenderTask(unsigned int startX, unsigned int startY, unsigned int width, unsigned int height, TileState state, unsigned int taskIndex);
@@ -79,11 +80,11 @@ public:
 	void incrementIterations() { m_iterationCount++; }
 
 	unsigned int getTaskIndex() const { return m_taskIndex; }
-	
+
 	bool shouldDiscard() const { return m_discard; }
 	void setDiscard(bool discard) { m_discard = discard; }
-	
-	
+
+
 
 protected:
 	TileState		m_state;
@@ -98,7 +99,7 @@ protected:
 	unsigned int	m_iterationCount;
 
 	unsigned int	m_taskIndex;
-	
+
 	bool			m_discard;
 };
 
@@ -133,8 +134,12 @@ public:
 
 	void setStatisticsOutputPath(const std::string& statsOutputPath) { m_statsOutputPath = statsOutputPath; }
 
+	// render the scene as an entire image
 	void renderScene(float time, const Params* pParams, bool waitForCompletion, bool isRestart = false);
-	
+
+	// render just a single tile - currently used for scanline rendering in Nuke
+	void renderTile(OutputImageTile& outputTile, unsigned int x, unsigned int y, unsigned int r, unsigned int t, bool deep);
+
 	void resetForReRender();
 
 	virtual void createTileJobs();
@@ -158,7 +163,7 @@ public:
 	DebugPathCollection* getDebugPathCollection() const { return m_pDebugPathCollection; }
 
 protected:
-	virtual bool doTask(Task* pTask, unsigned int threadID);
+	virtual bool doTask(ThreadPoolTask* pTask, unsigned int threadID);
 
 protected:
 	SceneInterface&			m_scene;
@@ -172,6 +177,8 @@ protected:
 	Renderer*				m_pRenderer;
 	Filter*					m_pFilter;
 	unsigned int			m_tileApronSize;
+
+	SampleGeneratorFactory*	m_pSampleGeneratorFactory;
 
 	bool					m_progressive;
 

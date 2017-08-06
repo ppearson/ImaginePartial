@@ -41,6 +41,7 @@ RayVisibilityButton::RayVisibilityButton(QWidget* parent) :	QPushButton(parent)
 	m_aOptions.push_back("Refraction");
 	m_aOptions.push_back("Diffuse");
 	m_aOptions.push_back("Glossy");
+	m_aOptions.push_back("Volume scatter");
 
 	unsigned int menuIndex = 0;
 	std::vector<std::string>::const_iterator it = m_aOptions.begin();

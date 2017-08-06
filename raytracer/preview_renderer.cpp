@@ -39,6 +39,8 @@
 #include "utils/params.h"
 #include "utils/time_counter.h"
 
+#define ENABLE_SAMPLE_BUNDLE_REUSE 1
+
 namespace Imagine
 {
 
@@ -63,6 +65,8 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 
 	RenderThreadContext* pRenderThreadCtx = this->getRenderThreadContext(threadID);
 	ShadingContext shadingContext(pRenderThreadCtx);
+	
+	pRenderThreadCtx->setRandomNumberGenerator(&rng);
 
 	SampleGeneratorStratified sampleGenerator(rng);
 	SampleGenerator::SampleGeneratorRequirements sgReq(1, this->m_numLights, this->getBounceLimitOverall());
@@ -76,6 +80,11 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 		sgReq.flags |= SampleGenerator::GENERATE_TIME_SAMPLES;
 	}
 	sampleGenerator.configureSampler(sgReq, this->m_pLights, this->getLightSampleCount());
+	
+#if ENABLE_SAMPLE_BUNDLE_REUSE
+	SampleBundleReuse samples;
+	sampleGenerator.allocateSampleBundleReuse(samples);
+#endif
 
 	Colour4f colour;
 
@@ -111,8 +120,13 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 				if (viewRay.type == RAY_UNDEFINED)
 					continue;
 
+#if ENABLE_SAMPLE_BUNDLE_REUSE
+				samples.setNextPixel(fPixelXPos, fPixelYPos);
+				sampleGenerator.generateSampleBundleReuse(samples);
+#else
 				SampleBundle samples(fPixelXPos, fPixelYPos);
 				sampleGenerator.generateSampleBundle(samples);
+#endif
 
 				colour += this->m_integrator.processRay(*pRenderThreadCtx, shadingContext, viewRay, draftIntegratorState, samples, 0);
 
@@ -142,16 +156,21 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 			return true; // we've finished with it...
 		}
 	}
-
+/*
 	// do extra channels that can't be anti-aliased or averaged
 	if (!pRTask->extraChannelsDone())
 	{
 		this->m_raytracer.processExtraChannels(pRTask, threadID);
 		pRTask->setExtraChannelsDone(true);
 	}
-
+*/
 	sgReq.samplesPerPixel = this->m_globalIlluminationSamplesPerIteration;
 	sampleGenerator.configureSampler(sgReq, this->m_pLights, this->getLightSampleCount());
+	
+#if ENABLE_SAMPLE_BUNDLE_REUSE
+	samples = SampleBundleReuse();
+	sampleGenerator.allocateSampleBundleReuse(samples);
+#endif
 
 	float fSamples = (float)this->m_globalIlluminationSamplesPerIteration;
 	IntegratorState integratorState(*this, this->getScene(), rng);
@@ -172,8 +191,13 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 
 			float fPixelXPos = (float)x + startX;
 
+#if ENABLE_SAMPLE_BUNDLE_REUSE
+			samples.setNextPixel(fPixelXPos, fPixelYPos);
+			sampleGenerator.generateSampleBundleReuse(samples);
+#else
 			SampleBundle samples(fPixelXPos, fPixelYPos);
 			sampleGenerator.generateSampleBundle(samples);
+#endif
 
 			for (unsigned int sample = 0; sample < this->m_globalIlluminationSamplesPerIteration; sample++)
 			{

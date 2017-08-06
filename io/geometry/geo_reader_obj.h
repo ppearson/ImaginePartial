@@ -44,6 +44,9 @@ public:
 
 	// TriangleGeometryInstance
 	bool readFileTriangleMesh(const std::string& path, const GeoReaderOptions& options);
+	
+	// Pointcloud - CompoundSpheres
+	bool readFilePointCloud(const std::string& path, const GeoReaderOptions& options);
 };
 
 } // namespace Imagine

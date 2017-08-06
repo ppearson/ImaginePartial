@@ -75,7 +75,7 @@ static const std::string sStyle = "QTabWidget::pane { /* The tab widget frame */
 
 TabWidgetEx::TabWidgetEx(ParametersPanel* pParametersPanel, QWidget *parent) : QTabWidget(parent), m_pParametersPanel(pParametersPanel)
 {
-	setStyleSheet(sStyle.c_str());
+//	setStyleSheet(sStyle.c_str());
 	connect(this, SIGNAL(currentChanged(int)), this, SLOT(tabIndexChanged(int)));
 }
 

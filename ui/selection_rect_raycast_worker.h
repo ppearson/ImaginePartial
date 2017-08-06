@@ -32,7 +32,7 @@ class Camera;
 
 class Object;
 
-class SelectionRectRaycastTask : public Task
+class SelectionRectRaycastTask : public ThreadPoolTask
 {
 public:
 	SelectionRectRaycastTask(SelectedObjects* pSelectedObjects, unsigned int startX, unsigned int startY, unsigned int endX, unsigned int endY);
@@ -57,7 +57,7 @@ public:
 	bool performRaycast(unsigned int startX, unsigned int startY, unsigned int endX, unsigned int endY, SelectedObjects& selectedObjects);
 
 protected:
-	virtual bool doTask(Task* pTask, unsigned int threadID);
+	virtual bool doTask(ThreadPoolTask* pTask, unsigned int threadID);
 
 	static Object* unconstObjectPointer(const Object* pObject);
 

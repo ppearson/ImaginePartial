@@ -31,7 +31,7 @@ template<typename T, size_t baseSize = 4>
 class SmallVector
 {
 public:
-	SmallVector() : m_extra(NULL, 0)
+	SmallVector() : m_extra()
 	{
 
 	}
@@ -78,10 +78,18 @@ public:
 			m_coreItems[i] = rhs.m_coreItems[i];
 		}
 		m_extra.setTag(coreItems);
-		const ExtraStorage* pExtra = rhs.m_extra.getPtr();
+
+		// delete any current extra items
+		ExtraStorage* pExtra = m_extra.getPtr();
 		if (pExtra)
 		{
-			ExtraStorage* pClonedExtra = pExtra->clone();
+			delete pExtra;
+		}
+
+		const ExtraStorage* pRHSExtra = rhs.m_extra.getPtr();
+		if (pRHSExtra)
+		{
+			ExtraStorage* pClonedExtra = pRHSExtra->clone();
 			m_extra.setPointer(pClonedExtra);
 		}
 		else
@@ -463,6 +471,7 @@ public:
 	}
 
 private:
+	// TODO: this shows up in profiles... - inline it? Some other way of doing this without returning a pointer?
 	bool isUsingExtra() const
 	{
 		const ExtraStorage* pExtra = m_extra.getPtr();

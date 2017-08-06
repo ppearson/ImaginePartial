@@ -31,6 +31,8 @@
 
 #include "materials/standard_material.h"
 
+#include "global_context.h"
+
 #include "objects/compound_object.h"
 #include "objects/mesh.h"
 
@@ -52,7 +54,7 @@ bool SceneReaderAbc::readFile(const std::string& path, const SceneReaderOptions&
 
 	if (!archive.valid())
 	{
-		fprintf(stderr, "Invalid Alembic file...\n");
+		GlobalContext::instance().getLogger().error("Invalid Alembic file: %s.", path.c_str());
 		return false;
 	}
 
@@ -69,7 +71,7 @@ bool SceneReaderAbc::readFile(const std::string& path, const SceneReaderOptions&
 
 	if (parentObjects.empty())
 	{
-		fprintf(stderr, "Not objects found in Alembic file...\n");
+		GlobalContext::instance().getLogger().error("No objects found in Alembic file: %s", path.c_str());
 		return false;
 	}
 

@@ -51,13 +51,10 @@ void GeoReader::postProcess()
 
 	Settings& settings = Settings::instance();
 
-	bool centreObject = settings.getBool("import/centre_objects", true);
+	bool centreObject = m_readOptions.centreObject;
 	bool scaleToFit = m_readOptions.scaleToFit;
 	float scaleToFitSize = m_readOptions.scaleToFitSize;
-	// if it's default, get value from settings
-	if (m_readOptions.scaleToFitSize == 0.0f)
-		scaleToFitSize = settings.getFloat("import/scale_to_fit_size", 10.0f);
-	bool sitGeometryOnPlane = settings.getBool("import/sit_geometry_on_plane", true);
+	bool sitGeometryOnPlane = m_readOptions.standObjectOnPlane;
 
 	if (scaleToFit)
 	{

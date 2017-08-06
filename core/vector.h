@@ -81,6 +81,11 @@ public:
 		return (rhs.x == x && rhs.y == y && rhs.z == z);
 	}
 
+	bool operator!=(const Vector& rhs) const
+	{
+		return (rhs.x != x || rhs.y != y || rhs.z != z);
+	}
+
 	inline Vector operator+(const Vector& rhs) const
 	{
 		return Vector(x + rhs.x, y + rhs.y, z + rhs.z);

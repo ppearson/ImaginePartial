@@ -27,7 +27,7 @@
 namespace Imagine
 {
 
-AnimatedVectorControl::AnimatedVectorControl(const std::string& name, AnimatedVector* pairedValue, float min, float max, std::string label) : Control(name, label)
+AnimatedVectorControl::AnimatedVectorControl(const std::string& name, AnimatedVector* pairedValue, float min, float max, const std::string& label) : Control(name, label)
 {
 	QWidget* mainWidget = new QWidget();
 
@@ -54,7 +54,7 @@ AnimatedVectorControl::AnimatedVectorControl(const std::string& name, AnimatedVe
 
 		pSpin->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-		pSpin->setBGColour(isKey ? QColor(192, 192, 255) : Qt::white);
+		pSpin->setBGColour(isKey ? QColor(192, 192, 255) : pSpin->palette().color(QPalette::Base));
 
 		pSpin->setValue((value)[i]);
 
@@ -222,7 +222,7 @@ void AnimatedVectorControl::refreshFromValue()
 
 	for (unsigned int i = 0; i < 3; i++)
 	{
-		m_Spins[i]->setBGColour(isKey ? QColor(192, 192, 255) : Qt::white);
+		m_Spins[i]->setBGColour(isKey ? QColor(192, 192, 255) : m_Spins[i]->palette().color(QPalette::Base));
 
 		m_Spins[i]->setValue((value)[i]);
 	}

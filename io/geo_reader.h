@@ -51,14 +51,16 @@ struct GeoReaderOptions
 {
 	enum GeoReaderMeshType
 	{
-		eEditable,
-		eStandard,
-		eTriangle
+		eEditableMesh,
+		eStandardMesh,
+		eTriangleMesh,
+		ePointCloud
 	};
 
 	GeoReaderOptions() : importMaterials(true), importTextures(true), importCompoundObjects(true), newMaterialBreaksObjectGroup(false),
-		rotate90NegX(false), scaleToFit(true), scaleToFitSize(0.0f) /*pull from settings*/, importFrame(1), useInstances(false),
-		meshType(eEditable)
+		rotate90NegX(false), centreObject(true), scaleToFit(true), scaleToFitSize(10.0f), standObjectOnPlane(true),
+		importFrame(1), useInstances(false),
+		pointSize(0.001f), meshType(eEditableMesh)
 	{
 	}
 
@@ -68,11 +70,16 @@ struct GeoReaderOptions
 	bool				newMaterialBreaksObjectGroup;
 
 	bool				rotate90NegX;
+	
+	bool				centreObject;
 	bool				scaleToFit;
 	float				scaleToFitSize;
+	bool				standObjectOnPlane;
 
 	unsigned int		importFrame;
 	bool				useInstances;
+	
+	float				pointSize;
 
 	GeoReaderMeshType	meshType;
 };

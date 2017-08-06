@@ -50,6 +50,8 @@ public:
 
 	static unsigned int kBVHSSEGoodClippingTrianglePackets;
 	static unsigned int kBVHSSEAllAxisLeafThreshold2;
+	
+	static unsigned int kChunkedParallelBuild;
 
 	unsigned int getType() const;
 	void setType(unsigned int type);
@@ -74,6 +76,9 @@ public:
 
 	bool hasConserveMemory() const;
 	void setConserveMemory(bool conserveMemory);
+
+	bool hasChunkedParallelBuild() const;
+	void setChunkedParallelBuild(bool chunkedParallel);
 
 	AccelStructureStatus getStatus() const;
 	void setStatus(AccelStructureStatus status);

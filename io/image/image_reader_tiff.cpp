@@ -28,6 +28,8 @@
 
 #include "colour/colour_space.h"
 
+#include "global_context.h"
+
 #include "utils/file_helpers.h"
 
 namespace Imagine
@@ -96,21 +98,21 @@ Image* ImageReaderTIFF::readColourImage(const std::string& filePath, unsigned in
 	TIFF* pTiff = TIFFOpen(filePath.c_str(), "r");
 	if (!pTiff)
 	{
-		fprintf(stderr, "Error reading file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Can't open file: %s", filePath.c_str());
 		return NULL;
 	}
 
 	TiffInfo tiffInfo;
 	if (!readInfo(pTiff, tiffInfo))
 	{
-		fprintf(stderr, "Invalid tiff file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Invalid tiff file: %s", filePath.c_str());
 		TIFFClose(pTiff);
 		return NULL;
 	}
 
 	if (tiffInfo.bitDepth < 8)
 	{
-		fprintf(stderr, "Unsupported TIFF format for file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Unsupported TIFF format for file: %s", filePath.c_str());
 		TIFFClose(pTiff);
 		return NULL;
 	}
@@ -153,7 +155,7 @@ Image* ImageReaderTIFF::readScanlineColourImage(const std::string& filePath, TIF
 	// if we didn't allocate any image, bail out
 	if (!pImage3b && !pImage3h && !pImage3f)
 	{
-		fprintf(stderr, "Couldn't allocate memory for new image for file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Couldn't allocate memory for new image for file: %s", filePath.c_str());
 		TIFFClose(pTiff);
 		return NULL;
 	}
@@ -169,14 +171,14 @@ Image* ImageReaderTIFF::readScanlineColourImage(const std::string& filePath, TIF
 
 		if (!pRawBuffer)
 		{
-			fprintf(stderr, "Couldn't allocate memory to read file: %s\n", filePath.c_str());
+			GlobalContext::instance().getLogger().error("Couldn't allocate memory to read file: %s", filePath.c_str());
 
 			failed = true;
 		}
 
 		if (TIFFReadRGBAImage(pTiff, tiffInfo.imageWidth, tiffInfo.imageHeight, pRawBuffer, 0) == 0)
 		{
-			fprintf(stderr, "Couldn't read image: %s\n", filePath.c_str());
+			GlobalContext::instance().getLogger().error("Couldn't read image: %s", filePath.c_str());
 
 			failed = true;
 
@@ -236,7 +238,7 @@ Image* ImageReaderTIFF::readScanlineColourImage(const std::string& filePath, TIF
 
 		if (!pRawBuffer)
 		{
-			fprintf(stderr, "Couldn't allocate memory to read file: %s\n", filePath.c_str());
+			GlobalContext::instance().getLogger().error("Couldn't allocate memory to read file: %s", filePath.c_str());
 			if (pImage3f)
 			{
 				delete pImage3f;
@@ -409,7 +411,7 @@ Image* ImageReaderTIFF::readTiledColourImage(const std::string& filePath, TIFF* 
 	// if we didn't allocate any image, bail out
 	if (!pImage3b && !pImage3h && !pImage3f)
 	{
-		fprintf(stderr, "Couldn't allocate memory for new image for file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Couldn't allocate memory for new image for file: %s", filePath.c_str());
 		TIFFClose(pTiff);
 		return NULL;
 	}
@@ -581,21 +583,21 @@ Image* ImageReaderTIFF::readGreyscaleImage(const std::string& filePath, unsigned
 	TIFF* pTiff = TIFFOpen(filePath.c_str(), "r");
 	if (!pTiff)
 	{
-		fprintf(stderr, "Error reading file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Error reading file: %s", filePath.c_str());
 		return NULL;
 	}
 
 	TiffInfo tiffInfo;
 	if (!readInfo(pTiff, tiffInfo))
 	{
-		fprintf(stderr, "Invalid tiff file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Invalid tiff file: %s", filePath.c_str());
 		TIFFClose(pTiff);
 		return NULL;
 	}
 
 	if (tiffInfo.bitDepth < 8)
 	{
-		fprintf(stderr, "Unsupported TIFF format for file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Unsupported TIFF format for file: %s", filePath.c_str());
 		TIFFClose(pTiff);
 		return NULL;
 	}
@@ -629,7 +631,7 @@ Image* ImageReaderTIFF::readScanlineGreyscaleImage(const std::string& filePath, 
 	// if we didn't allocate any image, bail out
 	if (!pImage1b && !pImage1f)
 	{
-		fprintf(stderr, "Couldn't allocate memory for new image for file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Couldn't allocate memory for new image for file: %s", filePath.c_str());
 		TIFFClose(pTiff);
 		return NULL;
 	}
@@ -645,14 +647,14 @@ Image* ImageReaderTIFF::readScanlineGreyscaleImage(const std::string& filePath, 
 
 		if (!pRawBuffer)
 		{
-			fprintf(stderr, "Couldn't allocate memory to read file: %s\n", filePath.c_str());
+			GlobalContext::instance().getLogger().error("Couldn't allocate memory to read file: %s", filePath.c_str());
 
 			failed = true;
 		}
 
 		if (TIFFReadRGBAImage(pTiff, tiffInfo.imageWidth, tiffInfo.imageHeight, pRawBuffer, 0) == 0)
 		{
-			fprintf(stderr, "Couldn't read image: %s\n", filePath.c_str());
+			GlobalContext::instance().getLogger().error("Couldn't read image: %s", filePath.c_str());
 
 			failed = true;
 
@@ -789,7 +791,7 @@ Image* ImageReaderTIFF::readScanlineGreyscaleImage(const std::string& filePath, 
 
 		if (!pRawBuffer)
 		{
-			fprintf(stderr, "Couldn't allocate memory to read file: %s\n", filePath.c_str());
+			GlobalContext::instance().getLogger().error("Couldn't allocate memory to read file: %s", filePath.c_str());
 			if (pImage1f)
 			{
 				delete pImage1f;
@@ -978,7 +980,7 @@ bool ImageReaderTIFF::readImageDetails(const std::string& filePath, ImageTexture
 	TIFF* pTiff = TIFFOpen(filePath.c_str(), "r");
 	if (!pTiff)
 	{
-		fprintf(stderr, "Error reading file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Error reading file: %s", filePath.c_str());
 		return false;
 	}
 
@@ -1060,7 +1062,7 @@ bool ImageReaderTIFF::readImageDetails(const std::string& filePath, ImageTexture
 		// if not, exit out
 		if (bitDepth != info.bitDepth || channelCount != info.channelCount)
 		{
-			fprintf(stderr, "Image subimage mismatch: %s\n", filePath.c_str());
+			GlobalContext::instance().getLogger().error("Error reading file - image subimage mismatch for file: %s", filePath.c_str());
 			wasOkay = false;
 			break;
 		}

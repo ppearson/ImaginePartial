@@ -159,6 +159,8 @@ bool DirectIllumination<Accumulator>::doProgressiveTask(RenderTask* pTask, unsig
 
 	RenderThreadContext* pRenderThreadCtx = getRenderThreadContext(threadID);
 	ShadingContext shadingContext(pRenderThreadCtx);
+	
+	pRenderThreadCtx->setRandomNumberGenerator(&rng);
 
 	TileState currentState = pTask->getState();
 
@@ -501,6 +503,14 @@ Colour4f DirectIllumination<Accumulator>::processRayRecurse(RenderThreadContext&
 
 	// shade the material to get the shader normal at the surface
 	pMaterial->shade(localRay, hitResult, &availableBSDF);
+	
+	if (pathState.bounceLevel == 0 && hitResult.pLight && (hitResult.pLight->getRenderVisibilityFlags() & localRay.type))
+	{
+		const BakedBSDF* pBakedBSDF = hitResult.pBakedBSDF;
+		colour += pBakedBSDF->getEmitter()->evaluateLuminance(hitResult, localRay.direction);
+		colour.a = 1.0f;
+		return colour;
+	}
 
 	Point lastRayIntersection = hitResult.hitPoint;
 

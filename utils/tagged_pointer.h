@@ -28,9 +28,11 @@ template <typename T, int alignment>
 class TaggedPointer
 {
 public:
-	inline TaggedPointer()
+	// explicitly don't use setBoth() for this, as there's an overhead doing that
+	// and we don't need to anyway...
+	inline TaggedPointer() : m_pPointer(NULL)
 	{
-		setBoth(NULL, 0);
+		
 	}
 
 	inline TaggedPointer(T* pointer, unsigned int tag = 0)

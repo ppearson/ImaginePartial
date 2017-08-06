@@ -32,6 +32,7 @@ static const unsigned int kTrianglePacketsFlagMask = (1 << 5);
 static const unsigned int kLeafNodeThesholdMask = (255 << 6);
 static const unsigned int kMaxDepthMask = (63 << 14);
 static const unsigned int kConserveMemoryMask = (1 << 21);
+unsigned int AccelSettings::kChunkedParallelBuild = (1 << 22);
 
 // Mesh KDTree with leaf node threshold = 0 (default), max depth = 0, good partitioning and clipping
 unsigned int AccelSettings::kKDTreeMeshBitSetGoodClipping = 20u;
@@ -189,6 +190,16 @@ bool AccelSettings::hasConserveMemory() const
 void AccelSettings::setConserveMemory(bool conserveMemory)
 {
 	setFlagForBoolValue(kConserveMemoryMask, conserveMemory);
+}
+
+bool AccelSettings::hasChunkedParallelBuild() const
+{
+	return (m_flags & kChunkedParallelBuild);
+}
+
+void AccelSettings::setChunkedParallelBuild(bool chunkedParallel)
+{
+	setFlagForBoolValue(kChunkedParallelBuild, chunkedParallel);
 }
 
 AccelStructureStatus AccelSettings::getStatus() const

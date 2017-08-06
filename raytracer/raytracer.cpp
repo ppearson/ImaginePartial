@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2016 Peter Pearson.
+ Copyright 2011-2017 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -73,6 +73,8 @@
 
 #include "filters/filter_factory.h"
 
+#include "sampling/sample_generator_factory.h"
+
 #include "remote/remote_state.h"
 
 #include "tile_task_generator.h"
@@ -99,9 +101,9 @@ static const unsigned int kTileSize = 32;
 
 Raytracer::Raytracer(SceneInterface& scene, OutputImage* outputImage, Params& settings, bool preview, unsigned int threads)
 	: ThreadPool(threads, false), m_scene(scene), m_pOutputImage(outputImage), m_useRemoteClients(false), m_pRenderer(NULL), m_pFilter(NULL),
-	  m_tileApronSize(0), m_progressive(settings.getBool("progressive")), m_extraChannels(0), m_statsType(eStatisticsNone),
-	  m_statsOutputType(eStatsOutputConsole), m_preview(preview), m_pRenderCamera(NULL), m_pCameraRayCreator(NULL), m_pHost(NULL),
-	  m_pGlobalImageCache(NULL), m_backgroundType(eBackgroundNone),
+	  m_tileApronSize(0), m_pSampleGeneratorFactory(NULL), m_progressive(settings.getBool("progressive")), m_extraChannels(0),
+	  m_statsType(eStatisticsNone), m_statsOutputType(eStatsOutputConsole), m_preview(preview), m_pRenderCamera(NULL), m_pCameraRayCreator(NULL),
+	  m_pHost(NULL), m_pGlobalImageCache(NULL), m_backgroundType(eBackgroundNone),
 	  m_pBackground(NULL), m_lightSampling(eLSFullAllLights), m_sampleLights(false), m_lightSamples(0), m_motionBlur(false), m_depthOfField(false),
 	  m_pDebugPathCollection(NULL)
 {
@@ -113,8 +115,8 @@ Raytracer::Raytracer(SceneInterface& scene, OutputImage* outputImage, Params& se
 
 // this is just used for preview renders, so we can make certain assumptions...
 Raytracer::Raytracer(SceneInterface& scene, unsigned int threads, bool progressive) : ThreadPool(threads), m_scene(scene),
-	m_pOutputImage(NULL), m_useRemoteClients(false), m_pRenderer(NULL), m_pFilter(NULL), m_tileApronSize(0), m_progressive(progressive),
-	m_preview(true), m_pRenderCamera(NULL), m_pCameraRayCreator(NULL), m_pHost(NULL), m_pGlobalImageCache(NULL),
+	m_pOutputImage(NULL), m_useRemoteClients(false), m_pRenderer(NULL), m_pFilter(NULL), m_tileApronSize(0), m_pSampleGeneratorFactory(NULL),
+	m_progressive(progressive),	m_preview(true), m_pRenderCamera(NULL), m_pCameraRayCreator(NULL), m_pHost(NULL), m_pGlobalImageCache(NULL),
 	m_backgroundType(eBackgroundNone), m_pBackground(NULL),
 	m_lightSampling(eLSFullAllLights), m_sampleLights(false), m_lightSamples(0), m_motionBlur(false), m_pDebugPathCollection(NULL)
 {
@@ -149,6 +151,12 @@ Raytracer::~Raytracer()
 	{
 		delete m_pFilter;
 		m_pFilter = NULL;
+	}
+
+	if (m_pSampleGeneratorFactory)
+	{
+		delete m_pSampleGeneratorFactory;
+		m_pSampleGeneratorFactory = NULL;
 	}
 
 	if (m_pBackground)
@@ -272,7 +280,7 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 	GlobalContext::TextureCachingType textureCacheType = GlobalContext::instance().getTextureCachingType();
 	if (textureCacheType != GlobalContext::eTextureCachingNone || useTextureCacheSet)
 	{
-		bool textureFileHandleCaching = settings.getBool("useTextureFileHandleCaching", true);
+		bool textureFileHandleCaching = settings.getBool("useTextureFileHandleCaching", false);
 
 		size_t memLimit = GlobalContext::instance().getTextureCacheMemoryLimit();
 		// ImageTextureCache needs memory size specified as KB
@@ -293,8 +301,8 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 				m_pGlobalImageCache->setGlobalMipmapLevelBias((int)textureGlobalMipmapBias);
 			}
 
-			bool deleteTileItems = settings.getBool("textureDeleteTileItems", false);
-			m_pGlobalImageCache->setDeleteTileItems(deleteTileItems);
+			bool deletekTileItems = settings.getBool("textureDeletekTileItems", false);
+			m_pGlobalImageCache->setDeleteTileItems(deletekTileItems);
 		}
 	}
 
@@ -312,6 +320,16 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 	m_pFilter->initialise(true); // clamp negative filter lobes for the moment
 
 	m_tileApronSize = m_pFilter->getApronSize();
+
+	// set up sampler factory generator
+	if (m_pSampleGeneratorFactory)
+	{
+		delete m_pSampleGeneratorFactory;
+		m_pSampleGeneratorFactory = NULL;
+	}
+
+	unsigned int samplerType = settings.getUInt("sampler_type", 1); // default is stratified
+	m_pSampleGeneratorFactory = SampleGeneratorFactory::createSampleGeneratorFactory(samplerType);
 
 	// for the moment, delete any existing per-thread stuff - for re-rendering, this has overheads,
 	// but it lets us cope with global state changes (different number of threads) easily
@@ -365,18 +383,22 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 
 				m_aThreadTempImages.push_back(result.pImageTile);
 
-				// create approprate time counter for thread, based off stats type
-				ThreadTimeCounter* pNewTimeCounter = NULL;
+				// create approprate time counters for thread, based off stats type
+				ThreadTimeCounter* pNewTimeCounterIntegrator = NULL;
+				ThreadTimeCounter* pNewTimeCounterTexture = NULL;
 				if (m_statsType != eStatisticsFull)
 				{
-					pNewTimeCounter = new ThreadTimeCounterNull();
+					pNewTimeCounterIntegrator = new ThreadTimeCounterNull();
+					pNewTimeCounterTexture = new ThreadTimeCounterNull();
 				}
 				else
 				{
-					pNewTimeCounter = new ThreadTimeCounterReal();
+					pNewTimeCounterIntegrator = new ThreadTimeCounterReal();
+					pNewTimeCounterTexture = new ThreadTimeCounterReal();
 				}
 
-				result.pRenderThreadContext->setTimeCounter(pNewTimeCounter);
+				result.pRenderThreadContext->setIntegratorTimeCounter(pNewTimeCounterIntegrator);
+				result.pRenderThreadContext->setTextureTimeCounter(pNewTimeCounterTexture);
 
 				result.pRenderThreadContext->setMainImageTextureCache(m_pGlobalImageCache);
 
@@ -408,18 +430,22 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 				// TODO: this won't always be the value to set (e.g. per thread)...
 				pNewRenderThreadContext->setMainImageTextureCache(m_pGlobalImageCache);
 
-				// create approprate time counter for thread, based off stats type
-				ThreadTimeCounter* pNewTimeCounter = NULL;
+				// create approprate time counters for thread, based off stats type
+				ThreadTimeCounter* pNewTimeCounterIntegrator = NULL;
+				ThreadTimeCounter* pNewTimeCounterTexture = NULL;
 				if (m_statsType != eStatisticsFull)
 				{
-					pNewTimeCounter = new ThreadTimeCounterNull();
+					pNewTimeCounterIntegrator = new ThreadTimeCounterNull();
+					pNewTimeCounterTexture = new ThreadTimeCounterNull();
 				}
 				else
 				{
-					pNewTimeCounter = new ThreadTimeCounterReal();
+					pNewTimeCounterIntegrator = new ThreadTimeCounterReal();
+					pNewTimeCounterTexture = new ThreadTimeCounterReal();
 				}
 
-				pNewRenderThreadContext->setTimeCounter(pNewTimeCounter);
+				pNewRenderThreadContext->setIntegratorTimeCounter(pNewTimeCounterIntegrator);
+				pNewRenderThreadContext->setTextureTimeCounter(pNewTimeCounterTexture);
 
 				if (m_pGlobalImageCache)
 				{
@@ -672,7 +698,7 @@ void Raytracer::setRemoteRenderSettings(const RemoteState& remoteRenderState)
 			return;
 		}
 
-		fprintf(stderr, "Error: Can't find any remote render clients to use...\n");
+		GlobalContext::instance().getLogger().error("Can't find any remote render clients to use.");
 	}
 
 	// otherwise, don't use it
@@ -743,7 +769,7 @@ void Raytracer::renderScene(float time, const Params* pParams, bool waitForCompl
 	updateCameraRayCreator();
 
 	{
-		Timer time1("Scene pre-renders", !m_preview);
+		Timer time1("Scene pre-renders", GlobalContext::instance().getLogger(), !m_preview);
 
 		m_pRenderCamera->init(m_width, m_height, time);
 
@@ -803,7 +829,7 @@ void Raytracer::renderScene(float time, const Params* pParams, bool waitForCompl
 			totalStatistics.recordInitialPreRenderStatistics();
 		}
 
-		Timer time1("Actual rendering", !m_preview);
+		Timer time1("Actual rendering", GlobalContext::instance().getLogger(), !m_preview);
 
 		// explicitly turn on affinity setting for threads...
 		m_setAffinity = true;
@@ -979,6 +1005,14 @@ void Raytracer::createTileJobs()
 
 		m_clientJobManager.addTasks(aRemoteTiles);
 	}
+}
+
+void Raytracer::renderTile(OutputImageTile& outputTile, unsigned int x, unsigned int y, unsigned int r, unsigned int t, bool deep)
+{
+	RenderTask newTask(x, y, r - x, t- y, eTSBlank, 0);
+
+	// TODO: need to do extra stuff here...
+	doTask(&newTask, 0);
 }
 
 void Raytracer::taskDone()
@@ -1190,7 +1224,7 @@ void Raytracer::setupRenderThreadContextLightSampling()
 		}
 		else
 		{
-			fprintf(stderr, "Threaded init of LightSampler failed.\n");
+			GlobalContext::instance().getLogger().error("Threaded init of LightSampler failed.");
 		}
 	}
 
@@ -1217,7 +1251,7 @@ void Raytracer::setupRenderThreadContextLightSampling()
 	}
 }
 
-bool Raytracer::doTask(Task* pTask, unsigned int threadID)
+bool Raytracer::doTask(ThreadPoolTask* pTask, unsigned int threadID)
 {
 	if (!pTask)
 		return false;

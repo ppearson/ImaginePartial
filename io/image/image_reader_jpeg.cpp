@@ -20,6 +20,8 @@
 
 #include <jpeglib.h>
 
+#include "global_context.h"
+
 #include "image/image_1f.h"
 #include "image/image_1b.h"
 #include "image/image_colour3f.h"
@@ -39,7 +41,7 @@ Image* ImageReaderJPEG::readColourImage(const std::string& filePath, unsigned in
 	FILE* pFile = fopen(filePath.c_str(), "rb");
 	if (!pFile)
 	{
-		fprintf(stderr, "Error opening file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Can't open file: %s", filePath.c_str());
 		return NULL;
 	}
 
@@ -53,7 +55,7 @@ Image* ImageReaderJPEG::readColourImage(const std::string& filePath, unsigned in
 	jpeg_read_header(&cinfo, TRUE);
 	if (jpeg_start_decompress(&cinfo) != TRUE)
 	{
-		fprintf(stderr, "Cannot open file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Cannot open file: %s", filePath.c_str());
 		fclose(pFile);
 		return NULL;
 	}
@@ -67,7 +69,7 @@ Image* ImageReaderJPEG::readColourImage(const std::string& filePath, unsigned in
 
 	if (!pScanlines)
 	{
-		fprintf(stderr, "Cannot allocate memory to read file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Cannot allocate memory to read file: %s", filePath.c_str());
 		jpeg_finish_decompress(&cinfo);
 		jpeg_destroy_decompress(&cinfo);
 		fclose(pFile);
@@ -90,7 +92,7 @@ Image* ImageReaderJPEG::readColourImage(const std::string& filePath, unsigned in
 
 	if (!pImage3f && !pImage3b)
 	{
-		fprintf(stderr, "Can't allocate memory for image...\n");
+		GlobalContext::instance().getLogger().error("Can't allocate memory for image...");
 		jpeg_finish_decompress(&cinfo);
 		jpeg_destroy_decompress(&cinfo);
 		fclose(pFile);
@@ -223,7 +225,7 @@ Image* ImageReaderJPEG::readColourImageAndByteCopy(const std::string& filePath, 
 	FILE* pFile = fopen(filePath.c_str(), "rb");
 	if (!pFile)
 	{
-		fprintf(stderr, "Error opening file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Can't open file: %s", filePath.c_str());
 		return NULL;
 	}
 
@@ -237,7 +239,7 @@ Image* ImageReaderJPEG::readColourImageAndByteCopy(const std::string& filePath, 
 	jpeg_read_header(&cinfo, TRUE);
 	jpeg_start_decompress(&cinfo);
 
-	int depth = cinfo.output_components;
+	int channels = cinfo.output_components;
 
 	unsigned int width = cinfo.output_width;
 	unsigned int height = cinfo.output_height;
@@ -263,7 +265,7 @@ Image* ImageReaderJPEG::readColourImageAndByteCopy(const std::string& filePath, 
 		for (unsigned int i = 0; i < height; i++)
 		{
 			// TODO: this could fail...
-			pScanlines[i] = new unsigned char[width * depth];
+			pScanlines[i] = new unsigned char[width * channels];
 		}
 
 		unsigned int linesRead = 0;
@@ -287,7 +289,7 @@ Image* ImageReaderJPEG::readColourImageAndByteCopy(const std::string& filePath, 
 			Colour3f* pImageRow = pImage->colourRowPtr(y);
 			Colour3b* pByteRow = pImageColour3b->colour3bRowPtr(y);
 
-			if (depth == 3)
+			if (channels == 3)
 			{
 				for (unsigned int x = 0; x < width; x++)
 				{
@@ -307,7 +309,7 @@ Image* ImageReaderJPEG::readColourImageAndByteCopy(const std::string& filePath, 
 					pByteRow++;
 				}
 			}
-			else if (depth == 1)
+			else if (channels == 1)
 			{
 				for (unsigned int x = 0; x < width; x++)
 				{
@@ -348,7 +350,7 @@ Image* ImageReaderJPEG::readGreyscaleImage(const std::string& filePath, unsigned
 	FILE* pFile = fopen(filePath.c_str(), "rb");
 	if (!pFile)
 	{
-		fprintf(stderr, "Error reading file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Can't open file: %s", filePath.c_str());
 		return NULL;
 	}
 
@@ -362,7 +364,7 @@ Image* ImageReaderJPEG::readGreyscaleImage(const std::string& filePath, unsigned
 	jpeg_read_header(&cinfo, TRUE);
 	jpeg_start_decompress(&cinfo);
 
-	int depth = cinfo.output_components;
+	int channels = cinfo.output_components;
 
 	unsigned int width = cinfo.output_width;
 	unsigned int height = cinfo.output_height;
@@ -389,7 +391,7 @@ Image* ImageReaderJPEG::readGreyscaleImage(const std::string& filePath, unsigned
 		// read all the scanlines
 		for (unsigned int i = 0; i < height; i++)
 		{
-			pScanlines[i] = new unsigned char[width * depth];
+			pScanlines[i] = new unsigned char[width * channels];
 		}
 
 		unsigned int linesRead = 0;
@@ -400,7 +402,7 @@ Image* ImageReaderJPEG::readGreyscaleImage(const std::string& filePath, unsigned
 		jpeg_finish_decompress(&cinfo);
 		jpeg_destroy_decompress(&cinfo);
 
-		if (depth == 3)
+		if (channels == 3)
 		{
 			if (makeFloat)
 			{

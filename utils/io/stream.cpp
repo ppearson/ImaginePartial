@@ -88,6 +88,19 @@ void Stream::loadUInt(unsigned int& uValue)
 	uValue = static_cast<unsigned int>(value32);
 }
 
+void Stream::storeInt(const int& iValue)
+{
+	int32_t value32 = static_cast<int32_t>(iValue);
+	write((char *) &value32, sizeof(int32_t));
+}
+
+void Stream::loadInt(int& iValue)
+{
+	int32_t value32;
+	read((char *) &value32, sizeof(int32_t));
+	iValue = static_cast<unsigned int>(value32);
+}
+
 void Stream::storeEnum(unsigned int eValue)
 {
 	unsigned char cValue = static_cast<unsigned char>(eValue);

@@ -23,13 +23,21 @@
 #include <sys/time.h>
 #include <stdio.h>
 
+#include "logger.h"
+
 namespace Imagine
 {
 
 class Timer
 {
 public:
-	Timer(const std::string& name, bool enabled = true) : m_enabled(enabled), m_name(name)
+	Timer(const std::string& name, bool enabled = true) : m_name(name), m_pLogger(NULL), m_enabled(enabled)
+	{
+		if (enabled)
+			gettimeofday(&m_startTime, NULL);
+	}
+
+	Timer(const std::string& name, Logger& logger, bool enabled = true) : m_name(name), m_pLogger(&logger), m_enabled(enabled)
 	{
 		if (enabled)
 			gettimeofday(&m_startTime, NULL);
@@ -50,16 +58,31 @@ public:
 		{
 			unsigned int minutes = (unsigned int)(seconds / 60.0);
 			seconds -= double(minutes * 60);
-			fprintf(stderr, "%s: %02d:%05.2f mins.\n", m_name.c_str(), minutes, seconds);
+			if (m_pLogger)
+			{
+				m_pLogger->info("%s: %02d:%05.2f mins.", m_name.c_str(), minutes, seconds);
+			}
+			else
+			{
+				fprintf(stderr, "%s: %02d:%05.2f mins.\n", m_name.c_str(), minutes, seconds);
+			}
 		}
 		else
 		{
-			fprintf(stderr, "%s: %0.5f secs.\n", m_name.c_str(), seconds);
+			if (m_pLogger)
+			{
+				m_pLogger->info("%s: %0.5f secs.", m_name.c_str(), seconds);
+			}
+			else
+			{
+				fprintf(stderr, "%s: %0.5f secs.\n", m_name.c_str(), seconds);
+			}
 		}
 	}
 protected:
-	bool			m_enabled;
 	std::string		m_name;
+	Logger*			m_pLogger;
+	bool			m_enabled;
 	timeval			m_startTime;
 };
 

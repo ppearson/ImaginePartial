@@ -28,6 +28,9 @@
 namespace Imagine
 {
 
+// This is arguably pointless in that std::vector<bool> is specialised to do this anyway,
+// but we might need to make this sparse in the future...
+
 class Bitset
 {
 public:
@@ -38,10 +41,12 @@ public:
 	void initialise(unsigned int size)
 	{
 		unsigned int numCharsNeeded = size / 8;
-		numCharsNeeded += 1;
+		if (size % 8 > 0)
+		{
+			numCharsNeeded += 1;
+		}
 
 		m_aBits.resize(numCharsNeeded, 0);
-		m_numChars = numCharsNeeded;
 	}
 
 	void reset()
@@ -73,8 +78,6 @@ public:
 
 protected:
 	std::vector<unsigned char>	m_aBits;
-
-	unsigned int				m_numChars;
 };
 
 } // namespace Imagine

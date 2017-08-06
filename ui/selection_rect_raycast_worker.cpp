@@ -101,7 +101,7 @@ bool SelectionRectRaycastWorker::performRaycast(unsigned int startX, unsigned in
 	return true;
 }
 
-bool SelectionRectRaycastWorker::doTask(Task* pTask, unsigned int threadID)
+bool SelectionRectRaycastWorker::doTask(ThreadPoolTask* pTask, unsigned int threadID)
 {
 	SelectionRectRaycastTask* pThisTask = static_cast<SelectionRectRaycastTask*>(pTask);
 

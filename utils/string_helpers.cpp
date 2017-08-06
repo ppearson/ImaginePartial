@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2016 Peter Pearson.
+ Copyright 2011-2017 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -21,11 +21,12 @@
 #include <stdio.h>
 #include <assert.h>
 #include <algorithm>
+#include <stdarg.h>
 
 namespace Imagine
 {
 
-void split(const std::string& str, std::vector<std::string>& tokens, const std::string& sep, int startPos)
+void splitString(const std::string& str, std::vector<std::string>& tokens, const std::string& sep, int startPos)
 {
 	int lastPos = str.find_first_not_of(sep, startPos);
 	int pos = str.find_first_of(sep, lastPos);
@@ -38,7 +39,7 @@ void split(const std::string& str, std::vector<std::string>& tokens, const std::
 	}
 }
 
-unsigned int fastSplit(const std::string& string, std::vector<StringToken>& tokens, const std::string& sep, int startPos)
+unsigned int fastStringSplit(const std::string& string, std::vector<StringToken>& tokens, const std::string& sep, int startPos)
 {
 	int lastPos = string.find_first_not_of(sep, startPos);
 	int pos = string.find_first_of(sep, lastPos);
@@ -166,7 +167,7 @@ std::string formatSize(size_t amount)
 	else
 	{
 		sprintf(szDecimalSize, "0");
-		units = " ";
+		units = "B"; // just so it makes sense
 	}
 
 	sprintf(szMemAvailable, "%s %s", szDecimalSize, units.c_str());
@@ -218,9 +219,18 @@ std::string formatTimePeriodSeconds(double seconds, bool keepAsSeconds)
 	unsigned int minutes = (unsigned int)(seconds / 60.0);
 	seconds -= minutes * 60;
 
+	// we need to cater for seconds now being something like 59.98999,
+	// which when printed out with no decimal places becomes 60, which while
+	// technically correct, looks wrong.
+	// TODO: a better way of doing this? Just round it as an int?
+	if (seconds >= 59.5)
+	{
+		minutes += 1.0f;
+		seconds = 0;
+	}
+
 	if (minutes < 60)
 	{
-//		sprintf(szTemp, "%02d:%04.1f m", minutes, seconds);
 		sprintf(szTemp, "%02d:%02.f m", minutes, seconds);
 		return std::string(szTemp);
 	}
@@ -228,8 +238,7 @@ std::string formatTimePeriodSeconds(double seconds, bool keepAsSeconds)
 	unsigned int hours = (unsigned int)(minutes / 60.0);
 	minutes -= hours * 60;
 
-//	sprintf(szTemp, "%2d:%02d:%02.1f hours", hours, minutes, seconds);
-	sprintf(szTemp, "%2d:%02d:%02d h", hours, minutes, (unsigned int)seconds);
+	sprintf(szTemp, "%d:%02d:%02.f h", hours, minutes, seconds);
 	return std::string(szTemp);
 }
 
@@ -284,6 +293,117 @@ std::string tabulateColumnStrings(const std::vector<std::string>& column0, const
 	}
 
 	return finalResult;
+}
+
+// TODO: lots of duplicate code here from above...
+std::string tabulateColumnStrings(const std::vector<std::string>& column0, const std::vector<std::string>& column1, const std::vector<std::string>& column2)
+{
+	// the assumption here is the second and third columns are numeric units, so should be right-aligned, such that it's easy
+	// to compare numbers
+
+	if (column0.size() != column1.size() || column1.size() != column2.size())
+		return "";
+
+	size_t maxLeftWidth = 0;
+
+	std::vector<std::string>::const_iterator itCol0 = column0.begin();
+	for (; itCol0 != column0.end(); ++itCol0)
+	{
+		const std::string& stringItem = *itCol0;
+		maxLeftWidth = std::max(stringItem.size(), maxLeftWidth);
+	}
+
+	size_t maxCentreWidth = 0;
+	std::vector<std::string>::const_iterator itCol1 = column1.begin();
+	for (; itCol1 != column1.end(); ++itCol1)
+	{
+		const std::string& stringItem = *itCol1;
+		maxCentreWidth = std::max(stringItem.size(), maxCentreWidth);
+	}
+
+	size_t maxRightWidth = 0;
+	std::vector<std::string>::const_iterator itCol2 = column2.begin();
+	for (; itCol2 != column2.end(); ++itCol2)
+	{
+		const std::string& stringItem = *itCol2;
+		maxRightWidth = std::max(stringItem.size(), maxRightWidth);
+	}
+
+	size_t centreWidth = maxLeftWidth + maxCentreWidth + 3;
+	size_t fullWidth = centreWidth + maxRightWidth + 3;
+
+	std::string finalResult;
+
+	char szTemp[2048];
+
+	for (unsigned int i = 0; i < column0.size(); i++)
+	{
+		const std::string& leftItem = column0[i];
+		const std::string& centreItem = column1[i];
+		const std::string& rightItem = column2[i];
+
+		unsigned int firstPaddingSize = (unsigned int)(centreWidth - leftItem.size() - centreItem.size());
+		unsigned int secondPaddingSize = (unsigned int)(fullWidth - centreWidth - rightItem.size());
+
+		sprintf(szTemp, "%s%*s %s%*s %s\n", leftItem.c_str(), firstPaddingSize, "", centreItem.c_str(), secondPaddingSize, "", rightItem.c_str());
+
+		finalResult += szTemp;
+	}
+
+	return finalResult;
+}
+
+void TextOutputColumnifier::addStringsCustom(const std::string& string0, const char* format, ...)
+{
+	char szTemp[2048];
+	va_list argPtr;
+	va_start(argPtr, format);
+	vsprintf(szTemp, format, argPtr);
+	va_end(argPtr);
+
+	std::string customString(szTemp);
+
+	m_column0.push_back(string0);
+	m_column1.push_back(customString);
+}
+
+void TextOutputColumnifier::addStringsCustom2(const std::string& string0, const std::string& string1, const char* format, ...)
+{
+	char szTemp[2048];
+	va_list argPtr;
+	va_start(argPtr, format);
+	vsprintf(szTemp, format, argPtr);
+	va_end(argPtr);
+
+	std::string customString(szTemp);
+
+	m_column0.push_back(string0);
+	m_column1.push_back(string1);
+	m_column2.push_back(customString);
+}
+
+void TextOutputColumnifier::addBlank(unsigned int numColumns)
+{
+	m_column0.push_back("");
+	m_column1.push_back("");
+	if (numColumns > 2)
+	{
+		m_column2.push_back("");
+	}
+}
+
+const std::string& TextOutputColumnifier::getString()
+{
+	if (m_column2.empty())
+	{
+		m_finalString = tabulateColumnStrings(m_column0, m_column1);
+	}
+	else
+	{
+		m_finalString = tabulateColumnStrings(m_column0, m_column1, m_column2);
+	}
+
+	return m_finalString;
 }
 
 } // namespace Imagine

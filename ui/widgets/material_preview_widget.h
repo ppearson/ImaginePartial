@@ -46,6 +46,8 @@ class MaterialPreviewRenderThread : public QThread
 public:
 	MaterialPreviewRenderThread(SceneInterface* pScene, MaterialPreviewWidget* pWidget);
 	virtual ~MaterialPreviewRenderThread();
+	
+	void initialise(OutputImage* pImage);
 
 	// run in a thread...
 	void renderScene(OutputImage* pImage);
@@ -140,6 +142,8 @@ public:
 
 	virtual Colour3f getBackgroundColour() const { return Colour3f(); }
 	virtual Colour3f getAmbientColour() const { return Colour3f(); }
+	
+	virtual void setupMaterials();
 
 public slots:
 	void refreshOutput();

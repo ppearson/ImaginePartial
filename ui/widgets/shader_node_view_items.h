@@ -157,8 +157,8 @@ public:
 		}
 
 
-		bool					wasSource; // whether hit point was closest to source node or destination node
 		ShaderConnectionUI*		pConnection;
+		bool					wasSource; // whether hit point was closest to source node or destination node
 	};
 
 	bool didHit(const QPointF& pos, SelectionInfo& selInfo, float& closestDistance) const;

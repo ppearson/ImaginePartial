@@ -61,7 +61,7 @@ public:
 		RenderThreadContext*		pRenderThreadContext;
 	};
 
-	class RenderThreadInitTask1 : public Task
+	class RenderThreadInitTask1 : public ThreadPoolTask
 	{
 	public:
 		RenderThreadInitTask1(unsigned int tileSizeX, unsigned int tileSizeY, unsigned int imageComponents, Filter* pFilter, unsigned int threadIndex) :
@@ -78,7 +78,7 @@ public:
 		unsigned int	m_threadIndex;
 	};
 
-	class RenderThreadInitTask2 : public Task
+	class RenderThreadInitTask2 : public ThreadPoolTask
 	{
 	public:
 		RenderThreadInitTask2(DistributionDiscrete* pLightDistribution, const LightsAndSamples* pLightSamples, unsigned int localisedSampleCount,
@@ -137,7 +137,7 @@ public:
 	}
 
 protected:
-	virtual bool doTask(Task* pTask, unsigned int threadID)
+	virtual bool doTask(ThreadPoolTask* pTask, unsigned int threadID)
 	{
 		if (!pTask)
 			return false;

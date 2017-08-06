@@ -25,28 +25,28 @@
 namespace Imagine
 {
 
-Task::Task() : m_pThreadPool(NULL)
+ThreadPoolTask::ThreadPoolTask() : m_pThreadPool(NULL)
 {
 }
 
-void Task::setThreadPool(ThreadPool* pThreadPool)
+void ThreadPoolTask::setThreadPool(ThreadPool* pThreadPool)
 {
 	m_pThreadPool = pThreadPool;
 }
 
-bool Task::isActive() const
+bool ThreadPoolTask::isActive() const
 {
 	return m_pThreadPool->isActive();
 }
 
 TaskBundle::TaskBundle() : m_size(0)
 {
-	memset(m_pTasks, 0, sizeof(Task*) * TASK_BUNDLE_SIZE);
+	memset(m_pTasks, 0, sizeof(ThreadPoolTask*) * TASK_BUNDLE_SIZE);
 }
 
 void TaskBundle::clear()
 {
-	memset(m_pTasks, 0, sizeof(Task*) * TASK_BUNDLE_SIZE);
+	memset(m_pTasks, 0, sizeof(ThreadPoolTask*) * TASK_BUNDLE_SIZE);
 	m_size = 0;
 }
 
@@ -58,7 +58,6 @@ ThreadController::ThreadController(unsigned int threads) : m_numberOfThreads(thr
 	m_bsThreadsAvailable.reset();
 
 	m_threadAvailable.reset();
-	m_threadAvailable.set();
 
 	for (unsigned int i = 0; i < m_numberOfThreads; i++)
 	{
@@ -90,7 +89,7 @@ void ThreadPool::terminate()
 	// to kill themselves
 	m_lock.lock();
 
-	std::deque<Task*>::iterator it = m_aTasks.begin();
+	std::deque<ThreadPoolTask*>::iterator it = m_aTasks.begin();
 	for (; it != m_aTasks.end(); ++it)
 	{
 		delete *it;
@@ -211,7 +210,7 @@ void ThreadController::freeThread(unsigned int thread)
 
 	m_lock.unlock();
 
-	m_threadAvailable.set();
+	m_threadAvailable.broadcast();
 }
 
 ThreadPoolThread::ThreadPoolThread(ThreadPool* pThreadPool, unsigned int threadID, Thread::ThreadPriority priority) : Thread(priority),
@@ -274,7 +273,7 @@ void ThreadPoolThread::runTaskBundle()
 {
 	assert(m_pThreadPool);
 
-	Task* pTask = NULL;
+	ThreadPoolTask* pTask = NULL;
 	while (m_isRunning)
 	{
 		// while we've got tasks in our local bundle...
@@ -334,7 +333,7 @@ void ThreadPoolThread::deleteTasksInBundle()
 
 	for (unsigned int i = 0; i < m_bundleSize; i++)
 	{
-		Task* pTask = m_pTaskBundle->m_pTasks[i];
+		ThreadPoolTask* pTask = m_pTaskBundle->m_pTasks[i];
 
 		if (pTask)
 			delete pTask;
@@ -367,7 +366,7 @@ ThreadPool::~ThreadPool()
 	deleteThreadsAndRequeuedTasks();
 }
 
-void ThreadPool::addTask(Task* pTask)
+void ThreadPool::addTask(ThreadPoolTask* pTask)
 {
 	m_lock.lock();
 
@@ -378,23 +377,23 @@ void ThreadPool::addTask(Task* pTask)
 	m_lock.unlock();
 }
 
-void ThreadPool::requeueTask(Task* pTask, unsigned int threadID)
+void ThreadPool::requeueTask(ThreadPoolTask* pTask, unsigned int threadID)
 {
 	RequeuedTasks* pRQT = m_pRequeuedTasks[threadID];
 
 	pRQT->m_pTasks.push_back(pTask);
 }
 
-void ThreadPool::addTaskNoLock(Task* pTask)
+void ThreadPool::addTaskNoLock(ThreadPoolTask* pTask)
 {
 	pTask->setThreadPool(this);
 
 	m_aTasks.push_back(pTask);
 }
 
-Task* ThreadPool::getNextTask()
+ThreadPoolTask* ThreadPool::getNextTask()
 {
-	Task* pTask = NULL;
+	ThreadPoolTask* pTask = NULL;
 
 	m_lock.lock();
 
@@ -477,7 +476,7 @@ void ThreadPool::startPoolAndWaitForCompletion()
 					}
 					else
 					{
-						Task* pTask = getNextTaskInternal();
+						ThreadPoolTask* pTask = getNextTaskInternal();
 						pThread->setTask(pTask);
 					}
 
@@ -531,7 +530,7 @@ void ThreadPool::startPoolAndWaitForCompletion()
 
 	m_lock.lock();
 
-	std::deque<Task*>::iterator it = m_aTasks.begin();
+	std::deque<ThreadPoolTask*>::iterator it = m_aTasks.begin();
 	for (; it != m_aTasks.end(); ++it)
 	{
 		delete *it;
@@ -599,7 +598,7 @@ void ThreadPool::startPool()
 					}
 					else
 					{
-						Task* pTask = getNextTaskInternal();
+						ThreadPoolTask* pTask = getNextTaskInternal();
 						pThread->setTask(pTask);
 					}
 
@@ -649,10 +648,10 @@ void ThreadPool::addRequeuedTasks(RequeuedTasks& rqt)
 
 	m_lock.lock();
 
-	std::deque<Task*>::iterator it = rqt.m_pTasks.begin();
+	std::deque<ThreadPoolTask*>::iterator it = rqt.m_pTasks.begin();
 	for (; it != rqt.m_pTasks.end(); ++it)
 	{
-		Task* pTask = *it;
+		ThreadPoolTask* pTask = *it;
 
 		m_aTasks.push_back(pTask);
 	}
@@ -686,7 +685,7 @@ void ThreadPool::deleteThreadsAndRequeuedTasks()
 	}
 }
 
-void ThreadPool::deleteTask(Task* pTask, bool lockAndRemoveFromQueue)
+void ThreadPool::deleteTask(ThreadPoolTask* pTask, bool lockAndRemoveFromQueue)
 {
 	if (lockAndRemoveFromQueue)
 	{
@@ -695,7 +694,7 @@ void ThreadPool::deleteTask(Task* pTask, bool lockAndRemoveFromQueue)
 		// rendering, it probably isn't *that* bad...
 		m_lock.lock();
 
-		std::deque<Task*>::iterator itFind = std::find(m_aTasks.begin(), m_aTasks.end(), pTask);
+		std::deque<ThreadPoolTask*>::iterator itFind = std::find(m_aTasks.begin(), m_aTasks.end(), pTask);
 		if (itFind != m_aTasks.end())
 		{
 			m_aTasks.erase(itFind);
@@ -724,15 +723,15 @@ void ThreadPool::freeThread(unsigned int threadID)
 
 void ThreadPool::clearTasks()
 {
-	
+
 }
 
 
 
 // assumes mutex is already held...
-Task* ThreadPool::getNextTaskInternal()
+ThreadPoolTask* ThreadPool::getNextTaskInternal()
 {
-	Task* pTask = m_aTasks.front();
+	ThreadPoolTask* pTask = m_aTasks.front();
 
 	m_aTasks.pop_front();
 
@@ -751,7 +750,7 @@ unsigned int ThreadPool::getNextTaskBundleInternal(TaskBundle* pBundle)
 		unsigned int tasksAdded = 0;
 		for (unsigned int i = 0; i < TASK_BUNDLE_SIZE; i++)
 		{
-			Task* pTask = m_aTasks.front();
+			ThreadPoolTask* pTask = m_aTasks.front();
 			m_aTasks.pop_front();
 
 			pBundle->m_pTasks[i] = pTask;
@@ -767,7 +766,7 @@ unsigned int ThreadPool::getNextTaskBundleInternal(TaskBundle* pBundle)
 		unsigned int tasksAdded = 0;
 		for (unsigned int i = 0; i < TASK_BUNDLE_SIZE / 2; i++)
 		{
-			Task* pTask = m_aTasks.front();
+			ThreadPoolTask* pTask = m_aTasks.front();
 			m_aTasks.pop_front();
 
 			pBundle->m_pTasks[i] = pTask;
@@ -780,7 +779,7 @@ unsigned int ThreadPool::getNextTaskBundleInternal(TaskBundle* pBundle)
 	}
 	else if (tasksPending > 0)
 	{
-		Task* pTask = m_aTasks.front();
+		ThreadPoolTask* pTask = m_aTasks.front();
 		m_aTasks.pop_front();
 
 		pBundle->m_pTasks[0] = pTask;

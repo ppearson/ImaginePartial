@@ -32,6 +32,7 @@
 #include "objects/primitives/cone.h"
 #include "objects/primitives/cube.h"
 #include "objects/primitives/torus.h"
+#include "objects/primitives/plane.h"
 
 #include "view_context.h"
 
@@ -45,6 +46,10 @@ Cylinder* Handle::pObjectZTranslateHandleLine = NULL;
 Cone* Handle::pObjectXTranslateHandleHead = NULL;
 Cone* Handle::pObjectYTranslateHandleHead = NULL;
 Cone* Handle::pObjectZTranslateHandleHead = NULL;
+
+Plane* Handle::pObjectXYTranslateHandlePlane = NULL;
+Plane* Handle::pObjectXZTranslateHandlePlane = NULL;
+Plane* Handle::pObjectYZTranslateHandlePlane = NULL;
 
 Torus* Handle::pObjectXRotateHandleLoop = NULL;
 Torus* Handle::pObjectYRotateHandleLoop = NULL;
@@ -106,6 +111,34 @@ void Handle::initAxisHandleObjects()
 	pZ->setPosition(Point(0.0f, 0.0f, 0.6f));
 	pZ->rotate(-90.0f, 0.0f, 0.0f);
 	pZ->constructGeometry();
+	
+	static const float kPlaneHandleSize = 0.2f;
+	
+	Handle::pObjectXYTranslateHandlePlane = new Plane(kPlaneHandleSize, kPlaneHandleSize);
+	Handle::pObjectXZTranslateHandlePlane = new Plane(kPlaneHandleSize, kPlaneHandleSize);
+	Handle::pObjectYZTranslateHandlePlane = new Plane(kPlaneHandleSize, kPlaneHandleSize);
+	
+	Plane* pTXY = Handle::pObjectXYTranslateHandlePlane;
+	
+	pTXY->setObjectID(eXYTranslate);
+	pTXY->setPosition(Vector(0.5f, 0.5f, 0.0f));
+	pTXY->rotate(90.0f, 0.0f, 0.0f);
+	pTXY->constructGeometry();
+	
+	Plane* pTXZ = Handle::pObjectXZTranslateHandlePlane;
+	
+	pTXZ->setObjectID(eXZTranslate);
+	pTXZ->setPosition(Vector(0.5f, 0.0f, 0.5f));
+	pTXZ->constructGeometry();
+	
+	Plane* pTYZ = Handle::pObjectYZTranslateHandlePlane;
+	
+	pTYZ->setObjectID(eYZTranslate);
+	pTYZ->setPosition(Vector(0.0f, 0.5f, 0.5f));
+	pTYZ->rotate(0.0f, 0.0f, 90.0f);
+	pTYZ->constructGeometry();
+	
+	// rotate
 
 	Cone *pXHead = Handle::pObjectXTranslateHandleHead;
 	Cone *pYHead = Handle::pObjectYTranslateHandleHead;
@@ -228,6 +261,11 @@ void Handle::drawObjectTranslateAxisForDisplay()
 	Cone* pXHead = Handle::pObjectXTranslateHandleHead;
 	Cone* pYHead = Handle::pObjectYTranslateHandleHead;
 	Cone* pZHead = Handle::pObjectZTranslateHandleHead;
+	
+	Plane* pXYTranslatePlane = Handle::pObjectXYTranslateHandlePlane;
+	Plane* pXZTranslatePlane = Handle::pObjectXZTranslateHandlePlane;
+	Plane* pYZTranslatePlane = Handle::pObjectYZTranslateHandlePlane;
+	
 
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
@@ -235,7 +273,7 @@ void Handle::drawObjectTranslateAxisForDisplay()
 	EditHandle editHandle = ViewContext::instance().getEditHandle();
 
 	// if we've only got one, then the mouse must be down on one, so only draw that
-	if (editHandle >= eXTranslate && editHandle <= eZTranslate)
+	if (editHandle >= eXTranslate && editHandle <= eYZTranslate)
 	{
 		if (editHandle == eXTranslate)
 		{
@@ -255,6 +293,21 @@ void Handle::drawObjectTranslateAxisForDisplay()
 			OpenGLEx::drawLine(Point(0.0f, 0.0f, 0.0f), Point(0.0f, 0.0f, 1.0f));
 			pZHead->drawForDisplay();
 		}
+		else if (editHandle == eXYTranslate)
+		{
+			glColor3f(1.0f, 0.0f, 0.0f);
+			pXYTranslatePlane->drawForDisplay();
+		}
+		else if (editHandle == eXZTranslate)
+		{
+			glColor3f(0.0f, 1.0f, 0.0f);
+			pXZTranslatePlane->drawForDisplay();
+		}
+		else if (editHandle == eYZTranslate)
+		{
+			glColor3f(0.0f, 0.0f, 1.0f);
+			pYZTranslatePlane->drawForDisplay();
+		}
 	}
 	else
 	{
@@ -262,14 +315,21 @@ void Handle::drawObjectTranslateAxisForDisplay()
 		glColor3f(1.0f, 0.0f, 0.0f);
 		OpenGLEx::drawLine(Point(0.0f, 0.0f, 0.0f), Point(1.0f, 0.0f, 0.0f));
 		pXHead->drawForDisplay();
+		
+		pXYTranslatePlane->drawForDisplay();
 
 		glColor3f(0.0f, 1.0f, 0.0f);
 		OpenGLEx::drawLine(Point(0.0f, 0.0f, 0.0f), Point(0.0f, 1.0f, 0.0f));
 		pYHead->drawForDisplay();
+		
+		pXZTranslatePlane->drawForDisplay();
+		
 
 		glColor3f(0.0f, 0.0f, 1.0f);
 		OpenGLEx::drawLine(Point(0.0f, 0.0f, 0.0f), Point(0.0f, 0.0f, 1.0f));
 		pZHead->drawForDisplay();
+		
+		pYZTranslatePlane->drawForDisplay();
 	}
 
 	glEnable(GL_DEPTH_TEST);
@@ -288,6 +348,10 @@ void Handle::drawObjectTranslateAxisForSelection()
 	Cone* pXHead = Handle::pObjectXTranslateHandleHead;
 	Cone* pYHead = Handle::pObjectYTranslateHandleHead;
 	Cone* pZHead = Handle::pObjectZTranslateHandleHead;
+	
+	Plane* pXYTranslatePlane = Handle::pObjectXYTranslateHandlePlane;
+	Plane* pXZTranslatePlane = Handle::pObjectXZTranslateHandlePlane;
+	Plane* pYZTranslatePlane = Handle::pObjectYZTranslateHandlePlane;
 
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
@@ -298,6 +362,10 @@ void Handle::drawObjectTranslateAxisForSelection()
 	pYHead->drawForSelection();
 	pZLine->drawForSelection();
 	pZHead->drawForSelection();
+	
+	pXYTranslatePlane->drawForSelection();
+	pXZTranslatePlane->drawForSelection();
+	pYZTranslatePlane->drawForSelection();
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);

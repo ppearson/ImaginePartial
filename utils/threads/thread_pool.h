@@ -34,11 +34,11 @@ namespace Imagine
 
 class ThreadPool;
 
-class Task
+class ThreadPoolTask
 {
 public:
-	Task();
-	virtual ~Task() { }
+	ThreadPoolTask();
+	virtual ~ThreadPoolTask() { }
 
 	void setThreadPool(ThreadPool* pThreadPool);
 
@@ -57,7 +57,7 @@ public:
 	void clear();
 
 	unsigned char		m_size;
-	Task*				m_pTasks[TASK_BUNDLE_SIZE];
+	ThreadPoolTask*		m_pTasks[TASK_BUNDLE_SIZE];
 };
 
 class RequeuedTasks
@@ -67,7 +67,7 @@ public:
 	{
 	}
 
-	std::deque<Task*> m_pTasks;
+	std::deque<ThreadPoolTask*> m_pTasks;
 	Mutex	m_lock;
 };
 
@@ -109,14 +109,14 @@ public:
 	void deleteTasksInBundle();
 
 	void setTaskBundleSize(unsigned int size) { m_bundleSize = size; }
-	void setTask(Task* pTask) { m_pTask = pTask; }
+	void setTask(ThreadPoolTask* pTask) { m_pTask = pTask; }
 
 protected:
 	void runSingleTask();
 	void runTaskBundle();
 
 protected:
-	Task*			m_pTask;
+	ThreadPoolTask*	m_pTask;
 	TaskBundle*		m_pTaskBundle;
 	RequeuedTasks	m_requeueTasks;
 	unsigned int	m_bundleIndex;
@@ -147,34 +147,35 @@ public:
 	virtual void taskDone() { }
 
 protected:
+	// these destroy any existing threads and create new ones...
 	void startPoolAndWaitForCompletion();
 	void startPool();
-	
-	void processTask(Task* pTask, unsigned int threadID);
 
-	virtual bool doTask(Task* pTask, unsigned int threadID) = 0;
+	void processTask(ThreadPoolTask* pTask, unsigned int threadID);
 
-	void addTask(Task* pTask);
-	void requeueTask(Task* pTask, unsigned int threadID);
+	virtual bool doTask(ThreadPoolTask* pTask, unsigned int threadID) = 0;
 
-	void addTaskNoLock(Task* pTask);
+	void addTask(ThreadPoolTask* pTask);
+	void requeueTask(ThreadPoolTask* pTask, unsigned int threadID);
+
+	void addTaskNoLock(ThreadPoolTask* pTask);
 
 	void addRequeuedTasks(RequeuedTasks& rqt);
 
 	void deleteThreads();
 	void deleteThreadsAndRequeuedTasks();
 
-	void deleteTask(Task* pTask, bool lockAndRemoveFromQueue);
+	void deleteTask(ThreadPoolTask* pTask, bool lockAndRemoveFromQueue);
 
-	Task* getNextTask();
+	ThreadPoolTask* getNextTask();
 	unsigned int getNextTaskBundle(TaskBundle* pBundle);
 
 	void freeThread(unsigned int threadID);
-	
+
 	void clearTasks();
 
 	// these assume locking is done elsewhere
-	Task* getNextTaskInternal();
+	ThreadPoolTask* getNextTaskInternal();
 	// assumes the TaskBundle is blank
 	unsigned int getNextTaskBundleInternal(TaskBundle* pBundle);
 
@@ -183,7 +184,7 @@ protected:
 	ThreadPoolThread*	m_pThreads[MAX_THREADS];
 	RequeuedTasks*		m_pRequeuedTasks[MAX_THREADS];
 	ThreadController	m_controller;
-	std::deque<Task*>	m_aTasks;
+	std::deque<ThreadPoolTask*>	m_aTasks;
 	Mutex				m_lock;
 	Mutex				m_requeueLock;
 

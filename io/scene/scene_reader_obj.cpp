@@ -198,7 +198,7 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 			Face newFace(4);
 			newFace.reserveUVs(4);
 
-			items = fastSplit(line, aItems, sep1, 2);
+			items = fastStringSplit(line, aItems, sep1, 2);
 
 			for (unsigned int i = 0; i < items; i++)
 			{

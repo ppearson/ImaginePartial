@@ -20,6 +20,7 @@
 #define RAY_H
 
 #include <limits>
+//#include <fenv.h>
 
 #include "point.h"
 #include "normal.h"
@@ -39,15 +40,16 @@ enum RayType
 	RAY_REFRACTION		= 1 << 3,
 	RAY_DIFFUSE			= 1 << 4,
 	RAY_GLOSSY			= 1 << 5,
+	RAY_VOL_SCATTER		= 1 << 6,
 
-	RAY_ALL				= RAY_CAMERA | RAY_SHADOW | RAY_REFLECTION | RAY_REFRACTION | RAY_DIFFUSE | RAY_GLOSSY
+	RAY_ALL				= RAY_CAMERA | RAY_SHADOW | RAY_REFLECTION | RAY_REFRACTION | RAY_DIFFUSE | RAY_GLOSSY | RAY_VOL_SCATTER
 };
 
 class Ray
 {
 public:
 	__finline Ray() : type(RAY_UNDEFINED), flags(0), importance(1.0f), width(0.0f), time(0.0f), timeFull(0.0f),
-	    tMin(0.0f),	tMax(std::numeric_limits<float>::max()), pCustPayload1(NULL), custValue1(0.0f)
+		tMin(0.0f),	tMax(std::numeric_limits<float>::max()), pCustPayload1(NULL), custValue1(0.0f)
 	{
 	}
 
@@ -58,8 +60,8 @@ public:
 	{
 	}
 
-	__finline Ray(const Point& startPos, const Normal& dir, float timet, float timeFullt, const RayType& rayType)
-		: type(rayType), startPosition(startPos), direction(dir), flags(0), importance(1.0f), width(0.0f), time(timet), timeFull(timeFullt),
+	__finline Ray(const Point& startPos, const Normal& dir, float timet, float timeFullt, const RayType& rayType, float rayWidth = 0.0f)
+		: type(rayType), startPosition(startPos), direction(dir), flags(0), importance(1.0f), width(rayWidth), time(timet), timeFull(timeFullt),
 			tMin(0.0f), tMax(std::numeric_limits<float>::max()), pCustPayload1(NULL), custValue1(0.0f)
 	{
 	}
@@ -100,9 +102,14 @@ public:
 		if (fabsf(inverseDirection.z) > 0.000000001f)
 			inverseDirection.z = 1.0f / direction.z;
 */
+
+//		fedisableexcept(FE_INVALID | FE_OVERFLOW | FE_DIVBYZERO);
+
 		// BVH bbox method and SSE'd BVH traversal depend on sign of inf values after div-by-0 for
 		// axis-aligned rays...
 		inverseDirection = Normal(1.0f / direction.x, 1.0f / direction.y, 1.0f / direction.z);
+
+//		feenableexcept(FE_INVALID | FE_OVERFLOW | FE_DIVBYZERO);
 	}
 
 	Point pointAt(float t) const

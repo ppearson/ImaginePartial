@@ -102,6 +102,7 @@ public:
 			m_sampleCount = 1;
 			m_currentMean = value;
 			m_lastMean = value;
+			m_lastMeanSquare = value;
 		}
 		else
 		{
@@ -123,13 +124,29 @@ public:
 		Colour4f variance = m_currentMeanSquare / (float)(m_sampleCount - 1);
 		return variance.max();
 	}
+	
+	float getVarianceWeighted() const
+	{
+		if (m_sampleCount <= 1)
+			return 0.0f;
+
+		Colour4f variance = m_currentMeanSquare / (float)(m_sampleCount - 1);
+		float totalBrightness = m_total.brightness();
+		if (totalBrightness > 0.0f)
+		{
+			// this doesn't really make sense...
+			return variance.max() / (totalBrightness / (float)m_sampleCount);
+		}
+		
+		return 0.0f;
+	}
 
 	float getStandardVariation() const
 	{
 		return std::sqrt(getVariance());
 	}
 
-	float getWeightedStandardVariation() const
+	float getStandardVariationWeighted() const
 	{
 		float weight = (float)m_sampleCount;
 		Colour4f weightedColour = m_total / weight;

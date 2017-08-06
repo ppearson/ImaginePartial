@@ -148,9 +148,11 @@ protected:
 class ImageTextureDetails
 {
 public:
-	ImageTextureDetails() : m_pCustomData(NULL), m_fullWidth(0), m_fullHeight(0), m_flipY(false),
-		m_isTiled(false), m_isMipmapped(false), m_isConstant(false), m_needsPerThreadFileHandles(true),
-		m_channelCount(0), m_dataType(eUnknown), m_wrapMode(eClamp)
+	ImageTextureDetails() : m_pCustomData(NULL), 
+		m_dataType(eUnknown), m_wrapMode(eClamp),
+	    m_fullWidth(0), m_fullHeight(0), m_channelCount(0), 
+	    m_flipY(false),	m_isTiled(false), m_isScanline(false), m_isMipmapped(false),
+		m_isConstant(false), m_needsPerThreadFileHandles(true)
 	{
 
 	}
@@ -203,6 +205,9 @@ public:
 	void setIsTiled(bool isTiled) { m_isTiled = isTiled; }
 	bool isTiled() const { return m_isTiled; }
 
+	void setIsScanline(bool isScanline) { m_isScanline = isScanline; }
+	bool isScanline() const { return m_isScanline; }
+
 	void setMipmapped(bool mipmapped) { m_isMipmapped = mipmapped; }
 	bool isMipmapped() const { return m_isMipmapped; }
 
@@ -226,31 +231,32 @@ public:
 	std::vector<ImageTextureItemDetails>& getMipmaps() { return m_aMipmaps; }
 
 protected:
+	std::vector<ImageTextureItemDetails>	m_aMipmaps;
 	std::string					m_filePath;
 
 	// optional custom data that an image reader can set, and then get access to later when reading tiles.
 	// once this is set, ImageTextureCache owns it and will free it with the ImageTextureItem
 	const ImageTextureCustomData*	m_pCustomData;
 
+	ImageDataType				m_dataType;
+	ImageWrapMode				m_wrapMode; // TODO: support separate s/t wrap modes?
+
 	// don't really need these, as they're duplicates of the base level mipmap's items, but
 	// storing them as float prevents us having to cast when working out texture filtering regions...
 	float						m_fullWidth;
 	float						m_fullHeight;
 
+	unsigned short				m_channelCount;
+
 	bool						m_flipY;
 
-	bool						m_isTiled;
-	bool						m_isMipmapped;
+	bool						m_isTiled; // whether the image format can be read in a tile at a tile
+	bool						m_isScanline; // whether the image format can be read in partially on a scanline basis
+
+	bool						m_isMipmapped; // implies tiled for the moment...
 	bool						m_isConstant;
 
 	bool						m_needsPerThreadFileHandles;
-
-	unsigned short				m_channelCount;
-
-	ImageDataType				m_dataType;
-	ImageWrapMode				m_wrapMode; // TODO: support separate s/t wrap modes?
-
-	std::vector<ImageTextureItemDetails>	m_aMipmaps;
 };
 
 // these classes are used and passed in to FileReaders intentionally, as it allows more flexibility

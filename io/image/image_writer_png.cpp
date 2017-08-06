@@ -24,6 +24,8 @@
 
 #include "image/output_image.h"
 
+#include "global_context.h"
+
 #include "utils/maths/maths.h"
 
 namespace Imagine
@@ -58,7 +60,7 @@ bool ImageWriterPNG::writeImage(const std::string& filePath, const OutputImage& 
 	if (!pFile)
 	{
 		png_destroy_write_struct(&pPNG, NULL);
-		fprintf(stderr, "Error writing file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Error writing file: %s", filePath.c_str());
 		return false;
 	}
 

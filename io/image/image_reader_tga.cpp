@@ -23,6 +23,8 @@
 #include "image/image_1f.h"
 #include "image/image_1b.h"
 
+#include "global_context.h"
+
 #include "colour/colour_space.h"
 
 namespace Imagine
@@ -55,7 +57,7 @@ Image* ImageReaderTGA::readColourImage(const std::string& filePath, unsigned int
 
 	if (!pImage3f && !pImage3b)
 	{
-		fprintf(stderr, "Can't allocate memory for image...\n");
+		GlobalContext::instance().getLogger().error("Can't allocate memory for image...");
 		return NULL;
 	}
 
@@ -148,7 +150,7 @@ Image* ImageReaderTGA::readGreyscaleImage(const std::string& filePath, unsigned 
 
 	if (!pImage1f && !pImage1b)
 	{
-		fprintf(stderr, "Can't allocate memory for image...\n");
+		GlobalContext::instance().getLogger().error("Can't allocate memory for image...");
 		return NULL;
 	}
 
@@ -377,7 +379,7 @@ bool ImageReaderTGA::readData(const std::string& filePath, TGAInfra& infra)
 	infra.pFile = fopen(filePath.c_str(), "rb");
 	if (!infra.pFile)
 	{
-		fprintf(stderr, "Error reading file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Error reading file: %s", filePath.c_str());
 		return false;
 	}
 
@@ -398,7 +400,7 @@ bool ImageReaderTGA::readData(const std::string& filePath, TGAInfra& infra)
 	if (infra.header.dataTypeCode != 2 && infra.header.dataTypeCode != 10)
 	{
 		fclose(infra.pFile);
-		fprintf(stderr, "Can't handle this image type\n");
+		GlobalContext::instance().getLogger().error("Can't handle this TGA image type for file: %s", filePath.c_str());
 		return false;
 	}
 
@@ -407,14 +409,14 @@ bool ImageReaderTGA::readData(const std::string& filePath, TGAInfra& infra)
 	if (infra.header.bitsPerPixel != 16 && infra.header.bitsPerPixel != 24 && infra.header.bitsPerPixel != 32)
 	{
 		fclose(infra.pFile);
-		fprintf(stderr, "Can only handle pixel depths of 16,24,32...\n");
+		GlobalContext::instance().getLogger().error("Can only handle pixel depths of 16,24,32...");
 		return false;
 	}
 
 	if (infra.header.colourMapType != 0 && infra.header.colourMapType != 1)
 	{
 		fclose(infra.pFile);
-		fprintf(stderr, "Can't handle this colourmap type...\n");
+		GlobalContext::instance().getLogger().error("Can't handle this colourmap type...");
 		return false;
 	}
 
@@ -422,7 +424,7 @@ bool ImageReaderTGA::readData(const std::string& filePath, TGAInfra& infra)
 	if (!infra.pBuffer)
 	{
 		fclose(infra.pFile);
-		fprintf(stderr, "Can't allocate memory for image...\n");
+		GlobalContext::instance().getLogger().error("Can't allocate memory for image...");
 		return false;
 	}
 
@@ -443,7 +445,7 @@ bool ImageReaderTGA::readData(const std::string& filePath, TGAInfra& infra)
 		{
 			if (fread(p, 1, bytesToRead, infra.pFile) != bytesToRead)
 			{
-				fprintf(stderr, "Can't read file...\n");
+				GlobalContext::instance().getLogger().error("Can't read TGA file: %s...", filePath.c_str());
 				fclose(infra.pFile);
 				delete [] infra.pBuffer;
 				return false;
@@ -455,7 +457,7 @@ bool ImageReaderTGA::readData(const std::string& filePath, TGAInfra& infra)
 		{
 			if (fread(p, 1, bytesToRead + 1, infra.pFile) != bytesToRead + 1)
 			{
-				fprintf(stderr, "Can't read file...\n");
+				GlobalContext::instance().getLogger().error("Can't read TGA file: %s...", filePath.c_str());
 				fclose(infra.pFile);
 				delete [] infra.pBuffer;
 				return false;
@@ -479,7 +481,7 @@ bool ImageReaderTGA::readData(const std::string& filePath, TGAInfra& infra)
 				{
 					if (fread(p, 1, bytesToRead, infra.pFile) != bytesToRead)
 					{
-						fprintf(stderr, "Can't read file...\n");
+						GlobalContext::instance().getLogger().error("Can't read TGA file: %s...", filePath.c_str());
 						fclose(infra.pFile);
 						delete [] infra.pBuffer;
 						return false;

@@ -21,11 +21,12 @@
 namespace Imagine
 {
 
-EnumControl::EnumControl(const std::string& name, unsigned char* pairedValue, const char** options, std::string label) : Control(name, label)
+EnumControl::EnumControl(const std::string& name, unsigned char* pairedValue, const char** options, const std::string& label) : Control(name, label)
 {
 	m_comboBox = new QComboBox();
 
 	m_comboBox->setMinimumSize(100, 22);
+	m_comboBox->setMaximumHeight(26);
 
 	m_widget = m_comboBox;
 

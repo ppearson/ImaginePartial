@@ -385,28 +385,28 @@ void ImageWidget::convertImageValues()
 
 	for (unsigned int y = 0; y < m_height; y++)
 	{
+		const Colour4f* pSrcRawColour = m_pDisplayImage->colourRowPtr(y);
+
 		if (m_displayChannel == eA)
 		{
 			for (unsigned int x = 0; x < m_width; x++)
 			{
-				const Colour4f& rawColour = m_pDisplayImage->colourAt(x, y);
-
-				float finalA = rawColour.a * gainValue;
+				float finalA = pSrcRawColour->a * gainValue;
 				int a = std::min((int)(finalA), 255);
 
 				value = qRgb(a, a, a);
 				m_pQImage->setPixel(x, y, value);
+
+				pSrcRawColour++;
 			}
 		}
 		else if (m_displayChannel == eRGB)
 		{
 			for (unsigned int x = 0; x < m_width; x++)
 			{
-				const Colour4f& rawColour = m_pDisplayImage->colourAt(x, y);
-
-				float finalR = rawColour.r * gainValue;
-				float finalG = rawColour.g * gainValue;
-				float finalB = rawColour.b * gainValue;
+				float finalR = pSrcRawColour->r * gainValue;
+				float finalG = pSrcRawColour->g * gainValue;
+				float finalB = pSrcRawColour->b * gainValue;
 
 				int red = std::min((int)(finalR), 255);
 				int green = std::min((int)(finalG), 255);
@@ -414,6 +414,8 @@ void ImageWidget::convertImageValues()
 
 				value = qRgb(red, green, blue);
 				m_pQImage->setPixel(x, y, value);
+
+				pSrcRawColour++;
 			}
 		}
 		else
@@ -421,11 +423,9 @@ void ImageWidget::convertImageValues()
 			// we're one (maybe two in the future?!) of the options
 			for (unsigned int x = 0; x < m_width; x++)
 			{
-				const Colour4f& rawColour = m_pDisplayImage->colourAt(x, y);
-
-				float finalR = rawColour.r * rMult;
-				float finalG = rawColour.g * gMult;
-				float finalB = rawColour.b * bMult;
+				float finalR = pSrcRawColour->r * rMult;
+				float finalG = pSrcRawColour->g * gMult;
+				float finalB = pSrcRawColour->b * bMult;
 
 				// we can just max to get the single value we want for greyscale...
 
@@ -435,6 +435,8 @@ void ImageWidget::convertImageValues()
 
 				value = qRgb(grey, grey, grey);
 				m_pQImage->setPixel(x, y, value);
+
+				pSrcRawColour++;
 			}
 		}
 	}

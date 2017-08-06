@@ -25,6 +25,8 @@
 #include "image/image_1f.h"
 #include "image/image_1b.h"
 
+#include "global_context.h"
+
 #include "colour/colour_space.h"
 
 namespace Imagine
@@ -52,7 +54,7 @@ ImageReaderPNG::ImageType ImageReaderPNG::readData(const std::string& filePath, 
 	infra.pFile = fopen(filePath.c_str(), "rb");
 	if (!infra.pFile)
 	{
-		fprintf(stderr, "Error opening file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Error opening file: %s", filePath.c_str());
 		return eInvalid;
 	}
 
@@ -62,7 +64,7 @@ ImageReaderPNG::ImageType ImageReaderPNG::readData(const std::string& filePath, 
 	fread(sig, 1, 8, infra.pFile);
 	if (!png_check_sig(sig, 8))
 	{
-		fprintf(stderr, "Cannot open file: %s - not a valid PNG file.\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Cannot open file: %s - not a valid PNG file.", filePath.c_str());
 		fclose(infra.pFile);
 		return eInvalid;
 	}
@@ -136,7 +138,7 @@ ImageReaderPNG::ImageType ImageReaderPNG::readData(const std::string& filePath, 
 
 	png_read_update_info(infra.pPNG, infra.pInfo);
 
-	infra.pRows = new png_bytep[infra.height * png_sizeof(png_bytep)];
+	infra.pRows = new png_bytep[infra.height * sizeof(png_bytep)];
 
 	png_set_rows(infra.pPNG, infra.pInfo, infra.pRows);
 

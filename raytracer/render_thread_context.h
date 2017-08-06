@@ -22,6 +22,7 @@
 #include "render_statistics.h"
 
 #include "utils/time_counter.h"
+#include "utils/maths/rng.h"
 
 #include "raytracer/light_sampler.h"
 
@@ -30,17 +31,18 @@
 namespace Imagine
 {
 
-class ImageTextureCache;
 class Raytracer;
 class SceneInterface;
+class RNG;
 
 class RenderThreadContext
 {
 public:
 	RenderThreadContext(const Raytracer* rt, const SceneInterface* sceneInterface, unsigned int threadID)
 		: m_pRaytracer(rt), m_pSceneInterface(sceneInterface),
-		  m_threadID(threadID), m_pLightSampler(NULL), m_pTimeCounter(NULL),
-					m_pMainImageTextureCache(NULL)
+		  m_threadID(threadID), m_pLightSampler(NULL), m_pIntegratorTimeCounter(NULL),
+					m_pTextureTimeCounter(NULL), m_pMainImageTextureCache(NULL),
+					m_pRNG(NULL)
 	{
 
 	}
@@ -53,10 +55,16 @@ public:
 			m_pLightSampler = NULL;
 		}
 
-		if (m_pTimeCounter)
+		if (m_pIntegratorTimeCounter)
 		{
-			delete m_pTimeCounter;
-			m_pTimeCounter = NULL;
+			delete m_pIntegratorTimeCounter;
+			m_pIntegratorTimeCounter = NULL;
+		}
+
+		if (m_pTextureTimeCounter)
+		{
+			delete m_pTextureTimeCounter;
+			m_pTextureTimeCounter = NULL;
 		}
 	}
 
@@ -85,14 +93,24 @@ public:
 		return m_pLightSampler;
 	}
 
-	void setTimeCounter(ThreadTimeCounter* pTimeCounter)
+	void setIntegratorTimeCounter(ThreadTimeCounter* pTimeCounter)
 	{
-		m_pTimeCounter = pTimeCounter;
+		m_pIntegratorTimeCounter = pTimeCounter;
 	}
 
-	inline ThreadTimeCounter* getTimeCounter()
+	inline ThreadTimeCounter* getIntegratorTimeCounter()
 	{
-		return m_pTimeCounter;
+		return m_pIntegratorTimeCounter;
+	}
+
+	void setTextureTimeCounter(ThreadTimeCounter* pTimeCounter)
+	{
+		m_pTextureTimeCounter = pTimeCounter;
+	}
+
+	inline ThreadTimeCounter* getTextureTimeCounter()
+	{
+		return m_pTextureTimeCounter;
 	}
 
 	void setMainImageTextureCache(ImageTextureCache* pMainImageTextureCache)
@@ -109,6 +127,16 @@ public:
 	{
 		return m_textureMicrocache;
 	}
+	
+	void setRandomNumberGenerator(RNG* pRNG)
+	{
+		m_pRNG = pRNG;
+	}
+	
+	RNG* getRandomNumberGenerator() const
+	{
+		return m_pRNG;
+	}
 
 	const Raytracer* getRaytracer() const
 	{
@@ -121,6 +149,8 @@ public:
 	}
 
 protected:
+	ImageTextureCache::Microcache	m_textureMicrocache;
+	
 	const Raytracer*		m_pRaytracer;
 	const SceneInterface*	m_pSceneInterface;
 	// not really sure we need this, but...
@@ -131,13 +161,14 @@ protected:
 	// we own this
 	LightSampler*			m_pLightSampler;
 
-	// we own this
-	ThreadTimeCounter*		m_pTimeCounter;
+	// we own these
+	ThreadTimeCounter*		m_pIntegratorTimeCounter;
+	ThreadTimeCounter*		m_pTextureTimeCounter;
 
 	// we don't own this
 	ImageTextureCache*		m_pMainImageTextureCache;
 
-	ImageTextureCache::Microcache	m_textureMicrocache;
+	RNG*					m_pRNG; // we don't own this
 };
 
 } // namespace Imagine

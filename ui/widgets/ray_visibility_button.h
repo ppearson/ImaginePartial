@@ -58,7 +58,6 @@ public slots:
 	void allSelected();
 	void noneSelected();
 
-
 protected:
 	std::vector<std::string>	m_aOptions;
 	QSignalMapper*				m_pSignalMapper;

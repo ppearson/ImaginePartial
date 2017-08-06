@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2012 Peter Pearson.
+ Copyright 2012-2016 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@
 #include "controls/string_control.h"
 #include "controls/float_control.h"
 #include "controls/uint_control.h"
+#include "controls/int_control.h"
 #include "controls/float_slider_control.h"
 #include "controls/enum_control.h"
 #include "controls/colour_control.h"
@@ -37,6 +38,7 @@
 #include "controls/texture_control.h"
 #include "controls/ray_visibility_control.h"
 #include "controls/material_edit_control.h"
+#include "controls/transform_control.h"
 
 namespace Imagine
 {
@@ -47,15 +49,16 @@ ParametersPanelBuilder::ParametersPanelBuilder()
 
 ParametersPanel* ParametersPanelBuilder::buildParametersPanel(Parameters& parameters, ParametersInterface* pParent, ParameterPanelType panelType)
 {
-	if (parameters.m_aParameters.empty())
+	std::vector<Parameter*>& params = parameters.getParameters();
+	if (params.empty())
 		return NULL;
 
 	ParametersPanel* pPP = new ParametersPanel(pParent, panelType);
 
 	pPP->addTab(panelType == eObjectParameter ? "Object" : "Basic");
 
-	std::vector<Parameter*>::iterator it = parameters.m_aParameters.begin();
-	for (; it != parameters.m_aParameters.end(); ++it)
+	std::vector<Parameter*>::iterator it = params.begin();
+	for (; it != params.end(); ++it)
 	{
 		Parameter* pParam = *it;
 
@@ -73,6 +76,7 @@ ParametersPanel* ParametersPanelBuilder::buildParametersPanel(Parameters& parame
 		Control* pControl = NULL;
 
 		bool fullControl = true;
+		bool addLabel = true;
 
 		switch (parameterType)
 		{
@@ -87,6 +91,13 @@ ParametersPanel* ParametersPanelBuilder::buildParametersPanel(Parameters& parame
 				RangeParameter<unsigned int, unsigned int>* pTypedParam = static_cast<RangeParameter<unsigned int, unsigned int>*>(pParam);
 				bool scrub = pTypedParam->getFlags() & eParameterScrubButton;
 				pControl = new UIntControl(name, pTypedParam->getPairedValue(), pTypedParam->getMin(), pTypedParam->getMax(), label, scrub);
+				break;
+			}
+			case eParameterInt:
+			{
+				RangeParameter<int, int>* pTypedParam = static_cast<RangeParameter<int, int>*>(pParam);
+				bool scrub = pTypedParam->getFlags() & eParameterScrubButton;
+				pControl = new IntControl(name, pTypedParam->getPairedValue(), pTypedParam->getMin(), pTypedParam->getMax(), label, scrub);
 				break;
 			}
 			case eParameterFloat:
@@ -231,15 +242,47 @@ ParametersPanel* ParametersPanelBuilder::buildParametersPanel(Parameters& parame
 			case eParameterSeparator:
 			{
 				fullControl = false;
+				break;
+			}
+			case eParameterTransform:
+			{
+				addLabel = false;
+
+				BasicParameter<Transform>* pTypedParam = static_cast<BasicParameter<Transform>*>(pParam);
+
+				pControl = new TransformControl(name, pTypedParam->getPairedValue());
+
+				break;
 			}
 		}
 
 		if (fullControl)
-			pPP->addControl(pControl, pParam->getGroup());
+		{
+			if (addLabel)
+			{
+				pPP->addControl(pControl, true, pParam->getGroup());
+			}
+			else
+			{
+				pPP->addControl(pControl, false, pParam->getGroup());
+			}
+		}
 		else
+		{
 			pPP->addDescriptorLine(label, pParam->getGroup());
+		}
 
 		delete pParam;
+	}
+
+	// now hide any initially hidden parameters
+	const std::set<std::string>& hiddenParams = parameters.getInitiallyHiddenParameters();
+	std::set<std::string>::const_iterator itHiddenParam = hiddenParams.begin();
+	for (; itHiddenParam != hiddenParams.end(); ++itHiddenParam)
+	{
+		const std::string& name = *itHiddenParam;
+
+		pPP->hideControl(name);
 	}
 
 	return pPP;

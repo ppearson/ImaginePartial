@@ -27,7 +27,7 @@ namespace Imagine
 class TreeViewEx : public QTreeView
 {
 public:
-	TreeViewEx(QWidget *parent = 0);
+	TreeViewEx(QWidget* parent = 0);
 	virtual ~TreeViewEx();
 
 signals:

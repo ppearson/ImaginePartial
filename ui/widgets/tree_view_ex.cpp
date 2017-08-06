@@ -23,7 +23,7 @@
 namespace Imagine
 {
 
-TreeViewEx::TreeViewEx(QWidget *parent) : QTreeView(parent)
+TreeViewEx::TreeViewEx(QWidget* parent) : QTreeView(parent)
 {
 }
 

@@ -40,7 +40,7 @@ public:
 	//       specifically allowing for storage of bool, UInt8, Int8, UInt16, Int16 or Float16 (half) format stuff
 	//       directly as we don't save any space, so those values will have to be up-cast to bigger types
 	//		 to be stored, loosing their true type, but I think that's a reasonable trade-off,
-	//       but this might change in the future.
+	//       but this might change in the future if casting overhead becomes an issue.
 	enum ItemType
 	{
 		eNone,
@@ -127,7 +127,7 @@ public:
 
 	AttributeValue(const AttributeValue& rhs) : m_itemType(rhs.m_itemType)
 	{
-		if (m_itemType != eString || m_itemType != eVoidPointer)
+		if (m_itemType != eString && m_itemType != eVoidPointer)
 		{
 			// if it's not a pointer type, just copy across the raw values
 			m_dataTriple[0] = rhs.m_dataTriple[0];
