@@ -47,6 +47,11 @@ void GeoReader::postProcess()
 	m_newObject->calculateTransformedBoundaryBox();
 	m_newObject->updateBoundaryBox();
 
+	if (m_readOptions.setBBoxDrawMode)
+	{
+		m_newObject->setDisplayType(eBoundaryBox);
+	}
+
 //	discardDuplicateGeometry(1);
 
 	Settings& settings = Settings::instance();

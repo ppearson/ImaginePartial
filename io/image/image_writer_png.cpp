@@ -52,7 +52,10 @@ bool ImageWriterPNG::writeImage(const std::string& filePath, const OutputImage& 
 
 	pInfo = png_create_info_struct(pPNG);
 	if (!pInfo)
+	{
+		png_destroy_write_struct(&pPNG, NULL);
 		return false;
+	}
 
 	/// pre-process the file
 
@@ -67,6 +70,14 @@ bool ImageWriterPNG::writeImage(const std::string& filePath, const OutputImage& 
 	png_byte** pRows = new png_byte*[height * sizeof(png_byte*)];
 	if (!pRows)
 	{
+		png_destroy_write_struct(&pPNG, NULL);
+		fclose(pFile);
+		return false;
+	}
+
+	if (setjmp(png_jmpbuf(pPNG)))
+	{
+		delete [] pRows;
 		png_destroy_write_struct(&pPNG, NULL);
 		fclose(pFile);
 		return false;
@@ -146,47 +157,16 @@ bool ImageWriterPNG::writeImage(const std::string& filePath, const OutputImage& 
 
 	///
 
-	if (setjmp(png_jmpbuf(pPNG)))
-	{
-		delete [] pRows;
-		png_destroy_write_struct(&pPNG, NULL);
-		fclose(pFile);
-		return false;
-	}
+
 
 	png_init_io(pPNG, pFile);
-
-	if (setjmp(png_jmpbuf(pPNG)))
-	{
-		delete [] pRows;
-		png_destroy_write_struct(&pPNG, NULL);
-		fclose(pFile);
-		return false;
-	}
 
 	png_set_IHDR(pPNG, pInfo, width, height, bitDepth, colourType, PNG_INTERLACE_NONE,
 				 PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
 	png_write_info(pPNG, pInfo);
 
-	// write the data
-	if (setjmp(png_jmpbuf(pPNG)))
-	{
-		delete [] pRows;
-		png_destroy_write_struct(&pPNG, NULL);
-		fclose(pFile);
-		return false;
-	}
-
 	png_write_image(pPNG, pRows);
-
-	if (setjmp(png_jmpbuf(pPNG)))
-	{
-		delete [] pRows;
-		png_destroy_write_struct(&pPNG, NULL);
-		fclose(pFile);
-		return false;
-	}
 
 	png_write_end(pPNG, NULL);
 

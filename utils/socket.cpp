@@ -210,6 +210,7 @@ int Socket::recv(std::string& data) const
 
 	do
 	{
+		// TODO: is this necessary?
 		memset(buffer, 0, sizeof(buffer));
 
 		ret = ::recv(m_sock, buffer, MAX_RECV_LENGTH, 0);
@@ -222,7 +223,7 @@ int Socket::recv(std::string& data) const
 			length += ret;
 		}
 	}
-	while (ret > MAX_RECV_LENGTH);
+	while (ret >= MAX_RECV_LENGTH);
 
 	return length;
 }

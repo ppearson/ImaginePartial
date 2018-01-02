@@ -38,6 +38,9 @@ public:
 	GeoHelperObj();
 
 	static bool readMaterialFile(const std::string& mtlPath, GeoMaterials& materials);
+	
+	// attempt to work out which bit is the filename, and discard the rest (possibly options)
+	static bool extractPathFilenameFromTexturePathString(const std::string& originalPathString, std::string& finalFilename);
 
 	struct FaceLineResults
 	{

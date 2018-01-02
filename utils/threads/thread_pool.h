@@ -20,6 +20,7 @@
 #define THREAD_POOL_H
 
 #include <deque>
+#include <vector>
 #include <bitset>
 
 #include "thread.h"
@@ -29,8 +30,8 @@
 namespace Imagine
 {
 
-#define MAX_THREADS 128
-#define TASK_BUNDLE_SIZE 4
+#define kMAX_THREADS 256 // used for controller bitset...
+#define kTASK_BUNDLE_SIZE 4
 
 class ThreadPool;
 
@@ -57,7 +58,7 @@ public:
 	void clear();
 
 	unsigned char		m_size;
-	ThreadPoolTask*		m_pTasks[TASK_BUNDLE_SIZE];
+	ThreadPoolTask*		m_pTasks[kTASK_BUNDLE_SIZE];
 };
 
 class RequeuedTasks
@@ -90,7 +91,7 @@ public:
 protected:
 	Mutex						m_lock;
 	unsigned int				m_numberOfThreads;
-	std::bitset<MAX_THREADS>	m_bsThreadsAvailable;
+	std::bitset<kMAX_THREADS>	m_bsThreadsAvailable;
 	Event						m_threadAvailable;
 
 	unsigned int				m_activeThreads;
@@ -147,9 +148,17 @@ public:
 	virtual void taskDone() { }
 
 protected:
+
+	enum PoolExecutionTypeFlags
+	{
+		POOL_WAIT_FOR_COMPLETION		= 1 << 0,
+		POOL_WAIT_FOR_NEW_TASKS			= 1 << 1,
+		POOL_FORCE_ALL_THREADS			= 1 << 2, // will create the full number of threads, even if there aren't enough tasks
+		POOL_ALLOW_START_EMPTY			= 1 << 3
+	};
+
 	// these destroy any existing threads and create new ones...
-	void startPoolAndWaitForCompletion();
-	void startPool();
+	void startPool(unsigned int flags);
 
 	void processTask(ThreadPoolTask* pTask, unsigned int threadID);
 
@@ -180,17 +189,27 @@ protected:
 	unsigned int getNextTaskBundleInternal(TaskBundle* pBundle);
 
 protected:
-	unsigned int		m_numberOfThreads;
-	ThreadPoolThread*	m_pThreads[MAX_THREADS];
-	RequeuedTasks*		m_pRequeuedTasks[MAX_THREADS];
 	ThreadController	m_controller;
+
+	std::vector<ThreadPoolThread*>	m_aThreads;
+	std::vector<RequeuedTasks*>		m_aRequeuedTasks;
+
 	std::deque<ThreadPoolTask*>	m_aTasks;
+
 	Mutex				m_lock;
 	Mutex				m_requeueLock;
+	
+	Event				m_finishedEvent;
+
+
+// configuration stuff
+	unsigned int		m_numberOfThreads;
 
 	//! Note: if this is set on Linux, any other threads started by a task started by a thread pool
-	//!       will share the same affinity and will be locked to that processor, effectively throttling the execution
-	//!       of all further spawned threads to a single core...
+	//!       will share (inherit) the same affinity and will be locked to that processor, effectively throttling the execution
+	//!       of all further spawned threads to a single core, so be careful when using this... However, on NUMA systems,
+	//!       it can make a noticable difference to efficiency when enabled and memory used by each thread is allocated (first touch)
+	//!       appropriately...
 	bool				m_setAffinity;
 
 	bool				m_lowPriorityThreads;

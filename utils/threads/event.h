@@ -16,8 +16,8 @@
  ---------
 */
 
-#ifndef MUTEX_H
-#define MUTEX_H
+#ifndef EVENT_H
+#define EVENT_H
 
 #ifndef _MSC_VER
 #include <pthread.h>
@@ -28,42 +28,30 @@
 namespace Imagine
 {
 
-class Mutex
+class Mutex;
+
+class Event
 {
 public:
-	Mutex();
-	~Mutex();
+	Event();
+	~Event();
 
-	void lock();
-	void unlock();
-	
-	friend class Event;
+	void signal();
+	void broadcast();
+	void wait();
+	void wait(Mutex& mutex);
+	void reset();
 
 protected:
 #ifdef _MSC_VER
-	HANDLE m_mutex;
+	HANDLE m_event;
 #else
-	pthread_mutex_t m_mutex;
+	pthread_cond_t m_ready;
+	pthread_mutex_t m_lock;
 #endif
-	bool m_created;
+	
+	volatile bool	m_hasHappened;
 
-};
-
-class Guard
-{
-public:
-	Guard()
-	{
-		m_mutex.lock();
-	}
-
-	~Guard()
-	{
-		m_mutex.unlock();
-	}
-
-protected:
-	Mutex m_mutex;
 };
 
 } // namespace Imagine

@@ -450,6 +450,7 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 		}
 
 		pCO->setType(CompoundObject::eBaked);
+		pCO->setDefaultMaterial(); // just for sanity reasons
 
 		m_newObject = pCO;
 	}
@@ -898,6 +899,7 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 		}
 
 		pCO->setType(CompoundObject::eBaked);
+		pCO->setDefaultMaterial(); // just for sanity reasons
 
 		m_newObject = pCO;
 	}

@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2016 Peter Pearson.
+ Copyright 2011-2017 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@
 
 #include <stdio.h>
 #include <string.h>
+
+#include "tagged_pointer.h"
 
 namespace Imagine
 {
@@ -48,29 +50,38 @@ template<typename T>
 class Matrix
 {
 public:
-	Matrix() : m_width(0), m_height(0), m_pData(NULL)
+	Matrix() : m_width(0), m_height(0)
 	{
 
 	}
 
-	Matrix(unsigned int width, unsigned int height, bool initialise = true) : m_width(width), m_height(height), m_pData(NULL)
+	Matrix(unsigned int width, unsigned int height, bool initialise = true) : m_width(width), m_height(height)
 	{
+		// use a tagged pointer to keep track of how the memory was allocated in order to delete it appropriately later
 		if (initialise)
 		{
-			m_pData = new T[width * height];
+			m_data.setBoth(new T[width * height], 0);
 		}
 		else
 		{
-			m_pData = static_cast<T*>(::operator new(sizeof(T) * width * height));
+			m_data.setBoth(static_cast<T*>(::operator new(sizeof(T) * width * height)), 1);
 		}
 	}
 
 	~Matrix()
 	{
-		if (m_pData)
+		if (m_data.getPtr())
 		{
-			// TODO: won't match when using operator new - used tagged pointer to tell?
-			delete [] m_pData;
+			unsigned int tag = m_data.getTag();
+			// work out which delete to call based on if it was operator new'd when allocated.
+			if (tag == 0)
+			{
+				delete [] m_data.getPtr();
+			}
+			else
+			{
+				delete m_data.getPtr();
+			}
 		}
 	}
 
@@ -83,52 +94,55 @@ public:
 
 	void initialise(unsigned int width, unsigned int height, bool setToZero)
 	{
-		if (setToZero)
+		// use a tagged pointer to keep track of how the memory was allocated in order to delete it appropriately later
+		if (initialise)
 		{
-			m_pData = new T[width * height];
+			m_data.setBoth(new T[width * height], 0);
 		}
 		else
 		{
-			m_pData = static_cast<T*>(::operator new(sizeof(T) * width * height));
+			m_data.setBoth(static_cast<T*>(::operator new(sizeof(T) * width * height)), 1);
 		}
 	}
 
 	T* rowPtr(unsigned int row)
 	{
-		return m_pData + (row * m_width);
+		return m_data.getPtr() + (row * m_width);
 	}
 
 	T* rawData()
 	{
-		return m_pData;
+		return m_data.getPtr();
 	}
 
+	// Note: the assumption here is that the dimensions match - in current usages this is the case,
+	//       but this is likely to change in the future, so this will need to be made more robust...
 	void copy(const Matrix<T>& source)
 	{
-		memcpy(m_pData, source.m_pData, m_width * m_height * sizeof(T));
+		memcpy(m_data.getPtr(), source.m_data.getPtr(), m_width * m_height * sizeof(T));
 	}
 
 	void copy(const Matrix<T>* source)
 	{
-		memcpy(m_pData, source->m_pData, m_width * m_height * sizeof(T));
+		memcpy(m_data.getPtr(), source->m_data.getPtr(), m_width * m_height * sizeof(T));
 	}
 
 	// only usable for ints or float 0.0f
 	void setAll(T val)
 	{
-		memset(m_pData, val, m_width * m_height * sizeof(T));
+		memset(m_data.getPtr(), val, m_width * m_height * sizeof(T));
 	}
 
 	void setZero()
 	{
-		memset(m_pData, 0, m_width * m_height * sizeof(T));
+		memset(m_data.getPtr(), 0, m_width * m_height * sizeof(T));
 	}
 
-	T& item(unsigned int x, unsigned int y) { return m_pData[x + m_width * y]; }
-	const T& item(unsigned int x, unsigned int y) const { return m_pData[x + m_width * y]; }
+	T& item(unsigned int x, unsigned int y) { return m_data.getPtr()[x + m_width * y]; }
+	const T& item(unsigned int x, unsigned int y) const { return m_data.getPtr()[x + m_width * y]; }
 
-	T* itemPtr(unsigned int x, unsigned int y) { return &m_pData[x + m_width * y]; }
-	const T* itemPtr(unsigned int x, unsigned int y) const { return &m_pData[x + m_width * y]; }
+	T* itemPtr(unsigned int x, unsigned int y) { return &m_data.getPtr()[x + m_width * y]; }
+	const T* itemPtr(unsigned int x, unsigned int y) const { return &m_data.getPtr()[x + m_width * y]; }
 
 	Row<T>& operator[](unsigned int row)
 	{
@@ -136,10 +150,10 @@ public:
 	}
 
 protected:
-	unsigned int	m_width;
-	unsigned int	m_height;
-	T*				m_pData;
-
+	TaggedPointer<T, 2>		m_data;
+	
+	unsigned int			m_width;
+	unsigned int			m_height;
 };
 
 } // namespace Imagine

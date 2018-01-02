@@ -106,7 +106,7 @@ public:
 			addTaskNoLock(pTask);
 		}
 
-		startPoolAndWaitForCompletion();
+		startPool(POOL_WAIT_FOR_COMPLETION);
 
 		return m_results1.size() == m_numberOfThreads;
 	}
@@ -121,7 +121,7 @@ public:
 			addTaskNoLock(pTask);
 		}
 
-		startPoolAndWaitForCompletion();
+		startPool(POOL_WAIT_FOR_COMPLETION);
 
 		return m_results2.size() == m_numberOfThreads;
 	}

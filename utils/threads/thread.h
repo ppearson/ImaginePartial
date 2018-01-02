@@ -70,6 +70,7 @@ protected:
 #endif
 
 	void setRunning(bool running);
+	void setFinished(bool finished);
 
 protected:
 #ifdef _MSC_VER
@@ -80,6 +81,7 @@ protected:
 #endif
 
 	volatile bool	m_isRunning;
+	volatile bool	m_isFinished;
 	bool			m_autoDestruct;
 	Mutex			m_mutex;
 	ThreadPriority	m_priority;

@@ -16,56 +16,47 @@
  ---------
 */
 
-#ifndef MUTEX_H
-#define MUTEX_H
+#ifndef ROOM_BUILDER_H
+#define ROOM_BUILDER_H
 
-#ifndef _MSC_VER
-#include <pthread.h>
-#else
-#include <windows.h>
-#endif
+#include "scene_builder.h"
 
 namespace Imagine
 {
 
-class Mutex
+class RoomBuilder : public SceneBuilder
 {
 public:
-	Mutex();
-	~Mutex();
+	RoomBuilder();
+	virtual ~RoomBuilder();
 
-	void lock();
-	void unlock();
-	
-	friend class Event;
+	enum TextureType
+	{
+		eDefaultMaterial,
+		eFloorOnly,
+		eFloorAndWalls
+	};
+
+	virtual unsigned char getSceneBuilderTypeID();
+	virtual std::string getSceneBuilderDescription();
+
+	virtual void buildParameters(Parameters& parameters, unsigned int flags);
+
+	virtual void createScene(Scene& scene);
 
 protected:
-#ifdef _MSC_VER
-	HANDLE m_mutex;
-#else
-	pthread_mutex_t m_mutex;
-#endif
-	bool m_created;
+	unsigned int		m_width;
+	unsigned int		m_depth;
+	unsigned int		m_height;
 
-};
+	bool				m_front;
+	bool				m_ceiling;
 
-class Guard
-{
-public:
-	Guard()
-	{
-		m_mutex.lock();
-	}
+	unsigned int		m_planeDivisions;
 
-	~Guard()
-	{
-		m_mutex.unlock();
-	}
-
-protected:
-	Mutex m_mutex;
+	TextureType			m_materials;
 };
 
 } // namespace Imagine
 
-#endif
+#endif // ROOM_BUILDER_H

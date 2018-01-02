@@ -49,6 +49,8 @@ bool GeoReaderPly::readFile(const std::string& path, const GeoReaderOptions& opt
 		return false;
 	}
 	
+	m_readOptions = options;
+	
 	if (headerInfo.type == eASCII)
 	{
 		return readASCIIFile(fileStream, headerInfo, options);

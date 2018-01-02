@@ -39,7 +39,7 @@
 namespace Imagine
 {
 
-MaterialControl::MaterialControl(const std::string& name, Object* parentObject, std::string label) : Control(name, label), m_pParentObject(parentObject),
+MaterialControl::MaterialControl(const std::string& name, Object* parentObject, const std::string& label) : Control(name, label), m_pParentObject(parentObject),
 	m_pSelectionManager(NULL), m_shiftPressed(false)
 {
 	initCommon();
@@ -289,10 +289,14 @@ void MaterialControl::refreshAvailableMaterials()
 
 void MaterialControl::setMaterial(Material* pMaterial, bool freeExisting)
 {
+	ViewContext::instance().cancelReRender();
+	
 	if (m_pParentObject)
 		m_pParentObject->setMaterial(pMaterial, freeExisting);
 	else if (m_pSelectionManager)
 		m_pSelectionManager->setMaterial(pMaterial, freeExisting);
+	
+	ViewContext::instance().sceneChanged();
 }
 
 Material* MaterialControl::getMaterial()

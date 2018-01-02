@@ -89,7 +89,7 @@ bool SelectionRectRaycastWorker::performRaycast(unsigned int startX, unsigned in
 												endX, endY);
 	addTaskNoLock(pTask4);
 
-	startPoolAndWaitForCompletion();
+	startPool(POOL_WAIT_FOR_COMPLETION);
 
 	// merge the results
 

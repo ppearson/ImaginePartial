@@ -257,6 +257,8 @@ Image* ImageReaderPNG::readColourImageAndByteCopy(const std::string& filePath, I
 	{
 		if (!pImageColour3b->initialise(infra.width, infra.height))
 		{
+            delete pImage;
+            
 			png_destroy_read_struct(&infra.pPNG, &infra.pInfo, (png_infopp)NULL);
 
 			for (unsigned int y = 0; y < infra.height; y++)

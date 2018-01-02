@@ -492,7 +492,10 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 void Raytracer::initRendererAndIntegrator(const Params& settings)
 {
 	if (m_pRenderer)
+	{
 		delete m_pRenderer;
+		m_pRenderer = NULL;
+	}
 
 	bool debugRender = settings.getBool("debugRender", false);
 	if (debugRender)
@@ -836,11 +839,11 @@ void Raytracer::renderScene(float time, const Params* pParams, bool waitForCompl
 
 		if (waitForCompletion)
 		{
-			startPoolAndWaitForCompletion();
+			startPool(POOL_WAIT_FOR_COMPLETION);
 		}
 		else
 		{
-			startPool();
+			startPool(0);
 			return;
 		}
 

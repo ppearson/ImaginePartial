@@ -21,6 +21,8 @@
 
 #include <cmath>
 
+#include "utils/hints.h"
+
 namespace Imagine
 {
 
@@ -38,7 +40,8 @@ public:
 	// returns true if it's within the set of smallest items
 	bool addItem(float itemSize, unsigned int index)
 	{
-		if (numItems == 0)
+		// this branch has a large penalty...
+		if (__expect_not_taken(numItems == 0))
 		{
 			// it's the first one...
 			sizes[0] = itemSize;
@@ -48,15 +51,27 @@ public:
 
 			return true;
 		}
+		
+		int newPos;
+		if (numItems == size)
+		{
+			// if we're full, first of all see if it's bigger than the biggest item we have
+			if (itemSize >= sizes[numItems - 1])
+				return false;
+			
+			newPos = size - 1;
+			
+			// TODO: because we've checked the final item above, we should be able to ignore that?
+		}
+		else
+		{
+			newPos = numItems;
+		}
 
-		// if we're full, first of all see if it's bigger than the biggest item we have
-		if (numItems == size && itemSize >= sizes[numItems - 1])
-			return false;
+		// we need to work out where to put it, and maybe shift the remainder up by one
+		
+		// TODO: binary search
 
-		// otherwise, it is, so we need to work out where to put it, and maybe
-		// shift the remainder up by one
-
-		int newPos = (numItems == size) ? size - 1 : numItems;
 		for (int i = newPos; i >= 0; i--)
 		{
 			float testValue = sizes[i];

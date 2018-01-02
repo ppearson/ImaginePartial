@@ -38,7 +38,8 @@
 namespace Imagine
 {
 
-Thread::Thread(ThreadPriority priority) : m_thread(0), m_isRunning(false), m_autoDestruct(false), m_priority(priority),
+Thread::Thread(ThreadPriority priority) : m_thread(0), m_isRunning(false), m_isFinished(false),
+	m_autoDestruct(false), m_priority(priority),
 	m_affinity(-1)
 {
 }
@@ -100,6 +101,8 @@ void* threadProc(void* ptr)
 #else
 	pthread_exit(ptr);
 #endif
+	
+	return NULL;
 }
 
 // TODO: if this is called twice in a row, the handle to the first thread will be lost, but
@@ -107,6 +110,7 @@ void* threadProc(void* ptr)
 bool Thread::start()
 {
 	setRunning(true);
+	setFinished(false);
 
 #ifdef _MSC_VER
 	unsigned long threadID = 0;
@@ -249,6 +253,8 @@ void Thread::waitForCompletion()
 	 * 22: nothing to join - something else has done a join on that thread
 	 *
 	*/
+	
+	setFinished(true);
 
 #endif
 }
@@ -288,6 +294,13 @@ void Thread::setRunning(bool running)
 {
 	m_mutex.lock();
 	m_isRunning = running;
+	m_mutex.unlock();
+}
+
+void Thread::setFinished(bool finished)
+{
+	m_mutex.lock();
+	m_isFinished = finished;
 	m_mutex.unlock();
 }
 

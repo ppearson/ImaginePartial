@@ -192,6 +192,13 @@ public:
 		g = std::min(g, max);
 		b = std::min(b, max);
 	}
+	
+	inline void clampMin(float min)
+	{
+		r = std::max(r, min);
+		g = std::max(g, min);
+		b = std::max(b, min);
+	}
 
 	void exp()
 	{

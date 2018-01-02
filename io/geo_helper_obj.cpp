@@ -53,6 +53,8 @@ bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, GeoMaterials& ma
 	float r;
 	float g;
 	float b;
+	
+	bool haveDiffuseTexture = false;
 
 	while (fileStream.getline(buf, 256))
 	{
@@ -73,6 +75,8 @@ bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, GeoMaterials& ma
 			}
 			// create a new one
 			pNewMaterial = new StandardMaterial();
+			
+			haveDiffuseTexture = false;
 
 			line.assign(buf);
 			line = line.substr(startIndex);
@@ -97,16 +101,16 @@ bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, GeoMaterials& ma
 
 			std::string diffuseTextureMapFile;
 			diffuseTextureMapFile.assign(line.substr(7));
-
-			if (!diffuseTextureMapFile.empty())
+			
+			std::string finalDiffuseTextureFilename;
+			if (extractPathFilenameFromTexturePathString(diffuseTextureMapFile, finalDiffuseTextureFilename))
 			{
-				if (diffuseTextureMapFile.find(".") != std::string::npos)
-				{
-					std::string basePath = FileHelpers::getFileDirectory(mtlPath);
+				std::string basePath = FileHelpers::getFileDirectory(mtlPath);
 
-					std::string diffuseTextureMapFullPath = basePath + diffuseTextureMapFile;
-					pNewMaterial->setDiffuseTextureMapPath(diffuseTextureMapFullPath, false);
-				}
+				std::string diffuseTextureMapFullPath = basePath + finalDiffuseTextureFilename;
+				pNewMaterial->setDiffuseTextureMapPath(diffuseTextureMapFullPath, false);
+				
+				haveDiffuseTexture = true; // make a note of the fact we extracted a diffuse texture.
 			}
 		}
 		else if (stringCompare(buf, "bump", 4, startIndex) || stringCompare(buf, "map_bump", 7, startIndex))
@@ -123,15 +127,13 @@ bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, GeoMaterials& ma
 			std::string bumpTextureMapFile;
 			bumpTextureMapFile.assign(line.substr(spacePos + 1));
 
-			if (!bumpTextureMapFile.empty())
+			std::string finalBumpTextureFilename;
+			if (extractPathFilenameFromTexturePathString(bumpTextureMapFile, finalBumpTextureFilename))
 			{
-				if (bumpTextureMapFile.find(".") != std::string::npos)
-				{
-					std::string basePath = FileHelpers::getFileDirectory(mtlPath);
+				std::string basePath = FileHelpers::getFileDirectory(mtlPath);
 
-					std::string bumpTextureMapFullPath = basePath + bumpTextureMapFile;
-					pNewMaterial->setBumpTextureMapPath(bumpTextureMapFullPath, false);
-				}
+				std::string bumpTextureMapFullPath = basePath + finalBumpTextureFilename;
+				pNewMaterial->setBumpTextureMapPath(bumpTextureMapFullPath, false);
 			}
 		}
 		else if (stringCompare(buf, "map_d", 5, startIndex)) // alpha texture
@@ -148,21 +150,25 @@ bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, GeoMaterials& ma
 			std::string alphaTextureMapFile;
 			alphaTextureMapFile.assign(line.substr(spacePos + 1));
 
-			if (!alphaTextureMapFile.empty())
+			std::string finalAlphaTextureFilename;
+			if (extractPathFilenameFromTexturePathString(alphaTextureMapFile, finalAlphaTextureFilename))
 			{
-				if (alphaTextureMapFile.find(".") != std::string::npos)
-				{
-					std::string basePath = FileHelpers::getFileDirectory(mtlPath);
+				std::string basePath = FileHelpers::getFileDirectory(mtlPath);
 
-					std::string alphaTextureMapFullPath = basePath + alphaTextureMapFile;
-					pNewMaterial->setAlphaTextureMapPath(alphaTextureMapFullPath, false);
-				}
+				std::string alphaTextureMapFullPath = basePath + finalAlphaTextureFilename;
+				pNewMaterial->setAlphaTextureMapPath(alphaTextureMapFullPath, false);
 			}
 		}
 		else if (buf[startIndex] == 'K' && buf[startIndex + 1] == 'd')
 		{
-			sscanf(buf + startIndex, "Kd %f %f %f", &r, &g, &b);
-			pNewMaterial->setDiffuseColour(Colour3f(r, g, b));
+			// .mtl files often have diffuse texture maps AND Kd constant colours
+			// in arbitrary orders. In this case, if we've seen a diffuse texture already,
+			// skip setting the diffuse constant colour to prevent overwriting the texture...
+			if (!haveDiffuseTexture)
+			{
+				sscanf(buf + startIndex, "Kd %f %f %f", &r, &g, &b);
+				pNewMaterial->setDiffuseColour(Colour3f(r, g, b));
+			}
 		}
 		else if (buf[startIndex] == 'K' && buf[startIndex + 1] == 's')
 		{
@@ -173,6 +179,13 @@ bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, GeoMaterials& ma
 		{
 			float shininess;
 			sscanf(buf + startIndex, "Ns %f", &shininess);
+			
+			// Obj .mtl specs say higher is tighter (i.e. less rough, more specular), but unfortunately,
+			// it seems that's often not the case, so there's not really a lot we can do
+			// that's robust in all situations...
+			// A large number of .mtl files I've seen that do obey the higher is tighter spec,
+			// seem to assume ~100-130 is fully specular (coming from OpenGL 2.x limits?),
+			// so work on that (broken) assumption for the moment.
 
 			// convert back to our range
 			float roughnessValue = fit(shininess, 0.0f, 128.0f, 0.0f, 1.0f);
@@ -205,6 +218,199 @@ bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, GeoMaterials& ma
 		return false;
 
 	return true;
+}
+
+// Attempt to work out which bit is the filename, and discard the rest (probably options).
+// If we didn't care about spaces in the filename, this would be easy (on the assumption that
+// all paths will have a file extension), but alas most Obj files (that I've seen anyway)
+// seem to be authored in Windows and they often have spaces in texture map filenames...
+//
+// This is unfortunately quite tricky to always get right - the Wavefront specs says options for filenames should be *before*
+// the filename, but this often isn't the case (they're after the filename), so we need to try and work it out by
+// detecting where the file extension is...
+// It's somewhat questionable what the point of doing this is (given it's fairly complicated, and .mtl files often have
+// hardcoded Windows paths in them which won't exist anyway), but it does generally allow stripping options off certain
+// relative map paths in .mtl files I have correctly, which wouldn't work without this logic (given spaces in filenames)
+//
+// Example strings we need to cope with:
+//
+// 1. bump bump_texture_map.jpg        - easy
+// 2. bump bump texture map.jpg        - spaces in filename
+// 3. bump -bm 2 bump_texture_map.jpg  - options correctly before filename
+// 4. bump -bm 2 bump texture map.jpg  - options correctly before filename with spaces in filename
+// 5. bump bump_texture_map.jpg -bm 2  - options incorrectly after filename
+// 6. bump bump texture map.jpg -bm 2  - options incorrectly after filename with spaces in filename
+// 7. bump bump -texture-map.jpg -bm 2 - filename with space and hyphen is before options - 
+//                                       we're screwed if this happens - we'd need to have a white list of options
+//                                       to recognise them correctly compared to the filename...
+// Note: currently, 1-6 are handled, but given 7 is extremely unlikely and more complex to handle, this isn't currently handled.
+bool GeoHelperObj::extractPathFilenameFromTexturePathString(const std::string& originalPathString, std::string& finalFilename)
+{
+	if (originalPathString.empty())
+		return false;
+	
+	// assume the filename will have a "." char in it - technically (UNIX) it doesn't need to, but in practice, it always will,
+	// so we can use this fact to detect which bit is the filename
+	if (originalPathString.find(".") == std::string::npos)
+		return false;
+	
+	std::vector<std::string> tokens;
+	splitString(originalPathString, tokens, " ", 0);
+	
+	if (tokens.size() == 1)
+	{
+		// we've only got one string item, so it must be that
+		finalFilename = originalPathString;
+		return true;
+	}
+	
+	// now go through the tokens, and attempt to work out if there are any options and if so, where they are in relation to the filename.
+	
+	// To do this completely robustly, we should be able to understand each possible option, and interpret it to some degree (as options can
+	// have different numbers of arguments), however for our purposes it's generally good enough to just work out which one is first based
+	// off where a filename extension is and where options are - the assumptions being options will be prefixed with "-" and will all be together
+	// either before OR after the filename - if these assumptions aren't met, then we can't cope, and we don't bother parsing the filename
+	
+	size_t extensionPos = -1u;
+	size_t optionsFirstPos = -1u; // index of first option item
+	size_t optionsLastPos = -1u;
+	
+	size_t index = 0;
+	
+	// TODO: we could attempt to do this in one pass, but...
+	
+	std::vector<std::string>::iterator itToken = tokens.begin();
+	for (; itToken != tokens.end(); ++itToken)
+	{
+		const std::string& tokenString = *itToken;
+		
+		bool isOption = (tokenString.substr(0, 1) == "-");
+		bool containsExtension = (tokenString.find(".") != std::string::npos);
+
+		if (isOption && !containsExtension)
+		{
+			// just an option
+			if (optionsFirstPos == -1u)
+			{
+				optionsFirstPos = index;
+			}
+			optionsLastPos = index;
+		}
+		else if (!isOption && containsExtension)
+		{
+			// just contains an extension
+			extensionPos = index;
+		}
+		else if (isOption && containsExtension)
+		{
+			// both. Oh dear...
+			// On the assumption that there isn't an actual option token (i.e. the option command as opposed to option argument) with
+			// "." in it, let's assume it's the extension part
+			extensionPos = index;
+		}
+		else
+		{
+			// otherwise, we assume it's either a part of a filename that has spaces in
+		}
+		
+		index ++;
+	}
+	
+	// this shouldn't happen, but...
+	if (extensionPos == -1u)
+	{
+		return false;
+	}
+	
+	// if we don't have any options, assume passed in string was entire filename
+	if (optionsFirstPos == -1u && optionsLastPos == -1u)
+	{
+		finalFilename = originalPathString;
+		return true;
+	}
+	
+	// if the options were after the extension pos, it's easy - we can assume all tokens up to and including the extension pos
+	// token are the filename
+	if (optionsFirstPos > extensionPos && optionsLastPos > extensionPos)
+	{
+		finalFilename = tokens[0];
+		
+		for (unsigned int i = 1; i <= extensionPos; i++)
+		{
+			finalFilename += " ";
+			finalFilename += tokens[i];
+		}
+		
+		return true;
+	}
+	else if (optionsFirstPos < extensionPos && optionsLastPos < extensionPos)
+	{
+		// hackily progress through the options (and attempt to correctly skip the arguments)
+		index = 0;
+		
+		itToken = tokens.begin();
+		for (; itToken != tokens.end(); ++itToken)
+		{
+			const std::string& tokenString = *itToken;
+			
+			bool isOption = (tokenString.substr(0, 1) == "-");
+			
+			// as we skip args explicitly (below), when we get to this stage,
+			// we know we're at the end of the args and this is the first filename
+			// item
+			if (!isOption)
+				break;
+
+			std::string optionName = tokenString.substr(1);
+			
+			unsigned int argCount = 1;
+			
+			if (optionName == "o" || optionName == "s" || optionName == "t")
+			{
+				// -o -s -t have: u, v, [w] args
+				argCount = 2;
+				// the only way to know if there is an optional third w argument is to see if the next
+				// arg is a number or not, which is obviously not completely robust - i.e. we could have
+				// the following:
+				// map_Kd -s 1 0.25 1 my lovely texture.jpg
+				// where the texture name is "1 my lovely texture.jpg"
+				// in which case, checking if the third string token is a number doesn't tell us anything useful.
+				// The only way to really deal with this is try and stat all filename combinations we see in order
+				// to work out what the actual filename is, which is pretty silly really, and would complicate
+				// this function even more to do.
+				// As such, for the moment, just assume these options only have two arguments (which is all I've ever
+				// seen in .mtl files I've got), in a less-than-ideal compromise. The alternative hacky solution
+				// is not coping with filenames with spaces starting with numbers, but unfortunately these exist...
+			}
+			else if (optionName == "mm")
+			{
+				argCount = 2;
+			}
+			
+			index += 1;
+			
+			// skip over the args
+			for (unsigned int j = 0; j < argCount; j++)
+			{
+				++itToken; 
+			}
+			
+			index += argCount;
+		}
+		
+		// now append further tokens to final string
+		finalFilename = tokens[index];
+		
+		for (unsigned int i = index + 1; i < tokens.size(); i++)
+		{
+			finalFilename += " ";
+			finalFilename += tokens[i];
+		}
+		
+		return true;
+	}
+	
+	return false;
 }
 
 void GeoHelperObj::copyPointsToGeometry(std::vector<Point>& points, std::set<unsigned int>& pointIndexesRequired, EditableGeometryInstance* pGeoInstance)
@@ -240,7 +446,7 @@ void GeoHelperObj::copyPointsToGeometry(std::vector<Point>& points, std::set<uns
 		{
 			unsigned int vertexIndex = face.getVertexPosition(i);
 
-			std::map<unsigned int, unsigned int>::iterator it1 = aMapToFaceVertices.find(vertexIndex);
+//			std::map<unsigned int, unsigned int>::iterator it1 = aMapToFaceVertices.find(vertexIndex);
 
 			unsigned int newIndex = aMapToFaceVertices[vertexIndex];
 

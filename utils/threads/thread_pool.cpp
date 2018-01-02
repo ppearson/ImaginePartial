@@ -41,12 +41,12 @@ bool ThreadPoolTask::isActive() const
 
 TaskBundle::TaskBundle() : m_size(0)
 {
-	memset(m_pTasks, 0, sizeof(ThreadPoolTask*) * TASK_BUNDLE_SIZE);
+	memset(m_pTasks, 0, sizeof(ThreadPoolTask*) * kTASK_BUNDLE_SIZE);
 }
 
 void TaskBundle::clear()
 {
-	memset(m_pTasks, 0, sizeof(ThreadPoolTask*) * TASK_BUNDLE_SIZE);
+	memset(m_pTasks, 0, sizeof(ThreadPoolTask*) * kTASK_BUNDLE_SIZE);
 	m_size = 0;
 }
 
@@ -63,40 +63,6 @@ ThreadController::ThreadController(unsigned int threads) : m_numberOfThreads(thr
 	{
 		m_bsThreadsAvailable.set(i, true);
 	}
-}
-
-void ThreadPool::terminate()
-{
-	if (!m_isActive)
-	{
-		return;
-	}
-
-	m_wasCancelled = true;
-	m_isActive = false;
-
-	for (unsigned int i = 0; i < m_numberOfThreads; i++)
-	{
-		if (m_controller.isActive(i))
-		{
-			Thread* pThread = m_pThreads[i];
-			pThread->stop(false);
-		}
-	}
-
-	// as Thread::waitForCompletion()'s pthread_join() doesn't seem to work properly when
-	// there's already something joining on it, just delete all the tasks and wait for the threads
-	// to kill themselves
-	m_lock.lock();
-
-	std::deque<ThreadPoolTask*>::iterator it = m_aTasks.begin();
-	for (; it != m_aTasks.end(); ++it)
-	{
-		delete *it;
-	}
-
-	m_aTasks.clear();
-	m_lock.unlock();
 }
 
 bool ThreadController::isActive(unsigned int thread)
@@ -346,18 +312,13 @@ ThreadPool::ThreadPool(unsigned int threads, bool useBundles) : m_numberOfThread
 {
 	for (unsigned int i = 0; i < m_numberOfThreads; i++)
 	{
-		m_pThreads[i] = NULL;
 		if (m_useBundles)
 		{
-			m_pRequeuedTasks[i] = new RequeuedTasks();
-		}
-		else
-		{
-			m_pRequeuedTasks[i] = NULL;
+			m_aRequeuedTasks.push_back(new RequeuedTasks());
 		}
 	}
 
-	m_threadBundleSizeThreshold1 = TASK_BUNDLE_SIZE * m_numberOfThreads;
+	m_threadBundleSizeThreshold1 = kTASK_BUNDLE_SIZE * m_numberOfThreads;
 	m_threadBundleSizeThreshold2 = m_threadBundleSizeThreshold1 / 2;
 }
 
@@ -379,7 +340,7 @@ void ThreadPool::addTask(ThreadPoolTask* pTask)
 
 void ThreadPool::requeueTask(ThreadPoolTask* pTask, unsigned int threadID)
 {
-	RequeuedTasks* pRQT = m_pRequeuedTasks[threadID];
+	RequeuedTasks* pRQT = m_aRequeuedTasks[threadID];
 
 	pRQT->m_pTasks.push_back(pTask);
 }
@@ -421,7 +382,7 @@ unsigned int ThreadPool::getNextTaskBundle(TaskBundle* pBundle)
 	return bundleSize;
 }
 
-void ThreadPool::startPoolAndWaitForCompletion()
+void ThreadPool::startPool(unsigned int flags)
 {
 	deleteThreads();
 
@@ -431,22 +392,32 @@ void ThreadPool::startPoolAndWaitForCompletion()
 	m_fOriginalNumberOfTasks = (float)m_originalNumberOfTasks;
 	m_invOriginalNumTasks = 1.0f / m_fOriginalNumberOfTasks;
 
-	// don't bother creating more threads than there are tasks if that is the case...
-	unsigned int threadsToStart = std::min(m_originalNumberOfTasks, m_numberOfThreads);
+	unsigned int threadsToStart = m_numberOfThreads;
+	if (!(flags & POOL_FORCE_ALL_THREADS))
+	{
+		// don't bother creating more threads than there are tasks if that is the case...
+		threadsToStart = std::min(m_originalNumberOfTasks, m_numberOfThreads);
+	}
 
 	unsigned int threadsCreated = 0;
-	unsigned int threadsStarted = 0;
 
 	m_wasCancelled = false;
 	m_isActive = true;
 
+	m_finishedEvent.reset();
+
 	// TODO: there is a mis-match here between the thread objects created along with
 	//       the tasks popped for them, and the actual number of threads that were started
 
-	// initialise all potential threads to NULL
-	memset(m_pThreads, 0, sizeof(ThreadPoolThread*) * MAX_THREADS);
-
 	m_lock.lock();
+
+	if (!(flags & POOL_ALLOW_START_EMPTY) && m_aTasks.empty())
+	{
+		// currently, the assumption is that tasks will exist at this point (although the infrastructure can technically cope with tasks being added later),
+		// so...
+		fprintf(stderr, "Empty task queue detected.\n");
+		assert(!m_aTasks.empty());
+	}
 
 	bool shouldCreateBundleThreads = m_useBundles && (m_originalNumberOfTasks > m_numberOfThreads * 2);
 
@@ -457,56 +428,95 @@ void ThreadPool::startPoolAndWaitForCompletion()
 		newThreadPriority = Thread::ePriorityLow;
 	}
 
-	for (unsigned int j = 0; j < threadsToStart; j++)
-	{
-		threadID = m_controller.getThreadNoLock();
+	m_aThreads.resize(m_numberOfThreads);
+	memset(m_aThreads.data(), 0, sizeof(ThreadPoolThread*) * m_numberOfThreads);
 
-		if (threadID != -1)
+	if (!shouldCreateBundleThreads)
+	{
+		for (unsigned int j = 0; j < threadsToStart; j++)
 		{
-			if (!m_aTasks.empty())
+			// TODO: there could be a miss-match here...
+			threadID = m_controller.getThreadNoLock();
+
+			if (threadID != -1)
 			{
 				ThreadPoolThread* pThread = new ThreadPoolThread(this, threadID, newThreadPriority);
-				if (pThread)
+				if (!pThread)
 				{
-					if (shouldCreateBundleThreads)
-					{
-						TaskBundle* pTB = pThread->createTaskBundle();
-						unsigned int numTasks = getNextTaskBundleInternal(pTB);
-						pThread->setTaskBundleSize(numTasks);
-					}
-					else
-					{
-						ThreadPoolTask* pTask = getNextTaskInternal();
-						pThread->setTask(pTask);
-					}
-
-					m_pThreads[threadID] = pThread;
-
-					if (m_setAffinity)
-					{
-						pThread->setAffinity(j);
-					}
-
-					threadsCreated ++;
+					// TODO: something more robust here...
+					continue;
 				}
+
+				if (m_setAffinity)
+				{
+					pThread->setAffinity(j);
+				}
+
+				ThreadPoolTask* pTask = getNextTaskInternal();
+				pThread->setTask(pTask);
+
+				// TODO: again, there could be a miss-match here...
+				m_aThreads[threadID] = pThread;
+
+				threadsCreated ++;
+			}
+			else
+			{
+				// something weird happened
+
+				Thread::sleep(1);
 			}
 		}
-		else
+	}
+	else
+	{
+		for (unsigned int j = 0; j < threadsToStart; j++)
 		{
-			// something weird happened
+			threadID = m_controller.getThreadNoLock();
 
-			Thread::sleep(1);
+			if (threadID != -1)
+			{
+				ThreadPoolThread* pThread = new ThreadPoolThread(this, threadID, newThreadPriority);
+				if (!pThread)
+				{
+					// TOOD:
+					continue;
+				}
+
+				if (m_setAffinity)
+				{
+					pThread->setAffinity(j);
+				}
+
+				TaskBundle* pTB = pThread->createTaskBundle();
+				unsigned int numTasks = getNextTaskBundleInternal(pTB);
+				pThread->setTaskBundleSize(numTasks);
+
+				m_aThreads[threadID] = pThread;
+
+				threadsCreated ++;
+			}
+			else
+			{
+				// something weird happened
+
+				Thread::sleep(1);
+			}
 		}
 	}
 
 	m_lock.unlock();
 
+	unsigned int threadsStarted = 0;
+
 	// start them - this is best done in its own loop
 	for (unsigned int i = 0; i < threadsCreated; i++)
 	{
-		if (m_pThreads[i])
+		ThreadPoolThread* pThread = m_aThreads[i];
+
+		if (pThread)
 		{
-			if (m_pThreads[i]->start())
+			if (pThread->start())
 			{
 				threadsStarted++;
 			}
@@ -518,15 +528,23 @@ void ThreadPool::startPoolAndWaitForCompletion()
 		}
 	}
 
+	// if we don't want to wait for completion, just early exit here...
+	if (!(flags & POOL_WAIT_FOR_COMPLETION))
+		return;
+
+	// otherwise...
+
 	// now need to make sure any active threads have finished before we go out of scope
 	for (unsigned int i = 0; i < threadsStarted; i++)
 	{
 		if (m_controller.isActive(i))
 		{
-			Thread* pThread = m_pThreads[i];
+			ThreadPoolThread* pThread = m_aThreads[i];
 			pThread->waitForCompletion();
 		}
 	}
+
+	m_finishedEvent.signal();
 
 	m_lock.lock();
 
@@ -541,104 +559,6 @@ void ThreadPool::startPoolAndWaitForCompletion()
 	m_lock.unlock();
 
 	m_isActive = false;
-}
-
-void ThreadPool::startPool()
-{
-	deleteThreads();
-
-	int threadID = -1;
-
-	m_originalNumberOfTasks = m_aTasks.size();
-	m_fOriginalNumberOfTasks = (float)m_originalNumberOfTasks;
-	m_invOriginalNumTasks = 1.0f / m_fOriginalNumberOfTasks;
-
-	// don't bother creating more threads than there are tasks if that is the case...
-	unsigned int threadsToStart = std::min(m_originalNumberOfTasks, m_numberOfThreads);
-
-	unsigned int threadsCreated = 0;
-	unsigned int threadsStarted = 0;
-
-	m_wasCancelled = false;
-	m_isActive = true;
-
-	// TODO: there is a mis-match here between the thread objects created along with
-	//       the tasks popped for them, and the actual number of threads that were started
-
-	// initialise all potential threads to NULL
-	memset(m_pThreads, 0, sizeof(ThreadPoolThread*) * MAX_THREADS);
-
-	m_lock.lock();
-
-	bool shouldCreateBundleThreads = m_useBundles && (m_originalNumberOfTasks > m_numberOfThreads * 2);
-
-	Thread::ThreadPriority newThreadPriority = Thread::ePriorityNormal;
-
-	if (m_lowPriorityThreads)
-	{
-		newThreadPriority = Thread::ePriorityLow;
-	}
-
-	for (unsigned int j = 0; j < threadsToStart; j++)
-	{
-		threadID = m_controller.getThreadNoLock();
-
-		if (threadID != -1)
-		{
-			if (!m_aTasks.empty())
-			{
-				ThreadPoolThread* pThread = new ThreadPoolThread(this, threadID, newThreadPriority);
-				if (pThread)
-				{
-					if (shouldCreateBundleThreads)
-					{
-						TaskBundle* pTB = pThread->createTaskBundle();
-						unsigned int numTasks = getNextTaskBundleInternal(pTB);
-						pThread->setTaskBundleSize(numTasks);
-					}
-					else
-					{
-						ThreadPoolTask* pTask = getNextTaskInternal();
-						pThread->setTask(pTask);
-					}
-
-					m_pThreads[threadID] = pThread;
-
-					if (m_setAffinity)
-					{
-						pThread->setAffinity(j);
-					}
-
-					threadsCreated ++;
-				}
-			}
-		}
-		else
-		{
-			// something weird happened
-
-			Thread::sleep(1);
-		}
-	}
-
-	m_lock.unlock();
-
-	// start them - this is best done in its own loop
-	for (unsigned int i = 0; i < threadsCreated; i++)
-	{
-		if (m_pThreads[i])
-		{
-			if (m_pThreads[i]->start())
-			{
-				threadsStarted++;
-			}
-			else
-			{
-				// indicate that it's not actually active
-				m_controller.freeThread(i);
-			}
-		}
-	}
 }
 
 void ThreadPool::addRequeuedTasks(RequeuedTasks& rqt)
@@ -663,26 +583,40 @@ void ThreadPool::addRequeuedTasks(RequeuedTasks& rqt)
 
 void ThreadPool::deleteThreads()
 {
-	for (unsigned int i = 0; i < m_numberOfThreads; i++)
+	std::vector<ThreadPoolThread*>::iterator itThread = m_aThreads.begin();
+	for (; itThread != m_aThreads.end(); ++itThread)
 	{
-		Thread* pThread = m_pThreads[i];
+		ThreadPoolThread* pThread = *itThread;
 		if (pThread)
 			delete pThread;
 	}
+
+	m_aThreads.clear();
 }
 
 void ThreadPool::deleteThreadsAndRequeuedTasks()
 {
-	for (unsigned int i = 0; i < m_numberOfThreads; i++)
+	std::vector<ThreadPoolThread*>::iterator itThread = m_aThreads.begin();
+	for (; itThread != m_aThreads.end(); ++itThread)
 	{
-		ThreadPoolThread* pThread = m_pThreads[i];
+		ThreadPoolThread* pThread = *itThread;
+
 		if (pThread)
 			delete pThread;
+	}
 
-		RequeuedTasks* pRQT = m_pRequeuedTasks[i];
+	m_aThreads.clear();
+
+	std::vector<RequeuedTasks*>::iterator itRequeuedTasks = m_aRequeuedTasks.begin();
+	for (; itRequeuedTasks != m_aRequeuedTasks.end(); ++itRequeuedTasks)
+	{
+		RequeuedTasks* pRQT = *itRequeuedTasks;
 		if (pRQT)
 			delete pRQT;
+
 	}
+
+	m_aRequeuedTasks.clear();
 }
 
 void ThreadPool::deleteTask(ThreadPoolTask* pTask, bool lockAndRemoveFromQueue)
@@ -706,6 +640,42 @@ void ThreadPool::deleteTask(ThreadPoolTask* pTask, bool lockAndRemoveFromQueue)
 	delete pTask;
 }
 
+void ThreadPool::terminate()
+{
+	if (!m_isActive)
+	{
+		return;
+	}
+
+	m_wasCancelled = true;
+	m_isActive = false;
+
+	for (unsigned int i = 0; i < m_numberOfThreads; i++)
+	{
+		if (m_controller.isActive(i))
+		{
+			Thread* pThread = m_aThreads[i];
+			pThread->stop(false);
+		}
+	}
+	
+	m_finishedEvent.wait();
+
+	// as Thread::waitForCompletion()'s pthread_join() doesn't seem to work properly when
+	// there's already something joining on it (in POSIX it's undefined behaviour), just delete all the tasks and wait for the threads
+	// to kill themselves
+	m_lock.lock();
+
+	std::deque<ThreadPoolTask*>::iterator it = m_aTasks.begin();
+	for (; it != m_aTasks.end(); ++it)
+	{
+		delete *it;
+	}
+
+	m_aTasks.clear();
+	m_lock.unlock();
+}
+
 bool ThreadPool::isActive() const
 {
 	return m_isActive;
@@ -725,8 +695,6 @@ void ThreadPool::clearTasks()
 {
 
 }
-
-
 
 // assumes mutex is already held...
 ThreadPoolTask* ThreadPool::getNextTaskInternal()
@@ -748,7 +716,7 @@ unsigned int ThreadPool::getNextTaskBundleInternal(TaskBundle* pBundle)
 	{
 		// TODO: spread out the tasks we take, so that we still get a linear progression of tiles...
 		unsigned int tasksAdded = 0;
-		for (unsigned int i = 0; i < TASK_BUNDLE_SIZE; i++)
+		for (unsigned int i = 0; i < kTASK_BUNDLE_SIZE; i++)
 		{
 			ThreadPoolTask* pTask = m_aTasks.front();
 			m_aTasks.pop_front();
@@ -764,7 +732,7 @@ unsigned int ThreadPool::getNextTaskBundleInternal(TaskBundle* pBundle)
 	else if (tasksPending > m_threadBundleSizeThreshold2)
 	{
 		unsigned int tasksAdded = 0;
-		for (unsigned int i = 0; i < TASK_BUNDLE_SIZE / 2; i++)
+		for (unsigned int i = 0; i < kTASK_BUNDLE_SIZE / 2; i++)
 		{
 			ThreadPoolTask* pTask = m_aTasks.front();
 			m_aTasks.pop_front();

@@ -68,11 +68,7 @@ bool GeoReaderXYZ::readFile(const std::string& path, const GeoReaderOptions& opt
 		Point vertex(x, y, z);
 
 		aPointPositions.push_back(vertex);
-
-//		line.assign(buf);
-		
 	}
-	
 	
 	fileStream.close();
 	

@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2012 Peter Pearson.
+ Copyright 2014 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
  ---------
 */
 
-#ifndef MUTEX_H
-#define MUTEX_H
+#ifndef RW_LOCK_H
+#define RW_LOCK_H
 
 #ifndef _MSC_VER
 #include <pthread.h>
@@ -28,44 +28,29 @@
 namespace Imagine
 {
 
-class Mutex
+class RWLock
 {
 public:
-	Mutex();
-	~Mutex();
+	RWLock();
+	~RWLock();
 
-	void lock();
+	void readLock();
+	void writeLock();
+
+	bool tryReadLock();
+	bool tryWriteLock();
+
 	void unlock();
-	
-	friend class Event;
 
 protected:
 #ifdef _MSC_VER
-	HANDLE m_mutex;
+
 #else
-	pthread_mutex_t m_mutex;
+	pthread_rwlock_t m_lock;
 #endif
 	bool m_created;
-
-};
-
-class Guard
-{
-public:
-	Guard()
-	{
-		m_mutex.lock();
-	}
-
-	~Guard()
-	{
-		m_mutex.unlock();
-	}
-
-protected:
-	Mutex m_mutex;
 };
 
 } // namespace Imagine
 
-#endif
+#endif // RW_LOCK_H

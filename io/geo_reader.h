@@ -59,6 +59,7 @@ struct GeoReaderOptions
 
 	GeoReaderOptions() : importMaterials(true), importTextures(true), importCompoundObjects(true), newMaterialBreaksObjectGroup(false),
 		rotate90NegX(false), centreObject(true), scaleToFit(true), scaleToFitSize(10.0f), standObjectOnPlane(true),
+		setBBoxDrawMode(false),
 		importFrame(1), useInstances(false),
 		pointSize(0.001f), meshType(eEditableMesh)
 	{
@@ -70,15 +71,17 @@ struct GeoReaderOptions
 	bool				newMaterialBreaksObjectGroup;
 
 	bool				rotate90NegX;
-	
+
 	bool				centreObject;
 	bool				scaleToFit;
 	float				scaleToFitSize;
 	bool				standObjectOnPlane;
 
+	bool				setBBoxDrawMode;
+
 	unsigned int		importFrame;
 	bool				useInstances;
-	
+
 	float				pointSize;
 
 	GeoReaderMeshType	meshType;
