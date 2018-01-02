@@ -20,6 +20,8 @@
 
 #include <stdio.h>
 
+#include "global_context.h"
+
 #include "volumes/volume_grid_sparse.h"
 
 namespace Imagine
@@ -36,12 +38,22 @@ bool VolumeReaderIVV::readHeaderAndBBox(const std::string& filePath, unsigned in
 	FILE* pFile = fopen(filePath.c_str(), "rb");
 	if (!pFile)
 	{
-		fprintf(stderr, "Error opening file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Can't open volume file: %s", filePath.c_str());
 		return false;
 	}
+	
+	size_t bytesRead = 0;
 
 	unsigned char version = 0;
-	fread(&version, sizeof(unsigned char), 1, pFile);
+	bytesRead = fread(&version, sizeof(unsigned char), 1, pFile);
+	
+	if (bytesRead != sizeof(unsigned char))
+	{
+		GlobalContext::instance().getLogger().error("Can't read volume file: %s", filePath.c_str());
+		return false;
+	}
+	
+	// TODO: decent error handling on reads...
 
 	bool denseGrid = true;
 	unsigned int subCellSize = 0;
@@ -107,12 +119,22 @@ VolumeInstance* VolumeReaderIVV::readVolume(const std::string& filePath, unsigne
 	FILE* pFile = fopen(filePath.c_str(), "rb");
 	if (!pFile)
 	{
-		fprintf(stderr, "Error opening volume file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Error opening volume file: %s", filePath.c_str());
 		return NULL;
 	}
 
+	size_t bytesRead = 0;
+
 	unsigned char version = 0;
-	fread(&version, sizeof(unsigned char), 1, pFile);
+	bytesRead = fread(&version, sizeof(unsigned char), 1, pFile);
+	
+	if (bytesRead != sizeof(unsigned char))
+	{
+		GlobalContext::instance().getLogger().error("Can't read volume file: %s", filePath.c_str());
+		return NULL;
+	}
+	
+	// TODO: decent error handling on reads...
 
 	bool floatFormat = true;
 	bool denseGrid = true;
@@ -175,18 +197,18 @@ VolumeInstance* VolumeReaderIVV::readVolume(const std::string& filePath, unsigne
 	if (denseGrid)
 	{
 		if (floatFormat)
-			pVolGridDense = new VolumeGridDense(VolumeGridDense::eTypeFloat);
+			pVolGridDense = new VolumeGridDense(eGridValueTypeFloat);
 		else
-			pVolGridDense = new VolumeGridDense(VolumeGridDense::eTypeHalf);
+			pVolGridDense = new VolumeGridDense(eGridValueTypeHalf);
 
 		pVolInstance = pVolGridDense;
 	}
 	else
 	{
 		if (floatFormat)
-			pVolGridSparse = new VolumeGridSparse(VolumeGridSparse::eTypeFloat);
+			pVolGridSparse = new VolumeGridSparse(eGridValueTypeFloat);
 		else
-			pVolGridSparse = new VolumeGridSparse(VolumeGridSparse::eTypeHalf);
+			pVolGridSparse = new VolumeGridSparse(eGridValueTypeHalf);
 
 		pVolInstance = pVolGridSparse;
 	}
@@ -194,7 +216,7 @@ VolumeInstance* VolumeReaderIVV::readVolume(const std::string& filePath, unsigne
 	if (!pVolInstance)
 	{
 		fclose(pFile);
-		fprintf(stderr, "Could not allocate memory for volume grid for volume file: %s\n", filePath.c_str());
+		GlobalContext::instance().getLogger().error("Could not allocate memory for volume grid for volume file: %s", filePath.c_str());
 		return NULL;
 	}
 
@@ -252,35 +274,84 @@ VolumeInstance* VolumeReaderIVV::readVolume(const std::string& filePath, unsigne
 		// iterate over each SubCell, reading in
 
 		std::vector<VolumeGridSparse::SparseSubCell*>& aSubCells = pVolGridSparse->getSubCells();
-
-		unsigned char subCellStatus = 0;
-
-		std::vector<VolumeGridSparse::SparseSubCell*>::iterator itSubCell = aSubCells.begin();
-		for (; itSubCell != aSubCells.end(); ++itSubCell)
+		
+		// group the subCells into batches of 8, so we can be efficient and use an unsigned char
+		// as a bitset for the state of the next 8 subcells
+			
+		unsigned int cellsRemaining = aSubCells.size();
+		
+		// if it's the newer slightly more compact format
+		if (version >= 3)
 		{
-			VolumeGridSparse::SparseSubCell* pSubCell = *itSubCell;
-
-			fread(&subCellStatus, sizeof(unsigned char), 1, pFile);
-
-			if (subCellStatus == 0)
+			for (unsigned int cellIndex = 0; cellIndex < aSubCells.size(); )
 			{
-				// it's empty, so just continue without copying memory for this subcell
-			}
-			else
-			{
-				unsigned int cellDataLength = pSubCell->getResXY() * pSubCell->getResZ();
-
-				if (floatFormat)
+				unsigned int batchSize = std::min(cellsRemaining, 8u);
+				
+				unsigned char subCellStateFlags = 0;
+				
+				// read in the state of the next 8 subcells
+				fread(&subCellStateFlags, sizeof(unsigned char), 1, pFile);
+				
+				for (unsigned int batchIndex = 0; batchIndex < batchSize; batchIndex++)
 				{
-					pSubCell->allocateIfNeeded(false);
-					float* pCellFloatData = pSubCell->getRawFloatData();
-					fread(pCellFloatData, sizeof(float), cellDataLength, pFile);
+					bool hasData = subCellStateFlags & (1 << batchIndex);
+					
+					if (!hasData)
+						continue;
+					
+					VolumeGridSparse::SparseSubCell* pSubCell = aSubCells[cellIndex + batchIndex];
+					
+					unsigned int cellDataLength = pSubCell->getResXY() * pSubCell->getResZ();
+	
+					if (floatFormat)
+					{
+						pSubCell->allocateIfNeeded(false);
+						float* pCellFloatData = pSubCell->getRawFloatData();
+						fread(pCellFloatData, sizeof(float), cellDataLength, pFile);
+					}
+					else
+					{
+						pSubCell->allocateIfNeeded(true);
+						half* pCellHalfData = pSubCell->getRawHalfData();
+						fread(pCellHalfData, sizeof(half), cellDataLength, pFile);
+					}
+				}
+				
+				cellIndex += 8;
+				cellsRemaining -= batchSize;
+			}
+		}
+		else
+		{
+			unsigned char subCellStatus = 0;
+	
+			std::vector<VolumeGridSparse::SparseSubCell*>::iterator itSubCell = aSubCells.begin();
+			for (; itSubCell != aSubCells.end(); ++itSubCell)
+			{
+				VolumeGridSparse::SparseSubCell* pSubCell = *itSubCell;
+	
+				fread(&subCellStatus, sizeof(unsigned char), 1, pFile);
+	
+				if (subCellStatus == 0)
+				{
+					// it's empty, so just continue without reading data for this subcell
 				}
 				else
 				{
-					pSubCell->allocateIfNeeded(true);
-					half* pCellHalfData = pSubCell->getRawHalfData();
-					fread(pCellHalfData, sizeof(half), cellDataLength, pFile);
+					unsigned int cellDataLength = pSubCell->getResXY() * pSubCell->getResZ();
+	
+					if (floatFormat)
+					{
+						pSubCell->allocateIfNeeded(false);
+						float* pCellFloatData = pSubCell->getRawFloatData();
+						fread(pCellFloatData, sizeof(float), cellDataLength, pFile);
+					}
+					else
+					{
+						pSubCell->allocateIfNeeded(true);
+						half* pCellHalfData = pSubCell->getRawHalfData();
+						fread(pCellHalfData, sizeof(half), cellDataLength, pFile);
+					}
 				}
 			}
 		}
