@@ -39,6 +39,8 @@ ColourButton::ColourButton(QWidget* parent) : QPushButton(parent), m_popupActive
 	m_mouseOver[0] = false;
 	m_mouseOver[1] = false;
 	m_mouseOver[2] = false;
+	
+	m_lastBufferSize = QRect(0, 0, 0, 0);
 
 	updateInternalsForResize();
 
@@ -319,12 +321,19 @@ void ColourButton::updateBackBuffer()
 
 	QRect pixmapSize(localColourRect);
 	pixmapSize.adjust(0, 0, 1, 1); // for some reason, we need to padd this to get the full size...
-	m_backBuffer = QPixmap(pixmapSize.size());
+	if (m_lastBufferSize != pixmapSize)
+	{
+		// we need to resize
+		m_backBuffer = QPixmap(pixmapSize.size());
+		m_lastBufferSize = pixmapSize;
+	}
+	
 //	m_backBuffer.fill(palette().color(QPalette::Base));
 	m_backBuffer.fill(Qt::transparent);
 
 	QPainter painter(&m_backBuffer);
 	painter.initFrom(this);
+//	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::HighQualityAntialiasing, true);
 
 	painter.setPen(Qt::black);
 	painter.setBrush(m_colour);
@@ -338,19 +347,19 @@ void ColourButton::updateBackBuffer()
 
 	QFontMetrics metrics(font());
 
-	unsigned int redWidth = metrics.width(m_strRed);
-	unsigned int greenWidth = metrics.width(m_strGreen);
-	unsigned int blueWidth = metrics.width(m_strBlue);
+	float redWidth = metrics.width(m_strRed);
+	float greenWidth = metrics.width(m_strGreen);
+	float blueWidth = metrics.width(m_strBlue);
 
-	unsigned int offsetX = m_rectColourArea.left();
+	float offsetX = m_rectColourArea.left();
 
 	// QPainter origin is top left...
-	unsigned int textX = localColourRect.left();
-	unsigned int textY = localColourRect.top() + metrics.height() - 1;
+	float textX = localColourRect.left();
+	float textY = localColourRect.top() + metrics.height() - 1.0f;
 	if (localColourRect.height() < metrics.height())
 	{
 		// on some Linux envs with KDE, metrics is actually a weird value which doesn't make sense, so bodge it for the moment
-		textY -= 4;
+		textY -= 4.0f;
 	}
 
 	// set text colour appropriate for background colour
@@ -364,15 +373,16 @@ void ColourButton::updateBackBuffer()
 		painter.setPen(Qt::black);
 	}
 
+	QPointF textPos(textX, textY);
 
-	textX = m_rectRed.center().x() - (redWidth / 2) - offsetX;
-	painter.drawText(textX, textY, m_strRed);
+	textPos.rx() = (float)m_rectRed.center().x() - (redWidth / 2.0f) - offsetX;
+	painter.drawText(textPos, m_strRed);
 
-	textX = m_rectGreen.center().x() - (greenWidth / 2) - offsetX;
-	painter.drawText(textX, textY, m_strGreen);
+	textPos.rx() = (float)m_rectGreen.center().x() - (greenWidth / 2.0f) - offsetX;
+	painter.drawText(textPos, m_strGreen);
 
-	textX = m_rectBlue.center().x() - (blueWidth / 2) - offsetX;
-	painter.drawText(textX, textY, m_strBlue);
+	textPos.rx() = (float)m_rectBlue.center().x() - (blueWidth / 2.0f) - offsetX;
+	painter.drawText(textPos, m_strBlue);
 
 	update();
 }

@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2016-2017 Peter Pearson.
+ Copyright 2016-2018 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -32,9 +32,10 @@ public:
 
 	enum LogOutputDestination
 	{
-		eLogStdOut,
-		eLogStdErr,
-		eLogFile
+		eLogStdOut,				// All to STDOUT
+		eLogStdErr,				// All to STDERR
+		eLogStdOutOrStdErr,		// Anything up to Notice level to STDOUT, Error and Critical levels to STDERR...
+		eLogFile				// Everything to a file
 //		eLogStdErrAndLogFile
 	};
 
@@ -84,14 +85,16 @@ protected:
 
 	// this will point to either stdout, stderr, or a FILE handle we own if m_logOutputType == eLogFile
 	FILE*					m_pFileHandle;
+
+	// this will only be set to stderr if the destination is eLogStdOutOrStdErr, otherwise it will be nullptr
+	FILE*					m_pSecondaryStdErr;
+
 	bool					m_initialised;
 
 	LogLevel				m_logLevel;
 	LogTimeStampType		m_timeStampType;
 
 	bool					m_colouredOutput;
-
-	// cached stuff for timestamps
 };
 
 } // namespace Imagine

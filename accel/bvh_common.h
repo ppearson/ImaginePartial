@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2013-2016 Peter Pearson.
+ Copyright 2013-2018 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -40,10 +40,12 @@ namespace Imagine
 class BVHTempNode
 {
 public:
-	BVHTempNode()
+	BVHTempNode() : m_tag(0)
 	{
 	}
 
+	// Note: there are situations where this doesn't get called, as the items
+	//       are allocated in a slab allocator.
 	~BVHTempNode()
 	{
 #if USE_BVHTEMP_TAGGED_POINTER
@@ -134,6 +136,36 @@ public:
 		}
 #endif
 	}
+	
+	void setLeafUsingAllocator(const PrimitivesList& primsList, uint32_t primStart, uint32_t primCount, const BoundaryBox& bbox,
+	                      FixedSlabAllocator& allocator)
+	{
+		m_boundaryBox = bbox;
+
+#if USE_BVHTEMP_TAGGED_POINTER
+		leaf.m_objectsCount = primCount;
+		leaf.m_pObjects = allocator.allocNoConstructor<uint32_t>(primCount);
+
+		unsigned int endIndex = primStart + primCount;
+		unsigned int targetIndex = 0;
+		for (unsigned int i = primStart; i < endIndex; i++)
+		{
+			leaf.m_pObjects[targetIndex++] = primsList.primitives[i];
+		}
+		m_tag |= 3;
+#else
+		leaf.m_flags = 3;
+		leaf.m_objectsCount = primCount;
+		leaf.m_pObjects = allocator.allocNoConstructor<uint32_t>(primCount);
+
+		unsigned int endIndex = primStart + primCount;
+		unsigned int targetIndex = 0;
+		for (unsigned int i = primStart; i < endIndex; i++)
+		{
+			leaf.m_pObjects[targetIndex++] = primsList.primitives[i];
+		}
+#endif
+	}	
 
 	void setEmptyStaticLeaf()
 	{
@@ -313,6 +345,12 @@ struct BVHBuildContext
 
 		if (m_pEmptyLeafTemp)
 		{
+			// also need to check if m_pRootNode points at this first for empty BVHs...
+			if (m_pRootNode == m_pEmptyLeafTemp)
+			{
+				m_pRootNode = NULL;
+			}
+			
 			delete m_pEmptyLeafTemp;
 			m_pEmptyLeafTemp = NULL;
 		}

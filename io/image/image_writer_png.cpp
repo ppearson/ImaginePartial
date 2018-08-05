@@ -24,6 +24,8 @@
 
 #include "image/output_image.h"
 
+#include "colour/colour_space.h"
+
 #include "global_context.h"
 
 #include "utils/maths/maths.h"
@@ -101,9 +103,9 @@ bool ImageWriterPNG::writeImage(const std::string& filePath, const OutputImage& 
 
 			for (unsigned int x = 0; x < width; x++)
 			{
-				float r = pRow->r;
-				float g = pRow->g;
-				float b = pRow->b;
+				float r = ColourSpace::convertLinearToSRGBAccurate(pRow->r);
+				float g = ColourSpace::convertLinearToSRGBAccurate(pRow->g);
+				float b = ColourSpace::convertLinearToSRGBAccurate(pRow->b);
 
 				unsigned char red = clamp(r) * 255;
 				unsigned char green = clamp(g) * 255;
@@ -138,9 +140,9 @@ bool ImageWriterPNG::writeImage(const std::string& filePath, const OutputImage& 
 
 			for (unsigned int x = 0; x < width; x++)
 			{
-				float r = pRow->r;
-				float g = pRow->g;
-				float b = pRow->b;
+				float r = ColourSpace::convertLinearToSRGBAccurate(pRow->r);
+				float g = ColourSpace::convertLinearToSRGBAccurate(pRow->g);
+				float b = ColourSpace::convertLinearToSRGBAccurate(pRow->b);
 
 				unsigned char red = r * 255;
 				unsigned char green = g * 255;

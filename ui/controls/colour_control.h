@@ -19,24 +19,27 @@
 #ifndef COLOUR_CONTROL_H
 #define COLOUR_CONTROL_H
 
-#include "colour/colour3f.h"
 
 #include "control.h"
 
 #include <QHBoxLayout>
 
+#include "colour/colour3f.h"
 #include "widgets/colour_button.h"
 
 namespace Imagine
 {
 
+class DoubleSpinBoxEx;
+
 class ColourControl : public Control
 {
 public:
-	ColourControl(const std::string& name, Colour3f* pairedValue, std::string label);
+	ColourControl(const std::string& name, Colour3f* pairedValue, const std::string& label, bool editControls = false, bool colourValues = false);
 	virtual ~ColourControl();
 
 	virtual bool valueChanged();
+	virtual bool valueChangedAlternative();
 	virtual bool buttonClicked(unsigned int index);
 
 	virtual void refreshFromValue();
@@ -44,6 +47,10 @@ public:
 protected:
 	ColourButton*		m_pickButton;
 	Colour3f*			m_pairedValue;
+	
+	bool				m_editControls;
+
+	DoubleSpinBoxEx*	m_Spins[3];
 };
 
 } // namespace Imagine

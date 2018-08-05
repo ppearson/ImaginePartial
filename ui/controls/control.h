@@ -39,6 +39,14 @@ public:
 
 	// return value indicates that the value was actually modified
 	virtual bool valueChanged() = 0;
+
+	// alternative additional version for compound controls
+	// return value indicates that the value was actually modified
+	virtual bool valueChangedAlternative()
+	{
+		return false;
+	}
+
 	// return value indicates that the value was actually modified
 	virtual bool sliderChanged(int value)
 	{
@@ -59,10 +67,15 @@ public:
 
 	QWidget* getWidget();
 
-	std::string getName() const;
-	std::string getLabel() const;
-	std::string getLabelOrName() const;
+	const std::string& getName() const;
+	const std::string& getLabel() const;
+	const std::string& getLabelOrName() const;
 	bool isEnabled() const;
+
+	virtual bool isCompoundControl() const
+	{
+		return false;
+	}
 
 private:
 	Control(const Control& rhs);

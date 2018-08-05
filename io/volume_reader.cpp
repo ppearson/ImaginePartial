@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2012 Peter Pearson.
+ Copyright 2015 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -16,34 +16,18 @@
  ---------
 */
 
-#ifndef VECTOR_CONTROL_H
-#define VECTOR_CONTROL_H
-
-#include "control.h"
-
-#include "core/vector.h"
+#include "volume_reader.h"
 
 namespace Imagine
 {
 
-class DoubleSpinBoxEx;
-
-class VectorControl : public Control
+VolumeReader::VolumeReader()
 {
-public:
-	VectorControl(const std::string& name, Vector* pairedValue, float min, float max, const std::string& label);
-	virtual ~VectorControl();
+}
 
-	virtual bool valueChanged();
+VolumeReader::~VolumeReader()
+{
 
-	virtual void refreshFromValue();
-
-protected:
-	DoubleSpinBoxEx*	m_Spins[3];
-
-	Vector*				m_pairedValue;
-};
+}
 
 } // namespace Imagine
-
-#endif // VECTOR_CONTROL_H

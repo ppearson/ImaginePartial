@@ -145,9 +145,15 @@ bool MaterialControl::buttonClicked(unsigned int index)
 
 	if (index == 0)
 	{
+		// TODO: because this just shows the material editor, we shouldn't really need to stop re-rendering, but
+		//       currently we do for some reason, otherwise we get segfaults... I think it's actually within the Material Preview
+		//       the segfault happens, but for the moment, just stop the re-rendering...
+		ViewContext::instance().cancelReRender();
 		refreshAvailableMaterials();
 		refreshFromValue();
 		pMainWindow->showMaterialEditor(pMaterial);
+		
+		ViewContext::instance().sceneChanged();
 
 		return false;
 	}
@@ -182,6 +188,8 @@ bool MaterialControl::buttonClicked(unsigned int index)
 					}
 					else
 					{
+						ViewContext::instance().cancelReRender();
+						
 						Material* pNewMaterial = pMaterial->clone();
 						pNewMaterial->setName(newMatName.toStdString());
 						mm.addMaterial(pNewMaterial, true);
@@ -191,6 +199,8 @@ bool MaterialControl::buttonClicked(unsigned int index)
 						pMainWindow->showMaterialEditor(pNewMaterial);
 
 						selectedNewName = true;
+						
+						ViewContext::instance().sceneChanged();
 					}
 				}
 				else
@@ -228,6 +238,8 @@ void MaterialControl::menuSelected(int index)
 			}
 			else
 			{
+				ViewContext::instance().cancelReRender();
+				
 				Material* pNewMaterial = MaterialFactory::instance().createMaterialForTypeID(index);
 				pNewMaterial->setName(newMatName.toStdString());
 				mm.addMaterial(pNewMaterial, true);
@@ -237,6 +249,8 @@ void MaterialControl::menuSelected(int index)
 				pMainWindow->showMaterialEditor(pNewMaterial);
 
 				selectedNewName = true;
+				
+				ViewContext::instance().sceneChanged();
 			}
 		}
 		else

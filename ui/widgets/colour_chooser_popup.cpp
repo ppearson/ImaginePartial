@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2012 Peter Pearson.
+ Copyright 2011-2018 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -20,17 +20,18 @@
 
 #include <QPainter>
 #include <QPaintEvent>
+#include <QToolTip>
 
 #include "colour_button.h"
 
 namespace Imagine
 {
 
-const unsigned int rows = 9;
-const unsigned int columns = 6;
+static const unsigned int kColourPopupRows = 9;
+static const unsigned int kColourPopupColumns = 6;
 
-const int boxSize = 12;
-const int margin = 6;
+static const int kColourPopupBoxSize = 12;
+static const int kColourPopupMargin = 6;
 
 ColourChooserPopup::ColourChooserPopup(ColourButton* owner) : QWidget(0, Qt::Popup),
 	m_pPixmap(NULL), m_pOwner(owner), m_selectedColourIndex(-1)
@@ -144,14 +145,14 @@ void ColourChooserPopup::doLayout()
 	unsigned int numColours = m_aColours.size();
 	unsigned int count = 0;
 
-	for (unsigned int i = 0; i < rows && count < numColours; i++)
+	for (unsigned int i = 0; i < kColourPopupRows && count < numColours; i++)
 	{
-		for (unsigned int j = 0; j < columns && count < numColours; j++)
+		y = 1 + kColourPopupMargin + (kColourPopupBoxSize + kColourPopupMargin) * i;
+		for (unsigned int j = 0; j < kColourPopupColumns && count < numColours; j++)
 		{
-			x = 1 + margin + (boxSize + margin) * j;
-			y = 1 + margin + (boxSize + margin) * i;
-
-			QRect boxRect(x, y, boxSize, boxSize);
+			x = 1 + kColourPopupMargin + (kColourPopupBoxSize + kColourPopupMargin) * j;
+			
+			QRect boxRect(x, y, kColourPopupBoxSize, kColourPopupBoxSize);
 
 			if (count == m_selectedColourIndex)
 			{
@@ -178,8 +179,8 @@ void ColourChooserPopup::doLayout()
 
 QSize ColourChooserPopup::getSize()
 {
-	int width = 2 + margin + (boxSize + margin) * columns;
-	int height = 2 + margin + (boxSize + margin) * rows;
+	int width = 2 + kColourPopupMargin + (kColourPopupBoxSize + kColourPopupMargin) * kColourPopupColumns;
+	int height = 2 + kColourPopupMargin + (kColourPopupBoxSize + kColourPopupMargin) * kColourPopupRows;
 
 	return QSize(width, height);
 }
@@ -197,6 +198,8 @@ void ColourChooserPopup::paintEvent(QPaintEvent* event)
 
 void ColourChooserPopup::mousePressEvent(QMouseEvent* event)
 {
+	QToolTip::hideText();
+	
 	unsigned int newIndex = 0;
 	bool found = false;
 	std::vector<QRect>::iterator it = m_aBoxes.begin();
@@ -227,6 +230,49 @@ void ColourChooserPopup::mousePressEvent(QMouseEvent* event)
 
 	m_pOwner->colourPicked(m_aColours[m_selectedColourIndex]);
 	hide();
+}
+
+void ColourChooserPopup::mouseMoveEvent(QMouseEvent* event)
+{
+	// this is a somewhat nasty implementation, but the feature is useful, so...
+
+	if (!(event->modifiers() & Qt::ShiftModifier))
+		return;
+	
+	QPoint localPoint = mapFrom(this, event->pos());
+	
+	unsigned int newIndex = 0;
+	unsigned int selectedIndex = -1u;
+	bool found = false;
+	std::vector<QRect>::iterator it = m_aBoxes.begin();
+	
+	for (; it != m_aBoxes.end(); ++it)
+	{
+		QRect& rect = *it;
+
+		if (rect.contains(localPoint))
+		{
+			found = true;
+			selectedIndex = newIndex;
+			break;
+		}
+
+		newIndex++;
+	}
+
+	if (!found)
+	{
+		return;
+	}
+	
+	QColor itemColour = m_aColours[selectedIndex];
+	
+	char szTemp[24];
+	sprintf(szTemp, "(%0.2f, %0.2f, %0.2f)", itemColour.redF(), itemColour.greenF(), itemColour.blueF());
+	
+	QPoint globalPoint = mapToGlobal(event->pos());
+	
+	QToolTip::showText(globalPoint, szTemp);
 }
 
 } // namespace Imagine

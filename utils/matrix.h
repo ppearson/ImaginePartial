@@ -55,10 +55,10 @@ public:
 
 	}
 
-	Matrix(unsigned int width, unsigned int height, bool initialise = true) : m_width(width), m_height(height)
+	Matrix(unsigned int width, unsigned int height, bool initValues = true) : m_width(width), m_height(height)
 	{
 		// use a tagged pointer to keep track of how the memory was allocated in order to delete it appropriately later
-		if (initialise)
+		if (initValues)
 		{
 			m_data.setBoth(new T[width * height], 0);
 		}
@@ -73,7 +73,7 @@ public:
 		if (m_data.getPtr())
 		{
 			unsigned int tag = m_data.getTag();
-			// work out which delete to call based on if it was operator new'd when allocated.
+			// work out which delete to call based on if it was operator newed when allocated.
 			if (tag == 0)
 			{
 				delete [] m_data.getPtr();
@@ -85,17 +85,17 @@ public:
 		}
 	}
 
-	Matrix<T> &operator=(const Matrix<T>& rhs)
+	Matrix<T>& operator=(const Matrix<T>& rhs)
 	{
 		copy(rhs);
 
 		return *this;
 	}
 
-	void initialise(unsigned int width, unsigned int height, bool setToZero)
+	void initialise(unsigned int width, unsigned int height, bool initValues)
 	{
 		// use a tagged pointer to keep track of how the memory was allocated in order to delete it appropriately later
-		if (initialise)
+		if (initValues)
 		{
 			m_data.setBoth(new T[width * height], 0);
 		}
@@ -138,11 +138,23 @@ public:
 		memset(m_data.getPtr(), 0, m_width * m_height * sizeof(T));
 	}
 
-	T& item(unsigned int x, unsigned int y) { return m_data.getPtr()[x + m_width * y]; }
-	const T& item(unsigned int x, unsigned int y) const { return m_data.getPtr()[x + m_width * y]; }
+	T& item(unsigned int x, unsigned int y)
+	{
+		return m_data.getPtr()[x + m_width * y];
+	}
+	const T& item(unsigned int x, unsigned int y) const
+	{
+		return m_data.getPtr()[x + m_width * y];
+	}
 
-	T* itemPtr(unsigned int x, unsigned int y) { return &m_data.getPtr()[x + m_width * y]; }
-	const T* itemPtr(unsigned int x, unsigned int y) const { return &m_data.getPtr()[x + m_width * y]; }
+	T* itemPtr(unsigned int x, unsigned int y)
+	{
+		return &m_data.getPtr()[x + m_width * y];
+	}
+	const T* itemPtr(unsigned int x, unsigned int y) const
+	{
+		return &m_data.getPtr()[x + m_width * y];
+	}
 
 	Row<T>& operator[](unsigned int row)
 	{
@@ -150,6 +162,7 @@ public:
 	}
 
 protected:
+	// tagged pointer is used to track how we allocated the original memory...
 	TaggedPointer<T, 2>		m_data;
 	
 	unsigned int			m_width;

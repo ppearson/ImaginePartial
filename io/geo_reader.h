@@ -67,6 +67,7 @@ struct GeoReaderOptions
 
 	bool				importMaterials;
 	bool				importTextures;
+	std::string			customTextureSearchPath;
 	bool				importCompoundObjects;
 	bool				newMaterialBreaksObjectGroup;
 

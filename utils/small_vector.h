@@ -24,6 +24,8 @@
 
 #include "tagged_pointer.h"
 
+// Note: This is currently only designed to be used with base data types, not items which allocate further heap memory themselves
+
 namespace Imagine
 {
 
@@ -138,7 +140,7 @@ public:
 
 		void addItem(const T& item)
 		{
-			// this is potentially inefficient, but we're working on the assumption that
+			// this is likely inefficient, but we're working on the assumption that
 			// this will rarely get called
 
 			// allocate a new array one item bigger

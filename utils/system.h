@@ -77,8 +77,6 @@ public:
 private:
 	static bool getLinuxCPUInfo(CPUInfo& info);
 	static bool getLinuxInfoToken(const char* cpuInfoLine, const char* token, unsigned int& value);
-
-	static bool getLinuxProcessMemInfo(ProcessMemInfo& memInfo);
 };
 
 } // namespace Imagine

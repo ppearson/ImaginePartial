@@ -67,7 +67,17 @@ public:
 
 		return (float)acos(angle);
 	}
+	
+	static float distanceSquared(const Vector2& vector1, const Vector2& vector2)
+	{
+		return ((vector1.x - vector2.x) * (vector1.x - vector2.x))
+				+ ((vector1.y - vector2.y) * (vector1.y - vector2.y));
+	}
 
+	static float distance(const Vector2& vector1, const Vector2& vector2)
+	{
+		return sqrtf(distanceSquared(vector1, vector2));
+	}
 
 	Vector2& operator+=(const Vector2& rhs)
 	{
@@ -102,10 +112,33 @@ public:
 		return tmp;
 	}
 
-	Vector2& operator*=(float scale) { x *= scale, y *= scale; return *this; }
-	Vector2 operator*(float scale) const { Vector2 tmp(*this); tmp *= scale; return tmp; }
-	Vector2& operator/=(float scale) { x /= scale, y /= scale; return *this; }
-	Vector2 operator/(float scale) const { Vector2 tmp(*this); tmp /= scale; return tmp; }
+	Vector2& operator*=(float scale)
+	{
+		x *= scale;
+		y *= scale;
+		return *this;
+	}
+	
+	Vector2 operator*(float scale) const
+	{
+		Vector2 tmp(*this);
+		tmp *= scale;
+		return tmp;
+	}
+	
+	Vector2& operator/=(float scale)
+	{
+		x /= scale;
+		y /= scale;
+		return *this;
+	}
+	
+	Vector2 operator/(float scale) const
+	{
+		Vector2 tmp(*this);
+		tmp /= scale;
+		return tmp;
+	}
 
 	float x;
 	float y;

@@ -24,6 +24,9 @@
 #include "utils/time_counter.h"
 #include "utils/maths/rng.h"
 
+#include "sampling/sampler_common.h"
+#include "sampling/sample_generator.h"
+
 #include "raytracer/light_sampler.h"
 
 #include "image/image_texture_cache.h"
@@ -42,7 +45,7 @@ public:
 		: m_pRaytracer(rt), m_pSceneInterface(sceneInterface),
 		  m_threadID(threadID), m_pLightSampler(NULL), m_pIntegratorTimeCounter(NULL),
 					m_pTextureTimeCounter(NULL), m_pMainImageTextureCache(NULL),
-					m_pRNG(NULL)
+					m_pRNG(NULL), m_pSampleBundleReuse(NULL), m_pSampleGenerator(NULL)
 	{
 
 	}
@@ -65,6 +68,18 @@ public:
 		{
 			delete m_pTextureTimeCounter;
 			m_pTextureTimeCounter = NULL;
+		}
+		
+		if (m_pSampleBundleReuse)
+		{
+			delete m_pSampleBundleReuse;
+			m_pSampleBundleReuse = NULL;
+		}
+		
+		if (m_pSampleGenerator)
+		{
+			delete m_pSampleGenerator;
+			m_pSampleGenerator = NULL;
 		}
 	}
 
@@ -137,6 +152,26 @@ public:
 	{
 		return m_pRNG;
 	}
+	
+	void setSampleBundleReuse(SampleBundleReuse* pSBR)
+	{
+		m_pSampleBundleReuse = pSBR;
+	}
+	
+	SampleBundleReuse* getSampleBundleReuse() const
+	{
+		return m_pSampleBundleReuse;
+	}
+	
+	void setSampleGenerator(SampleGenerator* pSampleGenerator)
+	{
+		m_pSampleGenerator = pSampleGenerator;
+	}
+	
+	SampleGenerator* getSampleGenerator() const
+	{
+		return m_pSampleGenerator;
+	}
 
 	const Raytracer* getRaytracer() const
 	{
@@ -169,6 +204,15 @@ protected:
 	ImageTextureCache*		m_pMainImageTextureCache;
 
 	RNG*					m_pRNG; // we don't own this
+	
+	// optional - preview renderer can use this
+	// we take owndership of this
+	SampleBundleReuse*		m_pSampleBundleReuse;
+	
+	// optional - preview renderer can use this
+	// we take ownership of this
+	SampleGenerator*		m_pSampleGenerator;
+	
 };
 
 } // namespace Imagine

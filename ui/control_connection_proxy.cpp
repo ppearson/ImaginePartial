@@ -33,12 +33,17 @@ void ControlConnectionProxy::registerValueChangedDouble(QObject* sender, int ind
 	QObject::connect(sender, SIGNAL(editingFinished()), this, SLOT(valueChanged()));
 }
 
+void ControlConnectionProxy::registerValueChangedDoubleAlternative(QObject* sender, int index)
+{
+	QObject::connect(sender, SIGNAL(editingFinished()), this, SLOT(valueChangedAlternative()));
+}
+
 void ControlConnectionProxy::registerSliderMovedInt(QObject* sender, int index)
 {
 	QObject::connect(sender, SIGNAL(sliderMoved(int)), this, SLOT(sliderChanged(int)));
 }
 
-void ControlConnectionProxy::registerComboIndexChangedInt(QObject *sender)
+void ControlConnectionProxy::registerComboIndexChangedInt(QObject* sender)
 {
 	QObject::connect(sender, SIGNAL(currentIndexChanged(int)), this, SLOT(valueChanged()));
 }
@@ -96,6 +101,21 @@ void ControlConnectionProxy::valueChanged()
 	{
 		// call Control-specific version to update paired value
 		if (m_pOwner->valueChanged())
+		{
+			// if the value actually did change (up to each control to check this or not)
+
+			// notify Parameter Panel that control was changed
+			m_pOwner->sendValueChanged();
+		}
+	}
+}
+
+void ControlConnectionProxy::valueChangedAlternative()
+{
+	if (m_pOwner)
+	{
+		// call Control-specific version to update paired value
+		if (m_pOwner->valueChangedAlternative())
 		{
 			// if the value actually did change (up to each control to check this or not)
 

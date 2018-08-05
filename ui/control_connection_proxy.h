@@ -34,7 +34,9 @@ class ControlConnectionProxy : public QObject
 public:
 	ControlConnectionProxy(Control* pOwner);
 
+	// stuff for standard controls
 	void registerValueChangedDouble(QObject* sender, int index = -1);
+	void registerValueChangedDoubleAlternative(QObject* sender, int index = -1);
 	void registerSliderMovedInt(QObject* sender, int index = -1);
 	void registerComboIndexChangedInt(QObject* sender);
 	void registerButtonClicked(QObject* sender);
@@ -47,10 +49,13 @@ public:
 	void registerTextureChanged(QObject* sender);
 	void registerRayVisButtonSelChanged(QObject* sender);
 
+	// stuff for compound controls
+
 signals:
 
 public slots:
 	void valueChanged();
+	void valueChangedAlternative();
 	void sliderChanged(int value);
 	void buttonClicked();
 	void buttonClickedIndex();

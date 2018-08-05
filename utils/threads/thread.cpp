@@ -88,6 +88,7 @@ void* threadProc(void* ptr)
 	pThread->run();
 
 	pThread->setRunning(false);
+	pThread->setFinished(true);
 
 	// this doesn't always seem to work safely... - sometimes Threadpools are still waiting for completion and crash
 	if (pThread->shouldAutodestruct())
@@ -98,8 +99,6 @@ void* threadProc(void* ptr)
 
 #ifdef _MSC_VER
 	return 0;
-#else
-	pthread_exit(ptr);
 #endif
 	
 	return NULL;
@@ -234,12 +233,9 @@ void Thread::stop(bool kill)
 
 void Thread::waitForCompletion()
 {
-	if (!m_isRunning)
-	{
-//		fprintf(stderr, "Thread isn't running...\n");
-		return;
-	}
-
+	// Note: The idea here is that threads *must* signal their own completion, even if they
+	//       have been stopped (m_running == false), so don't early-out here...
+	
 #ifdef _MSC_VER
 	WaitForSingleObject(m_thread, INFINITE);
 #else

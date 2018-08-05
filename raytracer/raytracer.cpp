@@ -107,7 +107,7 @@ Raytracer::Raytracer(SceneInterface& scene, OutputImage* outputImage, Params& se
 	  m_pBackground(NULL), m_lightSampling(eLSFullAllLights), m_sampleLights(false), m_lightSamples(0), m_motionBlur(false), m_depthOfField(false),
 	  m_pDebugPathCollection(NULL)
 {
-	initialise(outputImage, settings);
+	initialise(outputImage, settings, false);
 
 	if (GlobalContext::instance().getRenderThreadsLowPriority())
 		m_lowPriorityThreads = true;
@@ -178,7 +178,7 @@ Raytracer::~Raytracer()
 	}
 }
 
-void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
+void Raytracer::initialise(OutputImage* outputImage, const Params& settings, bool isReRender)
 {
 	m_pOutputImage = outputImage;
 
@@ -264,7 +264,7 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 	m_statsType = (StatisticsType)settings.getUInt("statsType", 0);
 	m_statsOutputType = (StatisticsOutputType)settings.getUInt("statsOutputType", 0);
 
-	if (m_pGlobalImageCache)
+	if (m_pGlobalImageCache && !isReRender)
 	{
 		delete m_pGlobalImageCache;
 		m_pGlobalImageCache = NULL;
@@ -278,7 +278,7 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 	bool useTextureCacheSet = settings.getBool("useTextureCaching", false);
 
 	GlobalContext::TextureCachingType textureCacheType = GlobalContext::instance().getTextureCachingType();
-	if (textureCacheType != GlobalContext::eTextureCachingNone || useTextureCacheSet)
+	if (!m_pGlobalImageCache && (textureCacheType != GlobalContext::eTextureCachingNone || useTextureCacheSet))
 	{
 		bool textureFileHandleCaching = settings.getBool("useTextureFileHandleCaching", false);
 
@@ -307,19 +307,22 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 	}
 
 	// initialise Filter
-	if (m_pFilter)
+	if (m_pFilter && !isReRender)
 	{
 		delete m_pFilter;
 		m_pFilter = NULL;
 	}
 
-	unsigned int filterType = settings.getUInt("filter_type", 0);
-	float filterScale = settings.getFloat("filter_scale", 1.0f);
-	m_pFilter = FilterFactory::createFilter(filterType, filterScale);
-
-	m_pFilter->initialise(true); // clamp negative filter lobes for the moment
-
-	m_tileApronSize = m_pFilter->getApronSize();
+	if (!m_pFilter)
+	{
+		unsigned int filterType = settings.getUInt("filter_type", 0);
+		float filterScale = settings.getFloat("filter_scale", 1.0f);
+		m_pFilter = FilterFactory::createFilter(filterType, filterScale);
+	
+		m_pFilter->initialise(true); // clamp negative filter lobes for the moment
+	
+		m_tileApronSize = m_pFilter->getApronSize();
+	}
 
 	// set up sampler factory generator
 	if (m_pSampleGeneratorFactory)
@@ -352,107 +355,111 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings)
 		}
 		m_aRenderThreadContexts.clear();
 	}
-
-	// allocate temporary Images so each render thread has its own tile image
-	// it can write into
-
-	bool haveInitialisedPerThreadData = false;
-
-	// if we have more than one processor socket, initialise things differently
-	System::CPUInfo cpuInfo = System::getCPUInfo();
-	bool initOnThreads = cpuInfo.numSockets > 1 && m_numberOfThreads > 1;
-
-	if (initOnThreads)
+	
+	if (m_aRenderThreadContexts.empty())
 	{
-		RenderThreadInitHelper threadInitHelper(m_numberOfThreads, true, this, &m_scene);
 
-		if (threadInitHelper.init1(m_tileSize, m_tileSize, imageFlags, m_pFilter))
+		// allocate temporary Images so each render thread has its own tile image
+		// it can write into
+	
+		bool haveInitialisedPerThreadData = false;
+	
+		// if we have more than one processor socket, initialise things differently
+		System::CPUInfo cpuInfo = System::getCPUInfo();
+		bool initOnThreads = cpuInfo.numSockets > 1 && m_numberOfThreads > 1;
+	
+		if (initOnThreads)
 		{
-			haveInitialisedPerThreadData = true;
-
-			// just need to hook everything up...
-			const std::map<unsigned int, RenderThreadInitHelper::RenderThreadInitResult>& threadResults = threadInitHelper.getResults1();
-
-			// if init1() returned true, then we have the correct number of results for the number of threads we want...
-			// so we can just do a push_back on the vectors straight from the map, as it's ordered based on the thread index
-
-			std::map<unsigned int, RenderThreadInitHelper::RenderThreadInitResult>::const_iterator itResult = threadResults.begin();
-			for (; itResult != threadResults.end(); ++itResult)
+			RenderThreadInitHelper threadInitHelper(m_numberOfThreads, true, this, &m_scene);
+	
+			if (threadInitHelper.init1(m_tileSize, m_tileSize, imageFlags, m_pFilter))
 			{
-				const RenderThreadInitHelper::RenderThreadInitResult& result = itResult->second;
-
-				m_aThreadTempImages.push_back(result.pImageTile);
-
-				// create approprate time counters for thread, based off stats type
-				ThreadTimeCounter* pNewTimeCounterIntegrator = NULL;
-				ThreadTimeCounter* pNewTimeCounterTexture = NULL;
-				if (m_statsType != eStatisticsFull)
+				haveInitialisedPerThreadData = true;
+	
+				// just need to hook everything up...
+				const std::map<unsigned int, RenderThreadInitHelper::RenderThreadInitResult>& threadResults = threadInitHelper.getResults1();
+	
+				// if init1() returned true, then we have the correct number of results for the number of threads we want...
+				// so we can just do a push_back on the vectors straight from the map, as it's ordered based on the thread index
+	
+				std::map<unsigned int, RenderThreadInitHelper::RenderThreadInitResult>::const_iterator itResult = threadResults.begin();
+				for (; itResult != threadResults.end(); ++itResult)
 				{
-					pNewTimeCounterIntegrator = new ThreadTimeCounterNull();
-					pNewTimeCounterTexture = new ThreadTimeCounterNull();
+					const RenderThreadInitHelper::RenderThreadInitResult& result = itResult->second;
+	
+					m_aThreadTempImages.push_back(result.pImageTile);
+	
+					// create approprate time counters for thread, based off stats type
+					ThreadTimeCounter* pNewTimeCounterIntegrator = NULL;
+					ThreadTimeCounter* pNewTimeCounterTexture = NULL;
+					if (m_statsType != eStatisticsFull)
+					{
+						pNewTimeCounterIntegrator = new ThreadTimeCounterNull();
+						pNewTimeCounterTexture = new ThreadTimeCounterNull();
+					}
+					else
+					{
+						pNewTimeCounterIntegrator = new ThreadTimeCounterReal();
+						pNewTimeCounterTexture = new ThreadTimeCounterReal();
+					}
+	
+					result.pRenderThreadContext->setIntegratorTimeCounter(pNewTimeCounterIntegrator);
+					result.pRenderThreadContext->setTextureTimeCounter(pNewTimeCounterTexture);
+	
+					result.pRenderThreadContext->setMainImageTextureCache(m_pGlobalImageCache);
+	
+					if (m_pGlobalImageCache)
+					{
+						m_pGlobalImageCache->addMicrocache(result.pRenderThreadContext->getTextureMicrocache());
+					}
+	
+					m_aRenderThreadContexts.push_back(result.pRenderThreadContext);
 				}
-				else
-				{
-					pNewTimeCounterIntegrator = new ThreadTimeCounterReal();
-					pNewTimeCounterTexture = new ThreadTimeCounterReal();
-				}
-
-				result.pRenderThreadContext->setIntegratorTimeCounter(pNewTimeCounterIntegrator);
-				result.pRenderThreadContext->setTextureTimeCounter(pNewTimeCounterTexture);
-
-				result.pRenderThreadContext->setMainImageTextureCache(m_pGlobalImageCache);
-
-				if (m_pGlobalImageCache)
-				{
-					m_pGlobalImageCache->addMicrocache(result.pRenderThreadContext->getTextureMicrocache());
-				}
-
-				m_aRenderThreadContexts.push_back(result.pRenderThreadContext);
 			}
 		}
-	}
-
-	if (!haveInitialisedPerThreadData)
-	{
-		// do it ourselves in the main thread
-
-		for (unsigned int i = 0; i < m_numberOfThreads; i++)
+	
+		if (!haveInitialisedPerThreadData)
 		{
-			OutputImageTile* pNewImage = new OutputImageTile(m_tileSize, m_tileSize, imageFlags, m_pFilter);
-
-			if (pNewImage)
-				m_aThreadTempImages.push_back(pNewImage);
-
-			RenderThreadContext* pNewRenderThreadContext = new RenderThreadContext(this, &m_scene, i);
-
-			if (pNewRenderThreadContext)
+			// do it ourselves in the main thread
+	
+			for (unsigned int i = 0; i < m_numberOfThreads; i++)
 			{
-				// TODO: this won't always be the value to set (e.g. per thread)...
-				pNewRenderThreadContext->setMainImageTextureCache(m_pGlobalImageCache);
-
-				// create approprate time counters for thread, based off stats type
-				ThreadTimeCounter* pNewTimeCounterIntegrator = NULL;
-				ThreadTimeCounter* pNewTimeCounterTexture = NULL;
-				if (m_statsType != eStatisticsFull)
+				OutputImageTile* pNewImage = new OutputImageTile(m_tileSize, m_tileSize, imageFlags, m_pFilter);
+	
+				if (pNewImage)
+					m_aThreadTempImages.push_back(pNewImage);
+	
+				RenderThreadContext* pNewRenderThreadContext = new RenderThreadContext(this, &m_scene, i);
+	
+				if (pNewRenderThreadContext)
 				{
-					pNewTimeCounterIntegrator = new ThreadTimeCounterNull();
-					pNewTimeCounterTexture = new ThreadTimeCounterNull();
+					// TODO: this won't always be the value to set (e.g. per thread)...
+					pNewRenderThreadContext->setMainImageTextureCache(m_pGlobalImageCache);
+	
+					// create approprate time counters for thread, based off stats type
+					ThreadTimeCounter* pNewTimeCounterIntegrator = NULL;
+					ThreadTimeCounter* pNewTimeCounterTexture = NULL;
+					if (m_statsType != eStatisticsFull)
+					{
+						pNewTimeCounterIntegrator = new ThreadTimeCounterNull();
+						pNewTimeCounterTexture = new ThreadTimeCounterNull();
+					}
+					else
+					{
+						pNewTimeCounterIntegrator = new ThreadTimeCounterReal();
+						pNewTimeCounterTexture = new ThreadTimeCounterReal();
+					}
+	
+					pNewRenderThreadContext->setIntegratorTimeCounter(pNewTimeCounterIntegrator);
+					pNewRenderThreadContext->setTextureTimeCounter(pNewTimeCounterTexture);
+	
+					if (m_pGlobalImageCache)
+					{
+						m_pGlobalImageCache->addMicrocache(pNewRenderThreadContext->getTextureMicrocache());
+					}
+	
+					m_aRenderThreadContexts.push_back(pNewRenderThreadContext);
 				}
-				else
-				{
-					pNewTimeCounterIntegrator = new ThreadTimeCounterReal();
-					pNewTimeCounterTexture = new ThreadTimeCounterReal();
-				}
-
-				pNewRenderThreadContext->setIntegratorTimeCounter(pNewTimeCounterIntegrator);
-				pNewRenderThreadContext->setTextureTimeCounter(pNewTimeCounterTexture);
-
-				if (m_pGlobalImageCache)
-				{
-					m_pGlobalImageCache->addMicrocache(pNewRenderThreadContext->getTextureMicrocache());
-				}
-
-				m_aRenderThreadContexts.push_back(pNewRenderThreadContext);
 			}
 		}
 	}
@@ -843,7 +850,7 @@ void Raytracer::renderScene(float time, const Params* pParams, bool waitForCompl
 		}
 		else
 		{
-			startPool(0);
+			startPool(POOL_ASYNC_COMPLETION_EVENT);
 			return;
 		}
 

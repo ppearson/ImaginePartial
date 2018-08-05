@@ -296,12 +296,12 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 							newFace.addUV(uvIndex);
 							break;
 						}
-						case 2:
+/*						case 2:
 						{
 							newFace.addNormal(value - 1);
 							break;
 						}
-						default:
+*/						default:
 							break;
 					}
 				}
@@ -324,7 +324,7 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 				line = line.substr(0, line.size() - 1);
 
 			std::string mtlPath(line.substr(7));
-			GeoHelperObj::readMaterialFile(basePath + mtlPath, materials);
+			GeoHelperObj::readMaterialFile(basePath + mtlPath, options.importTextures, options.customTextureSearchPath, materials);
 		}
 		else if (stringCompare(buf, "usemtl", 6))
 		{
@@ -750,7 +750,7 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 				line = line.substr(0, line.size() - 1);
 
 			std::string mtlPath(line.substr(7));
-			GeoHelperObj::readMaterialFile(basePath + mtlPath, materials);
+			GeoHelperObj::readMaterialFile(basePath + mtlPath, options.importTextures, options.customTextureSearchPath, materials);
 		}
 		else if (stringCompare(buf, "usemtl", 6))
 		{

@@ -60,6 +60,8 @@
 #include "simple_parameters_panel.h"
 #include "simple_panel_builder.h"
 
+#include "view_context.h"
+
 #include "utils/file_helpers.h"
 
 namespace Imagine
@@ -1035,6 +1037,8 @@ void TextureWidget::textureTypeChanged(int index)
 	if (m_pPairedValue)
 	{
 		unsigned int finalTextureID = index;
+		
+		ViewContext::instance().cancelReRender();
 
 		if (m_pPairedValue->isOptional() && index == 256)
 		{

@@ -38,12 +38,14 @@ GeoHelperObj::GeoHelperObj()
 {
 }
 
-bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, GeoMaterials& materials)
+bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, bool importTextures, const std::string& customTextureSearchPath, GeoMaterials& materials)
 {
 	char buf[256];
 	memset(buf, 0, 256);
 
 	std::fstream fileStream(mtlPath.c_str(), std::ios::in);
+	
+	std::string basePath = FileHelpers::getFileDirectory(mtlPath);
 
 	std::string line;
 	line.resize(256);
@@ -90,7 +92,7 @@ bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, GeoMaterials& ma
 			newName.assign(line.substr(7));
 			pNewMaterial->setName(newName);
 		}
-		else if (stringCompare(buf, "map_Kd", 6, startIndex))
+		else if (importTextures && stringCompare(buf, "map_Kd", 6, startIndex))
 		{
 			line.assign(buf);
 			line = line.substr(startIndex);
@@ -105,15 +107,23 @@ bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, GeoMaterials& ma
 			std::string finalDiffuseTextureFilename;
 			if (extractPathFilenameFromTexturePathString(diffuseTextureMapFile, finalDiffuseTextureFilename))
 			{
-				std::string basePath = FileHelpers::getFileDirectory(mtlPath);
-
-				std::string diffuseTextureMapFullPath = basePath + finalDiffuseTextureFilename;
+				// on the assumption that hard-coded Windows paths to the location the .obj files were created are useless,
+				// just get hold of the relative filename...
+				finalDiffuseTextureFilename = FileHelpers::getFileNameAllPlatforms(finalDiffuseTextureFilename);
+				
+				// try with relative path to location of .mtl file first
+				std::string diffuseTextureMapFullPath = FileHelpers::combinePaths(basePath, finalDiffuseTextureFilename);
+				if (!customTextureSearchPath.empty() && !FileHelpers::doesFileExist(diffuseTextureMapFullPath))
+				{
+					// now try to a custom searchpath
+					diffuseTextureMapFullPath = FileHelpers::combinePaths(customTextureSearchPath, finalDiffuseTextureFilename);
+				}
 				pNewMaterial->setDiffuseTextureMapPath(diffuseTextureMapFullPath, false);
 				
 				haveDiffuseTexture = true; // make a note of the fact we extracted a diffuse texture.
 			}
 		}
-		else if (stringCompare(buf, "bump", 4, startIndex) || stringCompare(buf, "map_bump", 7, startIndex))
+		else if (importTextures && (stringCompare(buf, "bump", 4, startIndex) || stringCompare(buf, "map_bump", 7, startIndex)))
 		{
 			line.assign(buf);
 			line = line.substr(startIndex);
@@ -130,13 +140,20 @@ bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, GeoMaterials& ma
 			std::string finalBumpTextureFilename;
 			if (extractPathFilenameFromTexturePathString(bumpTextureMapFile, finalBumpTextureFilename))
 			{
-				std::string basePath = FileHelpers::getFileDirectory(mtlPath);
-
-				std::string bumpTextureMapFullPath = basePath + finalBumpTextureFilename;
+				// on the assumption that hard-coded Windows paths to the location the .obj files were created are useless,
+				// just get hold of the relative filename...
+				finalBumpTextureFilename = FileHelpers::getFileNameAllPlatforms(finalBumpTextureFilename);
+				
+				std::string bumpTextureMapFullPath = FileHelpers::combinePaths(basePath, finalBumpTextureFilename);
+				if (!customTextureSearchPath.empty() && !FileHelpers::doesFileExist(bumpTextureMapFullPath))
+				{
+					// now try to a custom searchpath
+					bumpTextureMapFullPath = FileHelpers::combinePaths(customTextureSearchPath, finalBumpTextureFilename);
+				}
 				pNewMaterial->setBumpTextureMapPath(bumpTextureMapFullPath, false);
 			}
 		}
-		else if (stringCompare(buf, "map_d", 5, startIndex)) // alpha texture
+		else if (importTextures && stringCompare(buf, "map_d", 5, startIndex)) // alpha texture
 		{
 			line.assign(buf);
 			line = line.substr(startIndex);
@@ -153,9 +170,16 @@ bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, GeoMaterials& ma
 			std::string finalAlphaTextureFilename;
 			if (extractPathFilenameFromTexturePathString(alphaTextureMapFile, finalAlphaTextureFilename))
 			{
-				std::string basePath = FileHelpers::getFileDirectory(mtlPath);
-
-				std::string alphaTextureMapFullPath = basePath + finalAlphaTextureFilename;
+				// on the assumption that hard-coded Windows paths to the location the .obj files were created are useless,
+				// just get hold of the relative filename...
+				finalAlphaTextureFilename = FileHelpers::getFileNameAllPlatforms(finalAlphaTextureFilename);
+				
+				std::string alphaTextureMapFullPath = FileHelpers::combinePaths(basePath, finalAlphaTextureFilename);
+				if (!customTextureSearchPath.empty() && !FileHelpers::doesFileExist(alphaTextureMapFullPath))
+				{
+					// now try to a custom searchpath
+					alphaTextureMapFullPath = FileHelpers::combinePaths(customTextureSearchPath, finalAlphaTextureFilename);
+				}
 				pNewMaterial->setAlphaTextureMapPath(alphaTextureMapFullPath, false);
 			}
 		}
@@ -286,6 +310,23 @@ bool GeoHelperObj::extractPathFilenameFromTexturePathString(const std::string& o
 		
 		bool isOption = (tokenString.substr(0, 1) == "-");
 		bool containsExtension = (tokenString.find(".") != std::string::npos);
+		// check it's really an extension with a non-numeric character after the last ".".
+		// This is unfortunately necessary due to options like -bm 0.18 which can come after a real filename.
+		// To cope with this properly we'd need to detect options and their args in this loop and skip them
+		// (which is looking like the best approach in hindsight).
+		if (containsExtension)
+		{
+			size_t finalDot = tokenString.find_last_of('.');
+			if (finalDot != std::string::npos && (tokenString.size() > finalDot + 1))
+			{
+				containsExtension &= !isdigit(tokenString[finalDot + 1]);
+			}
+			else
+			{
+				// otherwise, assume it isn't a valid file extension
+				containsExtension = false;
+			}
+		}
 
 		if (isOption && !containsExtension)
 		{
@@ -310,7 +351,7 @@ bool GeoHelperObj::extractPathFilenameFromTexturePathString(const std::string& o
 		}
 		else
 		{
-			// otherwise, we assume it's either a part of a filename that has spaces in
+			// otherwise, we assume it's either a part of a filename that has spaces in, or is an argument for an option
 		}
 		
 		index ++;
@@ -433,13 +474,15 @@ void GeoHelperObj::copyPointsToGeometry(std::vector<Point>& points, std::set<uns
 
 	// fix up faces so they only
 	std::deque<Face>& geoFaces = pGeoInstance->getFaces();
+	
+	std::vector<unsigned int> aNewFaceIndexes;
 
 	std::deque<Face>::iterator itFace = geoFaces.begin();
 	for (; itFace != geoFaces.end(); ++itFace)
 	{
 		Face& face = *itFace;
 
-		std::vector<unsigned int> aNewFaceIndexes;
+		aNewFaceIndexes.clear();
 
 		unsigned int vertexCount = face.getVertexCount();
 		for (unsigned int i = 0; i < vertexCount; i++)
@@ -492,19 +535,21 @@ void GeoHelperObj::copyUVsToGeometry(std::vector<UV>& uvs, std::set<unsigned int
 	// fix up faces so they only
 	std::deque<Face>& geoFaces = pGeoInstance->getFaces();
 
+	std::vector<unsigned int> aNewFaceIndexes;
+	
 	std::deque<Face>::iterator itFace = geoFaces.begin();
 	for (; itFace != geoFaces.end(); ++itFace)
 	{
 		Face& face = *itFace;
 
-		std::vector<unsigned int> aNewFaceIndexes;
+		aNewFaceIndexes.clear();
 
 		unsigned int vertexCount = face.getVertexCount();
 		for (unsigned int i = 0; i < vertexCount; i++)
 		{
 			unsigned int UVIndex = face.getVertexUV(i);
 
-			std::map<unsigned int, unsigned int>::iterator it1 = aMapToFaceUVs.find(UVIndex);
+//			std::map<unsigned int, unsigned int>::iterator it1 = aMapToFaceUVs.find(UVIndex);
 //			assert(it1 != aMapToFaceUVs.end());
 
 			unsigned int newIndex = aMapToFaceUVs[UVIndex];

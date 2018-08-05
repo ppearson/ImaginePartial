@@ -36,6 +36,8 @@
 
 #include "core/matrix4.h"
 
+#include "global_context.h"
+
 #include "utils/system.h"
 #include "utils/timer.h"
 
@@ -61,7 +63,7 @@ void ObjectDetectorWorker::addDetectTask(const ObjectDetectorTask::ObjectDetecto
 
 void ObjectDetectorWorker::detectObject()
 {
-	startPoolAndWaitForCompletion();
+	startPool(POOL_WAIT_FOR_COMPLETION);
 }
 
 void ObjectDetectorWorker::addResults(const std::vector<Point>& results)
@@ -73,7 +75,7 @@ void ObjectDetectorWorker::addResults(const std::vector<Point>& results)
 	m_resultsLock.unlock();
 }
 
-bool ObjectDetectorWorker::doTask(Task* pTask, unsigned int threadID)
+bool ObjectDetectorWorker::doTask(ThreadPoolTask* pTask, unsigned int threadID)
 {
 	ObjectDetectorTask* pOurTask = static_cast<ObjectDetectorTask*>(pTask);
 
@@ -368,7 +370,7 @@ void InstanceShapeBuilder::createScene(Scene& scene)
 
 	unsigned int totalItems = numberX * numberY * numberZ;
 
-	fprintf(stderr, "Testing: %u positions...\n", totalItems);
+	GlobalContext::instance().getLogger().info("Testing: %u positions...", totalItems);
 
 	unsigned int numberOfThreadsAvailable = System::getNumberOfThreads();
 	bool doInParallel = m_parallelBuild && numberOfThreadsAvailable > 1 && totalItems > 20000;
@@ -463,7 +465,7 @@ void InstanceShapeBuilder::createScene(Scene& scene)
 	unsigned int count = 0;
 	char szName[32];
 
-	fprintf(stderr, "Creating Shape object from: %lu positions...\n", aFinalItemPositions.size());
+	GlobalContext::instance().getLogger().info("Creating Shape object from: %lu positions.", aFinalItemPositions.size());
 
 	if (m_addToGroup && m_objectType == eSphere)
 	{
@@ -530,13 +532,13 @@ bool InstanceShapeBuilder::isInObject(const Point& position, Object* pObject)
 	// fire rays in 6 directions
 	for (unsigned int testDir = 0; testDir < 6; testDir++)
 	{
-		const Normal& direction = kDirectionTests[testDir];
-
-		unsigned int hitCount = 0;
-		Ray occlusionRay(position, direction, RAY_ALL);
+		Ray occlusionRay(position, kDirectionTests[testDir], RAY_ALL);
+		occlusionRay.tMin = 0.00001f; // this is needed for larger source models (or those with scales)
 
 		// BVH intersectors depend on signed inf values resulting from div-by-0 for axis-aligned rays...
 		occlusionRay.calculateInverseDirection();
+
+		unsigned int hitCount = 0;
 
 		while (true)
 		{

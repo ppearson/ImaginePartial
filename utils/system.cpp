@@ -208,17 +208,46 @@ System::ProcessMemInfo System::getProcessMemInfo()
 {
 	System::ProcessMemInfo info;
 
-	// this isn't that useful, as doesn't have current mem info
-
-	struct rusage rusage;
-	getrusage(RUSAGE_SELF, &rusage); // returns 0 if okay, but...
-
+	// getrusage() isn't that useful, as doesn't have current mem info, and on Linux
+	// it's close to useless...
+	
+	// TODO: we could get this from below at the same time now...
 	info.currentRSS = getProcessCurrentMemUsage();
-	info.maxRSS = rusage.ru_maxrss;
 
 #if __linux__
-	// on linux, this is in kb, so
-	info.maxRSS *= 1024;
+	// on Linux, getrusage() is completely unreliable (ru_maxrss is almost always wrong), so
+	// again we have to use /proc/self/ stuff to get the correct answer
+
+	 FILE* pFile = fopen("/proc/self/status", "r");	
+	 if (!pFile)
+		 return info;
+	 
+	 char szTemp[1024];
+	 // not sure we need this, but...
+	 memset(szTemp, 0, 1024);
+	 
+	 while (fscanf(pFile, " %1023s", szTemp))
+	 {
+		 if (strcmp(szTemp, "VmHWM:") == 0)
+		 {
+			 unsigned int value = 0;
+			 fscanf(pFile, " %u", &value);
+			 
+			 info.maxRSS = (size_t)value;
+			 break;
+		 }
+	 }
+	 
+	 fclose(pFile);
+	 
+	 // on Linux, these values are in KB, so...
+	 info.maxRSS *= 1024;
+#else
+	// it seems to be reliable on OS X though...
+	struct rusage rusage;
+	getrusage(RUSAGE_SELF, &rusage); // returns 0 if okay, but...
+	
+	info.maxRSS = rusage.ru_maxrss;
 #endif
 
 	return info;
@@ -334,18 +363,6 @@ bool System::getLinuxInfoToken(const char* cpuInfoLine, const char* token, unsig
 	return false;
 }
 
-bool System::getLinuxProcessMemInfo(ProcessMemInfo& memInfo)
-{
-	FILE* pFile = fopen("/proc/self/statm", "r");
-	if (!pFile)
-		return false;
-
-	char szTemp[64]; // we don't care about flags, so don't need all of it
-
-	fclose(pFile);
-
-	return true;
-}
 #endif
 
 } // namespace Imagine

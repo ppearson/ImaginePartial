@@ -22,6 +22,9 @@
 #include <string.h> // for memset
 #include <assert.h>
 
+#include "global_context.h"
+#include "utils/logger.h"
+
 namespace Imagine
 {
 
@@ -146,6 +149,8 @@ int ThreadController::getThread()
 int ThreadController::getThreadNoLock()
 {
 	int thread = -1;
+	
+	m_lock.lock();
 
 	if (m_bsThreadsAvailable.any())
 	{
@@ -160,6 +165,8 @@ int ThreadController::getThreadNoLock()
 			}
 		}
 	}
+	
+	m_lock.unlock();
 
 	return thread;
 }
@@ -170,7 +177,7 @@ void ThreadController::freeThread(unsigned int thread)
 		return;
 
 	m_lock.lock();
-
+	
 	m_bsThreadsAvailable.set(thread, true);
 	m_activeThreads--;
 
@@ -306,8 +313,11 @@ void ThreadPoolThread::deleteTasksInBundle()
 	}
 }
 
-ThreadPool::ThreadPool(unsigned int threads, bool useBundles) : m_numberOfThreads(threads), m_controller(threads),
+ThreadPool::ThreadPool(unsigned int threads, bool useBundles) : m_controller(threads),
+	m_pAsyncFinishThread(NULL),
+    m_numberOfThreads(threads),
 	m_setAffinity(false), m_lowPriorityThreads(false), m_useBundles(useBundles), m_isActive(false),
+	m_startedThreads(0),
 	m_wasCancelled(false), m_originalNumberOfTasks(0)
 {
 	for (unsigned int i = 0; i < m_numberOfThreads; i++)
@@ -325,6 +335,11 @@ ThreadPool::ThreadPool(unsigned int threads, bool useBundles) : m_numberOfThread
 ThreadPool::~ThreadPool()
 {
 	deleteThreadsAndRequeuedTasks();
+	if (m_pAsyncFinishThread)
+	{
+		delete m_pAsyncFinishThread;
+		m_pAsyncFinishThread = NULL;
+	}
 }
 
 void ThreadPool::addTask(ThreadPoolTask* pTask)
@@ -415,7 +430,7 @@ void ThreadPool::startPool(unsigned int flags)
 	{
 		// currently, the assumption is that tasks will exist at this point (although the infrastructure can technically cope with tasks being added later),
 		// so...
-		fprintf(stderr, "Empty task queue detected.\n");
+		GlobalContext::instance().getLogger().error("Empty task queue detected.");
 		assert(!m_aTasks.empty());
 	}
 
@@ -463,6 +478,8 @@ void ThreadPool::startPool(unsigned int flags)
 			else
 			{
 				// something weird happened
+				
+//				fprintf(stderr, "Couldn't start thread: %u\n", j);
 
 				Thread::sleep(1);
 			}
@@ -504,7 +521,7 @@ void ThreadPool::startPool(unsigned int flags)
 			}
 		}
 	}
-
+	
 	m_lock.unlock();
 
 	unsigned int threadsStarted = 0;
@@ -527,15 +544,28 @@ void ThreadPool::startPool(unsigned int flags)
 			}
 		}
 	}
+	
+	m_startedThreads = threadsStarted;
 
 	// if we don't want to wait for completion, just early exit here...
 	if (!(flags & POOL_WAIT_FOR_COMPLETION))
+	{
+		if (flags & POOL_ASYNC_COMPLETION_EVENT)
+		{
+			if (!m_pAsyncFinishThread)
+			{
+				m_pAsyncFinishThread = new AsyncFinishEventWaitThread(this);
+			}
+
+			m_pAsyncFinishThread->start();
+		}
 		return;
+	}
 
 	// otherwise...
 
 	// now need to make sure any active threads have finished before we go out of scope
-	for (unsigned int i = 0; i < threadsStarted; i++)
+	for (unsigned int i = 0; i < m_startedThreads; i++)
 	{
 		if (m_controller.isActive(i))
 		{
@@ -559,6 +589,25 @@ void ThreadPool::startPool(unsigned int flags)
 	m_lock.unlock();
 
 	m_isActive = false;
+}
+
+void ThreadPool::externalFinished()
+{
+	// now need to make sure any active threads have finished before we go out of scope
+	for (unsigned int i = 0; i < m_numberOfThreads; i++)
+	{
+		// Note: It's important here that threads actually finish the work they're doing
+		//       and signal the controller that they've finished, so that there are no
+		//       race conditions
+		if (m_controller.isActive(i))
+		{
+			ThreadPoolThread* pThread = m_aThreads[i];
+			
+			pThread->waitForCompletion();
+		}
+	}
+
+	m_finishedEvent.signal();
 }
 
 void ThreadPool::addRequeuedTasks(RequeuedTasks& rqt)
@@ -649,13 +698,16 @@ void ThreadPool::terminate()
 
 	m_wasCancelled = true;
 	m_isActive = false;
-
+	
 	for (unsigned int i = 0; i < m_numberOfThreads; i++)
 	{
 		if (m_controller.isActive(i))
 		{
 			Thread* pThread = m_aThreads[i];
 			pThread->stop(false);
+			
+			// Note: The idea here is that it's up to threads to tell the controller they're finished,
+			//       so it's important that Thread::Wait
 		}
 	}
 	
@@ -759,6 +811,11 @@ unsigned int ThreadPool::getNextTaskBundleInternal(TaskBundle* pBundle)
 	{
 		return 0;
 	}
+}
+
+void ThreadPool::AsyncFinishEventWaitThread::run()
+{
+	m_pThreadPool->externalFinished();
 }
 
 } // namespace Imagine

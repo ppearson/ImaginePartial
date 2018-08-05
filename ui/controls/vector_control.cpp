@@ -20,10 +20,12 @@
 
 #include <QHBoxLayout>
 
+#include "widgets/double_spin_box_ex.h"
+
 namespace Imagine
 {
 
-VectorControl::VectorControl(const std::string& name, Vector* pairedValue, float min, float max, std::string label) : Control(name, label)
+VectorControl::VectorControl(const std::string& name, Vector* pairedValue, float min, float max, const std::string& label) : Control(name, label)
 {
 	QWidget* mainWidget = new QWidget();
 

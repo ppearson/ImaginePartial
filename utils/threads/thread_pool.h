@@ -84,7 +84,7 @@ public:
 	int getThreadNoLock();
 	void freeThread(unsigned int thread);
 	bool isActive(unsigned int thread);
-
+	
 	unsigned int threadsActive() const;
 	unsigned int threadsAvailable() const;
 
@@ -151,14 +151,18 @@ protected:
 
 	enum PoolExecutionTypeFlags
 	{
-		POOL_WAIT_FOR_COMPLETION		= 1 << 0,
-		POOL_WAIT_FOR_NEW_TASKS			= 1 << 1,
-		POOL_FORCE_ALL_THREADS			= 1 << 2, // will create the full number of threads, even if there aren't enough tasks
-		POOL_ALLOW_START_EMPTY			= 1 << 3
+		POOL_WAIT_FOR_COMPLETION		= 1 << 0, // this can't be used with POOL_ASYNC_COMPLETION_EVENT
+		POOL_ASYNC_COMPLETION_EVENT		= 1 << 1, // this can't be used with POOL_WAIT_FOR_COMPLETION
+		POOL_WAIT_FOR_NEW_TASKS			= 1 << 2,
+		POOL_FORCE_ALL_THREADS			= 1 << 3, // will create the full number of threads, even if there aren't enough tasks
+		POOL_ALLOW_START_EMPTY			= 1 << 4
 	};
 
 	// these destroy any existing threads and create new ones...
 	void startPool(unsigned int flags);
+
+	// called from async thread to trigger a finish
+	void externalFinished();
 
 	void processTask(ThreadPoolTask* pTask, unsigned int threadID);
 
@@ -188,6 +192,27 @@ protected:
 	// assumes the TaskBundle is blank
 	unsigned int getNextTaskBundleInternal(TaskBundle* pBundle);
 
+private:
+	class AsyncFinishEventWaitThread : public Thread
+	{
+	public:
+		AsyncFinishEventWaitThread(ThreadPool* pThreadPool) : m_pThreadPool(pThreadPool)
+		{
+
+		}
+
+		virtual ~AsyncFinishEventWaitThread()
+		{
+		}
+
+		virtual void run();
+
+
+	protected:
+		ThreadPool*		m_pThreadPool;
+	};
+
+
 protected:
 	ThreadController	m_controller;
 
@@ -199,6 +224,8 @@ protected:
 	Mutex				m_lock;
 	Mutex				m_requeueLock;
 	
+	AsyncFinishEventWaitThread*	m_pAsyncFinishThread;
+
 	Event				m_finishedEvent;
 
 
@@ -218,6 +245,7 @@ protected:
 	unsigned int		m_threadBundleSizeThreshold1; // overall size to use the thread size (* numThreads)
 	unsigned int		m_threadBundleSizeThreshold2; // half above
 
+	unsigned int		m_startedThreads;
 	volatile bool		m_isActive;
 	bool				m_wasCancelled;
 

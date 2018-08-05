@@ -117,7 +117,7 @@ public:
 	friend class PathTracerDeep;
 
 	// this is for re-using an existing Raytracer
-	void initialise(OutputImage* outputImage, const Params& settings);
+	void initialise(OutputImage* outputImage, const Params& settings, bool isReRender = false);
 	void initRendererAndIntegrator(const Params& settings);
 
 	void setExtraChannels(unsigned int extraChannels) { m_extraChannels = extraChannels; }

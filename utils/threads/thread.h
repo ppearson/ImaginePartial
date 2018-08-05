@@ -82,6 +82,7 @@ protected:
 
 	volatile bool	m_isRunning;
 	volatile bool	m_isFinished;
+
 	bool			m_autoDestruct;
 	Mutex			m_mutex;
 	ThreadPriority	m_priority;

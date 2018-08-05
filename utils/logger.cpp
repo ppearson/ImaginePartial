@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2016-2017 Peter Pearson.
+ Copyright 2016-2018 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -38,7 +38,8 @@ static const char* kLogLevelFullNames[] = { "Debug", "Info", "Warning", "Notice"
 static const char* kLogLevelColourCodes[] = { kCodeColourBlack, kCodeColourGreen, kCodeColourOrange,
 											  kCodeColourCyan, kCodeColourRed, kCodeColourRed, kCodeColourBlack, 0 };
 
-Logger::Logger() : m_pFileHandle(NULL), m_initialised(false), m_logLevel(eLevelOff),
+Logger::Logger() : m_pFileHandle(NULL), m_pSecondaryStdErr(NULL),
+					m_initialised(false), m_logLevel(eLevelOff),
 					m_timeStampType(eTimeStampNone), m_colouredOutput(false)
 {
 
@@ -51,6 +52,8 @@ Logger::~Logger()
 		fclose(m_pFileHandle);
 		m_pFileHandle = NULL;
 	}
+
+	// Note: we don't need to worry about m_pSecondaryStdErr...
 }
 
 bool Logger::initialiseFileLogger(const std::string& logPath, LogLevel level, LogTimeStampType timeStampType)
@@ -90,6 +93,14 @@ bool Logger::initialiseConsoleLogger(LogOutputDestination logDest, LogLevel leve
 	else if (m_logOutputType == eLogStdErr)
 	{
 		m_pFileHandle = stderr;
+	}
+	else if (m_logOutputType == eLogStdOutOrStdErr)
+	{
+		// the main one for warnings will point to stdout
+		m_pFileHandle = stdout;
+
+		// and we'll initialise the secondary one to point to stderr
+		m_pSecondaryStdErr = stderr;
 	}
 
 	// Note: this isatty() check fails within Katana, so we need to force it on...
@@ -173,15 +184,23 @@ void Logger::outputLogItem(LogLevel itemLevel, const char* format, va_list args)
 
 	if (m_logOutputType != eLogFile)
 	{
+		FILE* pFileTarget = m_pFileHandle;
+
+		// if we're configured to be split based on the log level, check if we need to change to stderr...
+		if (m_logOutputType == eLogStdOutOrStdErr && (itemLevel >= eLevelError && itemLevel < eLevelOff))
+		{
+			pFileTarget = m_pSecondaryStdErr;
+		}
+
 		// to console
 		if (m_colouredOutput)
 		{
 			// TODO: first two could be combined...
-			fprintf(m_pFileHandle, "%s[%s] %s%s\n", kLogLevelColourCodes[itemLevel], kLogLevelFullNames[itemLevel], szLogMessage, kCodeReset);
+			fprintf(pFileTarget, "%s[%s] %s%s\n", kLogLevelColourCodes[itemLevel], kLogLevelFullNames[itemLevel], szLogMessage, kCodeReset);
 		}
 		else
 		{
-			fprintf(m_pFileHandle, "[%s] %s\n", kLogLevelFullNames[itemLevel], szLogMessage);
+			fprintf(pFileTarget, "[%s] %s\n", kLogLevelFullNames[itemLevel], szLogMessage);
 		}
 	}
 	else

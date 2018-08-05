@@ -66,17 +66,17 @@ QWidget* Control::getWidget()
 	return m_widget;
 }
 
-std::string Control::getName() const
+const std::string& Control::getName() const
 {
 	return m_name;
 }
 
-std::string Control::getLabel() const
+const std::string& Control::getLabel() const
 {
 	return m_label;
 }
 
-std::string Control::getLabelOrName() const
+const std::string& Control::getLabelOrName() const
 {
 	if (!m_label.empty())
 		return m_label;

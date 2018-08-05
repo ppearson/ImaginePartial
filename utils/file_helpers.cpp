@@ -111,12 +111,39 @@ std::string FileHelpers::getFileDirectory(const std::string& path)
 
 std::string FileHelpers::getFileName(const std::string& path)
 {
-	std::string directory;
+	std::string fileName;
 	size_t slashPos = path.find_last_of(kDirSepChar, path.length());
 	if (slashPos != std::string::npos)
-		directory = path.substr(slashPos + 1);
+		fileName = path.substr(slashPos + 1);
+	else
+		return path;
 
-	return directory;
+	return fileName;
+}
+
+std::string FileHelpers::getFileNameAllPlatforms(const std::string& path)
+{
+	std::string fileName;
+	size_t slashPos = path.find_last_of(kDirSepChar, path.length());
+	if (slashPos != std::string::npos)
+	{
+		fileName = path.substr(slashPos + 1);
+	}
+	else
+	{
+		char otherSep = (kDirSepChar == '/') ? '\\' : '/';
+		slashPos = path.find_last_of(otherSep, path.length());
+		if (slashPos != std::string::npos)
+		{
+			fileName = path.substr(slashPos + 1);
+		}
+		else
+		{
+			return path;
+		}
+	}
+
+	return fileName;
 }
 
 std::string FileHelpers::bakeFrameIntoFileSequencePath(const std::string& path, unsigned int frame)

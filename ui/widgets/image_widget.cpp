@@ -351,8 +351,10 @@ void ImageWidget::showImage(const OutputImage& image, float gamma)
 		// the raw image hasn't been normalised yet (probably still rendering)
 		// so do this to the display image copy
 		m_pDisplayImage->normaliseProgressive();
-		m_pDisplayImage->applyExposure(gamma);
 	}
+	
+	// apply exposure to the display image only
+	m_pDisplayImage->applyExposure(gamma);
 
 	m_width = image.getWidth();
 	m_height = image.getHeight();
@@ -488,7 +490,6 @@ void ImageWidget::renderFinished(float gamma)
 	m_haveNormalisedRawImage = true;
 
 	m_pRawImage->normaliseProgressive();
-	m_pRawImage->applyExposure(gamma);
 }
 
 void ImageWidget::saveImage()

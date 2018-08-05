@@ -20,6 +20,8 @@
 
 #include "mutex.h"
 
+#include <stdio.h>
+
 namespace Imagine
 {
 
@@ -73,7 +75,7 @@ void Event::wait()
 {
 #ifdef _MSC_VER
 	WaitForSingleObject(m_event, INFINITE);
-#else
+#else	
 	pthread_mutex_lock(&m_lock);
 	while (!m_hasHappened)
 	{
@@ -94,10 +96,13 @@ void Event::wait(Mutex& mutex)
 void Event::reset()
 {
 #ifndef _MSC_VER
-//	pthread_mutex_unlock(&m_lock);
+	pthread_mutex_lock(&m_lock);
 #endif
 	
 	m_hasHappened = false;
+#ifndef _MSC_VER
+	pthread_mutex_unlock(&m_lock);
+#endif
 }
 
 } // namespace Imagine

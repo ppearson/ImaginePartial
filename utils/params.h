@@ -85,6 +85,11 @@ public:
 
 		return it->second.getFloat();
 	}
+	
+	bool isEmpty() const
+	{
+		return m_aParams.empty();
+	}
 
 	void load(Stream* stream);
 	void store(Stream* stream) const;

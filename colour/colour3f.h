@@ -128,6 +128,16 @@ public:
 		return *this;
 	}
 
+	const float& operator[](unsigned int i) const
+	{
+		return (&r)[i];
+	}
+
+	float& operator[](unsigned int i)
+	{
+		return (&r)[i];
+	}
+
 	void load(Stream* stream, unsigned int)
 	{
 		stream->loadFloat(r);

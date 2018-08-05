@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2014 Peter Pearson.
+ Copyright 2011-2018 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -36,15 +36,19 @@ public:
 protected:
 	unsigned int writeGeoInstanceEditablePoints(EditableGeometryInstance* pGeoInstance, std::fstream& stream, Matrix4* pMatrix);
 	unsigned int writeGeoInstanceEditableUVs(EditableGeometryInstance* pGeoInstance, std::fstream& stream);
+	unsigned int writeGeoInstanceEditableNormals(EditableGeometryInstance* pGeoInstance, std::fstream& stream);
 
 	void writeGeoInstanceEditableFaces(EditableGeometryInstance* pGeoInstance, std::fstream& stream, unsigned int pointOffset,
-							   unsigned int uvOffset, bool writeUVs);
+							   unsigned int uvOffset, bool writeUVs,
+							   unsigned int normalOffset, bool writeNormals);
 
 	unsigned int writeGeoInstanceStandardPoints(StandardGeometryInstance* pGeoInstance, std::fstream& stream, Matrix4* pMatrix);
 	unsigned int writeGeoInstanceStandardUVs(StandardGeometryInstance* pGeoInstance, std::fstream& stream);
+	unsigned int writeGeoInstanceStandardNormals(StandardGeometryInstance* pGeoInstance, std::fstream& stream);
 
 	void writeGeoInstanceStandardFaces(StandardGeometryInstance* pGeoInstance, std::fstream& stream, unsigned int pointOffset,
-							   unsigned int uvOffset, bool writeUVs);
+							   unsigned int uvOffset, bool writeUVs,
+							   unsigned int normalOffset, bool writeNormals);
 };
 
 } // namespace Imagine

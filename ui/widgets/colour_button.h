@@ -90,6 +90,7 @@ protected:
 	bool				m_mouseOver[3];
 
 	QPixmap				m_backBuffer;
+	QRect				m_lastBufferSize;
 };
 
 } // namespace Imagine

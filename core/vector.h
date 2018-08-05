@@ -93,7 +93,9 @@ public:
 
 	inline Vector& operator+=(const Vector& rhs)
 	{
-		x += rhs.x; y += rhs.y; z += rhs.z;
+		x += rhs.x;
+		y += rhs.y;
+		z += rhs.z;
 		return *this;
 	}
 
@@ -104,7 +106,9 @@ public:
 
 	inline Vector& operator-=(const Vector& rhs)
 	{
-		x -= rhs.x; y -= rhs.y; z -= rhs.z;
+		x -= rhs.x;
+		y -= rhs.y;
+		z -= rhs.z;
 		return *this;
 	}
 
@@ -138,11 +142,13 @@ public:
 	inline Vector &operator/=(float scale)
 	{
 		float inv = 1.0f / scale;
-		x *= inv; y *= inv; z *= inv;
+		x *= inv;
+		y *= inv;
+		z *= inv;
 		return *this;
 	}
 
-	inline Vector &operator/=(Vector scale)
+	inline Vector &operator/=(const Vector& scale)
 	{
 		x /= scale.x;
 		y /= scale.y;

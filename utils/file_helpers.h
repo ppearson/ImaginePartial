@@ -30,7 +30,7 @@ class FileHelpers
 public:
 	FileHelpers();
 
-	//! tries to find the requested file in the search directories provided if it does not exist in it's original location
+	//! tries to find the requested file in the search directories provided if it does not exist in its original location
 	static bool findPathWithSearchPaths(const std::string& originalPath, const std::vector<std::string>& searchPaths, std::string& foundPath);
 
 	//! searches the Texture Map search path (if enabled) for the file if it doesn't exist
@@ -39,6 +39,7 @@ public:
 	static std::string getFileExtension(const std::string& path);
 	static std::string getFileDirectory(const std::string& path);
 	static std::string getFileName(const std::string& path);
+	static std::string getFileNameAllPlatforms(const std::string& path);
 
 	static std::string bakeFrameIntoFileSequencePath(const std::string& path, unsigned int frame);
 

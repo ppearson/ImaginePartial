@@ -19,17 +19,67 @@
 #include "colour_control.h"
 
 #include <QColorDialog>
+#include <QHBoxLayout>
+
+#include "widgets/double_spin_box_ex.h"
 
 namespace Imagine
 {
 
-ColourControl::ColourControl(const std::string& name, Colour3f* pairedValue, std::string label) : Control(name, label)
+ColourControl::ColourControl(const std::string& name, Colour3f* pairedValue, const std::string& label,
+							 bool editControls, bool colourValues) : Control(name, label),
+							m_editControls(editControls)
 {
+	m_pairedValue = pairedValue;
+
 	m_pickButton = new ColourButton();
 
-	m_widget = m_pickButton;
+	if (!m_editControls)
+	{
+		m_widget = m_pickButton;
 
-	m_pairedValue = pairedValue;
+		for (unsigned int i = 0; i < 3; i++)
+		{
+			m_Spins[i] = NULL;
+		}
+	}
+	else
+	{
+		m_pickButton->setMinimumWidth(250);
+		
+		QWidget* mainWidget = new QWidget();
+
+		QHBoxLayout* layout = new QHBoxLayout(mainWidget);
+		mainWidget->setLayout(layout);
+		layout->setSpacing(1);
+		layout->setMargin(0);
+
+		float minVal = 0.0f;
+		float maxVal = 1.0f;
+
+		layout->addWidget(m_pickButton);
+
+		for (unsigned int i = 0; i < 3; i++)
+		{
+			m_Spins[i] = new DoubleSpinBoxEx(mainWidget);
+
+			m_Spins[i]->setMinimumSize(25, 22);
+			m_Spins[i]->setMaximumHeight(22);
+
+			m_Spins[i]->setMinimum(minVal);
+			m_Spins[i]->setMaximum(maxVal);
+
+			m_Spins[i]->setValue((*pairedValue)[i]);
+
+			layout->addWidget(m_Spins[i]);
+		}
+
+		m_pConnectionProxy->registerValueChangedDoubleAlternative(m_Spins[0]);
+		m_pConnectionProxy->registerValueChangedDoubleAlternative(m_Spins[1]);
+		m_pConnectionProxy->registerValueChangedDoubleAlternative(m_Spins[2]);
+
+		m_widget = mainWidget;
+	}
 
 	refreshFromValue();
 
@@ -51,6 +101,34 @@ bool ColourControl::valueChanged()
 	float blue = colour.blueF();
 
 	*m_pairedValue = Colour3f(red, green, blue);
+
+	if (m_editControls)
+	{
+		m_Spins[0]->setValue((*m_pairedValue)[0]);
+		m_Spins[1]->setValue((*m_pairedValue)[1]);
+		m_Spins[2]->setValue((*m_pairedValue)[2]);
+	}
+
+	return true;
+}
+
+bool ColourControl::valueChangedAlternative()
+{
+	if (!m_editControls)
+		return false;
+	
+	(*m_pairedValue)[0] = m_Spins[0]->value();
+	(*m_pairedValue)[1] = m_Spins[1]->value();
+	(*m_pairedValue)[2] = m_Spins[2]->value();
+
+	float red = m_pairedValue->r;
+	float green = m_pairedValue->g;
+	float blue = m_pairedValue->b;
+
+	QColor colour;
+	colour.setRgbF(red, green, blue);
+
+	m_pickButton->setColour(colour);
 
 	return true;
 }
@@ -79,6 +157,13 @@ bool ColourControl::buttonClicked(unsigned int index)
 
 	*m_pairedValue = Colour3f(red, green, blue);
 
+	if (m_editControls)
+	{
+		m_Spins[0]->setValue((*m_pairedValue)[0]);
+		m_Spins[1]->setValue((*m_pairedValue)[1]);
+		m_Spins[2]->setValue((*m_pairedValue)[2]);
+	}
+
 	return true;
 }
 
@@ -92,6 +177,13 @@ void ColourControl::refreshFromValue()
 	colour.setRgbF(red, green, blue);
 
 	m_pickButton->setColour(colour);
+
+	if (m_editControls)
+	{
+		m_Spins[0]->setValue((*m_pairedValue)[0]);
+		m_Spins[1]->setValue((*m_pairedValue)[1]);
+		m_Spins[2]->setValue((*m_pairedValue)[2]);
+	}
 }
 
 

@@ -190,9 +190,13 @@ bool ImageWriterEXR::writeStandardImage(const std::string& filePath, const Outpu
 
 			if (channels & ImageWriter::RGB)
 			{
-				float red = ColourSpace::convertSRGBToLinearAccurate(pRow->r);
-				float green = ColourSpace::convertSRGBToLinearAccurate(pRow->g);
-				float blue = ColourSpace::convertSRGBToLinearAccurate(pRow->b);
+//				float red = ColourSpace::convertSRGBToLinearAccurate(pRow->r);
+//				float green = ColourSpace::convertSRGBToLinearAccurate(pRow->g);
+//				float blue = ColourSpace::convertSRGBToLinearAccurate(pRow->b);
+				
+				float red = pRow->r;
+				float green = pRow->g;
+				float blue = pRow->b;
 
 				rgba[pixelPos++] = red;
 				rgba[pixelPos++] = green;
@@ -203,6 +207,7 @@ bool ImageWriterEXR::writeStandardImage(const std::string& filePath, const Outpu
 				pixelPos += 3;
 			}
 
+            // assumption here is that RGBA will always exist...
 			if (channels & ImageWriter::ALPHA)
 				rgba[pixelPos++] = pRow->a;
 

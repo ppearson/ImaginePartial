@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2014 Peter Pearson.
+ Copyright 2011-2018 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@
 
 #include "geometry/editable_geometry_instance.h"
 #include "geometry/standard_geometry_instance.h"
-
 #include "geometry/editable_geometry_operations.h"
+
 #include "object.h"
 #include "objects/compound_object.h"
 #include "objects/mesh.h"
@@ -47,19 +47,37 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 	{
 		return false;
 	}
+	
+	bool writeNormals = options.exportNormals;
 
 	Matrix4 overallTransform;
 	bool transformValues = options.applyTransform;
 	if (transformValues)
 	{
 		Vector rotation = pObject->getRotation();
+		
+		// TODO: for the moment, if there's a rotation component, we don't export the normals
+		if (!rotation.isNull())
+		{
+			writeNormals = false;
+		}
+		
 		overallTransform.translate(pObject->getPosition());
 		overallTransform.rotate(rotation.x, rotation.y, rotation.z, Matrix4::eYXZ);
-		float scale = pObject->getUniformScale();
-		overallTransform.scale(scale, scale, scale);
+		float uniformScale = pObject->getUniformScale();
+		overallTransform.scale(uniformScale, uniformScale, uniformScale);
+		
+		const Transform& objectTransform = pObject->transform();
+		Vector objectScale = objectTransform.extractScale();
+		if (!objectScale.isAllValue(objectScale.x))
+		{
+			// TODO: again, if we have a non-uniform scale, don't output normals for the moment
+			writeNormals = false;
+		}
+		overallTransform.scale(objectScale.x, objectScale.y, objectScale.z);
 	}
 
-	bool writeUVs = true;
+	bool writeUVs = options.exportUVs;
 
 	CompoundObject* pCO = dynamic_cast<CompoundObject*>(pObject);
 	if (!pCO)
@@ -81,8 +99,13 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 			{
 				writeGeoInstanceEditableUVs(pEditableGeoInstance, fileStream);
 			}
+			
+			if (writeNormals)
+			{
+				writeGeoInstanceEditableNormals(pEditableGeoInstance, fileStream);
+			}
 
-			writeGeoInstanceEditableFaces(pEditableGeoInstance, fileStream, 0, 0, writeUVs);
+			writeGeoInstanceEditableFaces(pEditableGeoInstance, fileStream, 0, 0, writeUVs, 0, writeNormals);
 		}
 		else if (pGeoInstance->getTypeID() == 3)
 		{
@@ -96,8 +119,13 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 			{
 				writeGeoInstanceStandardUVs(pStandardGeoInstance, fileStream);
 			}
+			
+			if (writeNormals)
+			{
+				writeGeoInstanceStandardNormals(pStandardGeoInstance, fileStream);
+			}
 
-			writeGeoInstanceStandardFaces(pStandardGeoInstance, fileStream, 0, 0, writeUVs);
+			writeGeoInstanceStandardFaces(pStandardGeoInstance, fileStream, 0, 0, writeUVs, 0, writeNormals);
 		}
 	}
 	else
@@ -107,17 +135,31 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 		{
 			unsigned int pointOffsetCount = 0;
 			unsigned int uvsOffsetCount = 0;
+			unsigned int normalsOffsetCount = 0;
 
 			unsigned int subObjectCount = pCO->getSubObjectCount();
 			for (unsigned int i = 0; i < subObjectCount; i++)
 			{
 				Object* pSubObject = pCO->getSubObject(i);
+				
+				// TODO: do this properly
+				bool localWriteNormals = pSubObject->getRotation().isNull();
+				
+				bool localWriteUVs = writeUVs;
 
 				Matrix4 subObjectTransform;
 				subObjectTransform.translate(pSubObject->getPosition());
 				subObjectTransform.rotate(pSubObject->getRotation().x, pSubObject->getRotation().y, pSubObject->getRotation().z, Matrix4::eYXZ);
-				float scale = pSubObject->getUniformScale();
-				subObjectTransform.scale(scale, scale, scale);
+				float uniformScale = pSubObject->getUniformScale();
+				subObjectTransform.scale(uniformScale, uniformScale, uniformScale);
+				
+				Vector scale = pSubObject->transform().extractScale();
+				if (!scale.isAllValue(scale.x))
+				{
+					// TODO: do this properly
+					localWriteNormals = false;
+				}
+				subObjectTransform.scale(scale.x, scale.y, scale.z);
 
 				Matrix4 combinedSubObjectTransform = overallTransform;
 				combinedSubObjectTransform *= subObjectTransform;
@@ -134,21 +176,29 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 					fileStream << "\n# Object\n" << "g OBJECT\n";
 
 					unsigned int pointsWritten = writeGeoInstanceEditablePoints(pEditableGeoInstance, fileStream, &combinedSubObjectTransform);
-
-					if (writeUVs && pEditableGeoInstance->hasPerVertexUVs())
+					
+					if (localWriteUVs && !pEditableGeoInstance->hasPerVertexUVs())
 					{
-						unsigned int uvsWritten = writeGeoInstanceEditableUVs(pEditableGeoInstance, fileStream);
-
-						writeGeoInstanceEditableFaces(pEditableGeoInstance, fileStream, pointOffsetCount, uvsOffsetCount, true);
-
-						uvsOffsetCount += uvsWritten;
+						localWriteUVs = false;
 					}
-					else
+					
+					unsigned int uvsWritten = 0;
+					unsigned int normalsWritten = 0;
+
+					if (localWriteUVs)
 					{
-						// don't write UVs
-						writeGeoInstanceEditableFaces(pEditableGeoInstance, fileStream, pointOffsetCount, 0, false);
+						uvsWritten = writeGeoInstanceEditableUVs(pEditableGeoInstance, fileStream);
 					}
-
+					
+					if (localWriteNormals)
+					{
+						normalsWritten = writeGeoInstanceEditableNormals(pEditableGeoInstance, fileStream);
+					}
+					
+					writeGeoInstanceEditableFaces(pEditableGeoInstance, fileStream, pointOffsetCount, uvsOffsetCount, localWriteUVs, normalsOffsetCount, localWriteNormals);
+					
+					uvsOffsetCount += uvsWritten;
+					normalsOffsetCount += normalsWritten;
 					pointOffsetCount += pointsWritten;
 				}
 				else
@@ -158,21 +208,29 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 					fileStream << "\n# Object\n" << "g OBJECT\n";
 
 					unsigned int pointsWritten = writeGeoInstanceStandardPoints(pStandardGeoInstance, fileStream, &combinedSubObjectTransform);
-
-					if (writeUVs && pStandardGeoInstance->hasPerVertexUVs())
+					
+					if (localWriteUVs && !pStandardGeoInstance->hasPerVertexUVs())
 					{
-						unsigned int uvsWritten = writeGeoInstanceStandardUVs(pStandardGeoInstance, fileStream);
-
-						writeGeoInstanceStandardFaces(pStandardGeoInstance, fileStream, pointOffsetCount, uvsOffsetCount, true);
-
-						uvsOffsetCount += uvsWritten;
+						localWriteUVs = false;
 					}
-					else
+					
+					unsigned int uvsWritten = 0;
+					unsigned int normalsWritten = 0;
+
+					if (localWriteUVs)
 					{
-						// don't write UVs
-						writeGeoInstanceStandardFaces(pStandardGeoInstance, fileStream, pointOffsetCount, 0, false);
+						uvsWritten = writeGeoInstanceStandardUVs(pStandardGeoInstance, fileStream);
 					}
+					
+					if (localWriteNormals)
+					{
+						normalsWritten = writeGeoInstanceStandardNormals(pStandardGeoInstance, fileStream);
+					}
+					
+					writeGeoInstanceStandardFaces(pStandardGeoInstance, fileStream, pointOffsetCount, uvsOffsetCount, localWriteUVs, normalsOffsetCount, localWriteNormals);
 
+					uvsOffsetCount += uvsWritten;
+					normalsOffsetCount += normalsWritten;
 					pointOffsetCount += pointsWritten;
 				}
 			}
@@ -184,11 +242,15 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 
 			unsigned int pointOffsetCount = 0;
 			unsigned int uvsOffsetCount = 0;
+			unsigned int normalsOffsetCount = 0;
 
 			unsigned int subObjectCount = pCO->getSubObjectCount();
 			for (unsigned int i = 0; i < subObjectCount; i++)
 			{
 				Object* pSubObject = pCO->getSubObject(i);
+				
+				bool localWriteUVs = writeUVs;
+				bool localWriteNormals = writeNormals;
 
 				Matrix4 subObjectTransform;
 				subObjectTransform.translate(pSubObject->getPosition());
@@ -205,22 +267,25 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 					continue;
 
 				EditableGeometryInstance* pEditableGeoInstance = reinterpret_cast<EditableGeometryInstance*>(pGeoInstance);
+				
+				if (localWriteUVs && !pEditableGeoInstance->hasPerVertexUVs())
+				{
+					localWriteUVs = false;
+				}
 
 				unsigned int pointsWritten = writeGeoInstanceEditablePoints(pEditableGeoInstance, fileStream, &combinedSubObjectTransform);
+				unsigned int uvsWritten = 0;
 
-				if (writeUVs && pEditableGeoInstance->hasPerVertexUVs())
+				if (localWriteUVs)
 				{
-					unsigned int uvsWritten = writeGeoInstanceEditableUVs(pEditableGeoInstance, fileStream);
-
-					writeGeoInstanceEditableFaces(pEditableGeoInstance, fileStream, pointOffsetCount, uvsOffsetCount, true);
+					uvsWritten = writeGeoInstanceEditableUVs(pEditableGeoInstance, fileStream);
 
 					uvsOffsetCount += uvsWritten;
 				}
-				else
-				{
-					// don't write UVs
-					writeGeoInstanceEditableFaces(pEditableGeoInstance, fileStream, pointOffsetCount, 0, false);
-				}
+				
+				// write normals
+				
+				writeGeoInstanceEditableFaces(pEditableGeoInstance, fileStream, pointOffsetCount, uvsOffsetCount, localWriteUVs, normalsOffsetCount, localWriteNormals);
 
 				pointOffsetCount += pointsWritten;
 			}
@@ -237,7 +302,7 @@ unsigned int GeoWriterObj::writeGeoInstanceEditablePoints(EditableGeometryInstan
 	// write out the points
 	stream << "# Points\n";
 
-	std::deque<Point>& points = pGeoInstance->getPoints();
+	const std::deque<Point>& points = pGeoInstance->getPoints();
 	std::deque<Point>::const_iterator it = points.begin();
 
 	unsigned int pointsWritten = 0;
@@ -273,7 +338,7 @@ unsigned int GeoWriterObj::writeGeoInstanceEditableUVs(EditableGeometryInstance*
 	// write out the UVs
 	stream << "# UVs\n";
 
-	std::deque<UV>& uvs = pGeoInstance->getUVs();
+	const std::deque<UV>& uvs = pGeoInstance->getUVs();
 	std::deque<UV>::const_iterator it = uvs.begin();
 
 	unsigned int uvsWritten = 0;
@@ -290,53 +355,109 @@ unsigned int GeoWriterObj::writeGeoInstanceEditableUVs(EditableGeometryInstance*
 	return uvsWritten;
 }
 
+unsigned int GeoWriterObj::writeGeoInstanceEditableNormals(EditableGeometryInstance* pGeoInstance, std::fstream& stream)
+{
+	// write out the Normals
+	stream << "# Normals\n";
+	
+	// Note: we don't de-duplicate these, which obviously isn't efficient file-size-wise, but makes things
+	//       much simplier.
+
+	const std::deque<Normal>& normals = pGeoInstance->getNormals();
+	std::deque<Normal>::const_iterator it = normals.begin();
+
+	unsigned int normalsWritten = 0;
+
+	for (; it != normals.end(); ++it)
+	{
+		const Normal& normal = *it;
+
+		stream << std::setprecision(6) << "vn " << normal.x << " " << normal.y << " " << normal.z << "\n";
+
+		normalsWritten++;
+	}
+
+	return normalsWritten;
+}
+
 void GeoWriterObj::writeGeoInstanceEditableFaces(EditableGeometryInstance* pGeoInstance, std::fstream& stream, unsigned int pointOffset,
-										 unsigned int uvOffset, bool writeUVs)
+										 unsigned int uvOffset, bool writeUVs, unsigned int normalOffset, bool writeNormals)
 {
 	stream << "\n\n# Faces\n";
-
-	if (!writeUVs)
+	
+	// convert to single value in the hope of helping branch predictor a bit...
+	int indicesType = 0; // no UVs or Normals
+	if (writeUVs && !writeNormals)
 	{
-		std::deque<Face>& faces = pGeoInstance->getFaces();
-		std::deque<Face>::iterator itFace = faces.begin();
-		for (; itFace != faces.end(); ++itFace)
+		indicesType = 1;
+	}
+	else if (writeUVs && writeNormals)
+	{
+		indicesType = 2; // both
+	}
+	else
+	{
+		indicesType = 3; // no UVs
+	}
+
+	const std::deque<Face>& faces = pGeoInstance->getFaces();
+	std::deque<Face>::const_iterator itFace = faces.begin();
+	for (; itFace != faces.end(); ++itFace)
+	{
+		const Face& face = *itFace;
+
+		unsigned int numVertices = face.getVertexCount();
+
+		stream << "f";
+		
+		if (indicesType == 0)
 		{
-			const Face& face = *itFace;
-
-			unsigned int numVertices = face.getVertexCount();
-
-			stream << "f";
+			// just point index
 			for (unsigned int i = 0; i < numVertices; i++)
 			{
 				unsigned int vertexIndex = face.getVertexPosition(i);
 
-				stream << " " << vertexIndex + 1 + pointOffset;
+				// just the point index
+				stream << " " << vertexIndex + 1 + pointOffset;	
 			}
-
-			stream << "\n";
 		}
-	}
-	else
-	{
-		std::deque<Face>& faces = pGeoInstance->getFaces();
-		std::deque<Face>::iterator itFace = faces.begin();
-		for (; itFace != faces.end(); ++itFace)
+		else if (indicesType == 1)
 		{
-			const Face& face = *itFace;
-
-			unsigned int numVertices = face.getVertexCount();
-
-			stream << "f";
+			// point index and UV index
+			
 			for (unsigned int i = 0; i < numVertices; i++)
 			{
 				unsigned int vertexIndex = face.getVertexPosition(i);
 				unsigned int uvIndex = face.getVertexUV(i);
-
+				
 				stream << " " << vertexIndex + 1 + pointOffset << "/" << uvIndex + 1 + uvOffset << "/";
 			}
-
-			stream << "\n";
 		}
+		else if (indicesType == 2)
+		{
+			// point index, UV index and Normal index
+			
+			for (unsigned int i = 0; i < numVertices; i++)
+			{
+				unsigned int vertexIndex = face.getVertexPosition(i);
+				unsigned int uvIndex = face.getVertexUV(i);
+				unsigned int normalIndex = face.getVertexNormal(i);
+				
+				stream << " " << vertexIndex + 1 + pointOffset << "/" << uvIndex + 1 + uvOffset << "/" << normalIndex + normalOffset;
+			}
+		}
+		else if (indicesType == 3)
+		{
+			for (unsigned int i = 0; i < numVertices; i++)
+			{
+				unsigned int vertexIndex = face.getVertexPosition(i);
+				unsigned int normalIndex = face.getVertexNormal(i);
+				
+				stream << " " << vertexIndex + 1 + pointOffset << "//" << normalIndex + normalOffset;
+			}
+		}
+
+		stream << "\n";
 	}
 }
 
@@ -345,7 +466,7 @@ unsigned int GeoWriterObj::writeGeoInstanceStandardPoints(StandardGeometryInstan
 	// write out the points
 	stream << "# Points\n";
 
-	std::vector<Point>& points = pGeoInstance->getPoints();
+	const std::vector<Point>& points = pGeoInstance->getPoints();
 	std::vector<Point>::const_iterator it = points.begin();
 
 	unsigned int pointsWritten = 0;
@@ -381,7 +502,7 @@ unsigned int GeoWriterObj::writeGeoInstanceStandardUVs(StandardGeometryInstance*
 	// write out the UVs
 	stream << "# UVs\n";
 
-	std::vector<UV>& uvs = pGeoInstance->getUVs();
+	const std::vector<UV>& uvs = pGeoInstance->getUVs();
 	std::vector<UV>::const_iterator it = uvs.begin();
 
 	unsigned int uvsWritten = 0;
@@ -398,41 +519,151 @@ unsigned int GeoWriterObj::writeGeoInstanceStandardUVs(StandardGeometryInstance*
 	return uvsWritten;
 }
 
+unsigned int GeoWriterObj::writeGeoInstanceStandardNormals(StandardGeometryInstance* pGeoInstance, std::fstream& stream)
+{
+	// write out the Normals
+	stream << "# Normals\n";
+	
+	// Note: we don't de-duplicate these, which obviously isn't efficient file-size-wise, but makes things
+	//       much simplier.
+
+	const std::vector<Normal>& normals = pGeoInstance->getNormals();
+	std::vector<Normal>::const_iterator it = normals.begin();
+
+	unsigned int normalsWritten = 0;
+
+	for (; it != normals.end(); ++it)
+	{
+		const Normal& normal = *it;
+
+		stream << std::setprecision(6) << "vn " << normal.x << " " << normal.y << " " << normal.z << "\n";
+
+		normalsWritten++;
+	}
+
+	return normalsWritten;
+}
+
 void GeoWriterObj::writeGeoInstanceStandardFaces(StandardGeometryInstance* pGeoInstance, std::fstream& stream, unsigned int pointOffset,
-										 unsigned int uvOffset, bool writeUVs)
+										 unsigned int uvOffset, bool writeUVs, unsigned int normalOffset, bool writeNormals)
 {
 	stream << "\n\n# Faces\n";
-
-	if (!writeUVs)
+	
+	// convert to single value in the hope of helping branch predictor a bit...
+	int indicesType = 0; // no UVs or Normals
+	if (writeUVs && !writeNormals)
 	{
-		const std::vector<uint32_t>& aPolyOffsets = pGeoInstance->getPolygonOffsets();
-		const std::vector<uint32_t>& aPolyIndices = pGeoInstance->getPolygonIndices();
+		indicesType = 1;
+	}
+	else if (writeUVs && writeNormals)
+	{
+		indicesType = 2; // both
+	}
+	else
+	{
+		indicesType = 3; // no UVs
+	}
 
-		unsigned int lastOffset = 0;
+	
+	const std::vector<uint32_t>& aPolyOffsets = pGeoInstance->getPolygonOffsets();
+	const std::vector<uint32_t>& aPolyIndices = pGeoInstance->getPolygonIndices();
+	
+	const uint32_t* pUVIndices = pGeoInstance->getUVIndices();
+	const uint32_t* pNormalIndices = pGeoInstance->getNormalIndices();
 
-		std::vector<uint32_t>::const_iterator itPolyOffset = aPolyOffsets.begin();
-		for (; itPolyOffset != aPolyOffsets.end(); ++itPolyOffset)
+	unsigned int lastOffset = 0;
+
+	std::vector<uint32_t>::const_iterator itPolyOffset = aPolyOffsets.begin();
+	for (; itPolyOffset != aPolyOffsets.end(); ++itPolyOffset)
+	{
+		const uint32_t& offset = *itPolyOffset;
+
+		unsigned int numVertices = offset - lastOffset;
+
+		stream << "f";
+		
+		// TODO: need to cope with point-index-derived as well...
+		
+		if (indicesType == 0)
 		{
-			const uint32_t& offset = *itPolyOffset;
-
-			unsigned int numVertices = offset - lastOffset;
-
-			stream << "f";
+			// just points
 			for (unsigned int i = lastOffset; i < offset; i++)
 			{
 				unsigned int vertexIndex = aPolyIndices[i];
 
 				stream << " " << vertexIndex + 1 + pointOffset;
 			}
-
-			stream << "\n";
-
-			lastOffset += numVertices;
 		}
-	}
-	else
-	{
+		else if (indicesType == 1)
+		{
+			// points and UVs
+			
+			if (pUVIndices)
+			{
+				// we have UV indices
+				for (unsigned int i = lastOffset; i < offset; i++)
+				{
+					unsigned int vertexIndex = aPolyIndices[i];
+					unsigned int uvIndex = pUVIndices[i];
+	
+					stream << " " << vertexIndex + 1 + pointOffset << "/" << uvIndex + 1 + uvOffset << "/";
+				}
+			}
+			else
+			{
+				// we're using implicit indices for the UVs
+				for (unsigned int i = lastOffset; i < offset; i++)
+				{
+					unsigned int vertexIndex = aPolyIndices[i];
+					unsigned int uvIndex = i;
+	
+					stream << " " << vertexIndex + 1 + pointOffset << "/" << uvIndex + 1 + uvOffset << "/";
+				}
+			}
+		}
+		else if (indicesType == 2)
+		{
+			// points, normals and UVs
+			
+			for (unsigned int i = lastOffset; i < offset; i++)
+			{
+				unsigned int vertexIndex = aPolyIndices[i];
+				unsigned int uvIndex = pUVIndices ? pUVIndices[i] : i;
+				unsigned int normalIndex = pNormalIndices ? pNormalIndices[i] : i;
 
+				stream << " " << vertexIndex + 1 + pointOffset << "/" << uvIndex + 1 + uvOffset << "/" << normalIndex + 1 + normalOffset;
+			}
+		}
+		else
+		{
+			// just points and normals
+			if (pNormalIndices)
+			{
+				// we have normal indices
+				for (unsigned int i = lastOffset; i < offset; i++)
+				{
+					unsigned int vertexIndex = aPolyIndices[i];
+					unsigned int normalIndex = pNormalIndices[vertexIndex];
+	
+					stream << " " << vertexIndex + 1 + pointOffset << "//" << normalIndex + 1 + normalOffset;
+				}
+			}
+			else
+			{
+				// we're using implicit indices for the Normals
+				for (unsigned int i = lastOffset; i < offset; i++)
+				{
+					unsigned int vertexIndex = aPolyIndices[i];
+					unsigned int normalIndex = i;
+	
+					stream << " " << vertexIndex + 1 + pointOffset << "//" << normalIndex + 1 + normalOffset;
+				}
+			}
+		}
+
+		stream << "\n";
+
+		lastOffset += numVertices;
 	}
 }
 
