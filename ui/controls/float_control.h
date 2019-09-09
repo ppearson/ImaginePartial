@@ -29,7 +29,7 @@ namespace Imagine
 class FloatControl : public Control
 {
 public:
-	FloatControl(const std::string& name, float* pairedValue, float min, float max, std::string label,
+	FloatControl(const std::string& name, float* pairedValue, float min, float max, const std::string& label,
 				 unsigned int flags = 0);
 	virtual ~FloatControl();
 

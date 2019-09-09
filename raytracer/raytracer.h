@@ -106,7 +106,7 @@ protected:
 class Raytracer : public ThreadPool
 {
 public:
-	Raytracer(SceneInterface& scene, OutputImage* outputImage, Params& settings, bool preview, unsigned int threads);
+	Raytracer(SceneInterface& scene, OutputImage* outputImage, const Params& settings, bool preview, unsigned int threads);
 	Raytracer(SceneInterface& scene, unsigned int threads, bool progressive);
 	virtual ~Raytracer();
 
@@ -151,6 +151,10 @@ public:
 	HitResult processRayExtra(RenderThreadContext& rtc, ShadingContext& shadingContext, Ray& viewRay, float& t) const;
 
 	void updateCameraRayCreator();
+	
+	// this is for secondary utility camera ray creators (alternative resolutions).
+	// The returned CameraRayCreator "leaks", so anything using it owns it and needs to free it.
+	CameraRayCreator* generateAlternativeCameraRayCreator(unsigned int width, unsigned int height) const;
 
 	size_t getRendererMemoryUsage() const;
 	float getRayEpsilon() const { return m_rayEpsilon; }
@@ -161,6 +165,9 @@ public:
 
 	void setDebugPathCollection(DebugPathCollection* pDPC) { m_pDebugPathCollection = pDPC;}
 	DebugPathCollection* getDebugPathCollection() const { return m_pDebugPathCollection; }
+	
+	unsigned int getRenderWidth() const { return m_renderWindowWidth; }
+	unsigned int getRenderHeight() const { return m_renderWindowHeight; }
 
 protected:
 	virtual bool doTask(ThreadPoolTask* pTask, unsigned int threadID);

@@ -217,11 +217,11 @@ public:
 
 	static Point interpolate(const Point& point0, const Point& point1, float delta)
 	{
-		float x = linearInterpolate(point0.x, point1.x, delta);
-		float y = linearInterpolate(point0.y, point1.y, delta);
-		float z = linearInterpolate(point0.z, point1.z, delta);
+		float interX = linearInterpolate(point0.x, point1.x, delta);
+		float interY = linearInterpolate(point0.y, point1.y, delta);
+		float interZ = linearInterpolate(point0.z, point1.z, delta);
 
-		return Point(x, y, z);
+		return Point(interX, interY, interZ);
 	}
 
 	Point& position()

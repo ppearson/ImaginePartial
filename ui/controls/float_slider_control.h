@@ -29,7 +29,7 @@ class FloatSliderWidget;
 class FloatSliderControl : public Control
 {
 public:
-	FloatSliderControl(const std::string& name, float* pairedValue, float min, float max, std::string label,
+	FloatSliderControl(const std::string& name, float* pairedValue, float min, float max, const std::string& label,
 					   bool editControl, bool logScaleSlider, bool highPrecision);
 	virtual ~FloatSliderControl();
 

@@ -175,12 +175,13 @@ public:
 		Normal newDirection(sinPhi * cosf(theta), sinPhi * sinf(theta), -cosf(phi));
 
 		float time = sampleBundle.getTimeSample(sampleIndex);
+		float timeFull = time;
 		if (m_relativeTimes)
 		{
-			time = linearInterpolate(m_shutterOpen, m_shutterClose, time);
+			timeFull = linearInterpolate(m_shutterOpen, m_shutterClose, time);
 		}
 
-		Ray ray1(Point(), newDirection, time, RAY_CAMERA);
+		Ray ray1(Point(), newDirection, time, timeFull, RAY_CAMERA);
 		ray1 = m_transform.transform(ray1);
 		ray1.direction.normalise();
 
@@ -231,12 +232,13 @@ public:
 		Normal newDirection(sinPhi * cosf(theta), sinPhi * sinf(theta), -cosf(phi));
 
 		float time = sampleBundle.getTimeSample(sampleIndex);
+		float timeFull = time;
 		if (m_relativeTimes)
 		{
-			time = linearInterpolate(m_shutterOpen, m_shutterClose, time);
+			timeFull = linearInterpolate(m_shutterOpen, m_shutterClose, time);
 		}
 
-		Ray ray1(Point(), newDirection, time, RAY_CAMERA);
+		Ray ray1(Point(), newDirection, time, timeFull, RAY_CAMERA);
 
 		SnapShotTransform ssT;
 		m_transform.getTransformAtTime(time, ssT);

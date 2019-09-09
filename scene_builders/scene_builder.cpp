@@ -35,7 +35,7 @@ SceneBuilder::~SceneBuilder()
 void SceneBuilder::addObject(Scene& scene, Object* pObject)
 {
 	pObject->constructGeometry();
-	scene.addObject(pObject, false, true); // don't set name, but set object ID
+	scene.addObject(pObject, false, true, true); // don't set name, but set object ID and lookup map
 }
 
 } // namespace Imagine

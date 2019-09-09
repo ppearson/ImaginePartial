@@ -21,7 +21,7 @@
 namespace Imagine
 {
 
-RayVisibilityControl::RayVisibilityControl(const std::string& name, unsigned char* pairedValue, std::string label)
+RayVisibilityControl::RayVisibilityControl(const std::string& name, unsigned char* pairedValue, const std::string& label)
 	: Control(name, label), m_pVisibilityButton(NULL)
 {
 	m_pVisibilityButton = new RayVisibilityButton();

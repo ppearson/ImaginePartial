@@ -58,6 +58,30 @@ public:
 	{
 		m_aParams[name] = ParamsValue(value);
 	}
+	
+	void addIfNotSet(const std::string& name, bool value)
+	{
+		if (m_aParams.find(name) == m_aParams.end())
+			m_aParams[name] = ParamsValue(value);
+	}
+
+	void addIfNotSet(const std::string& name, int value)
+	{
+		if (m_aParams.find(name) == m_aParams.end())
+			m_aParams[name] = ParamsValue((unsigned int)value);
+	}
+
+	void addIfNotSet(const std::string& name, unsigned int value)
+	{
+		if (m_aParams.find(name) == m_aParams.end())
+			m_aParams[name] = ParamsValue(value);
+	}
+
+	void addIfNotSet(const std::string& name, float value)
+	{
+		if (m_aParams.find(name) == m_aParams.end())
+			m_aParams[name] = ParamsValue(value);
+	}
 
 	bool getBool(const std::string& name, bool defaultValue = false) const
 	{

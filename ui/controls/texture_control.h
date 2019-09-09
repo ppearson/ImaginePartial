@@ -30,7 +30,7 @@ class TextureParameters;
 class TextureControl : public Control
 {
 public:
-	TextureControl(const std::string& name, TextureParameters* pairedValue, std::string label, unsigned int flags);
+	TextureControl(const std::string& name, TextureParameters* pairedValue, const std::string& label, unsigned int flags);
 	virtual ~TextureControl();
 
 	virtual bool valueChanged();

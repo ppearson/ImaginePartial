@@ -34,6 +34,7 @@ class PushButtonEx : public QPushButton
 public:
 	explicit PushButtonEx(QWidget* parent = 0);
 	explicit PushButtonEx(const QIcon& icon, const QString& text, QWidget* parent = 0);
+	explicit PushButtonEx(const QString& text, QWidget* parent = 0);
 
 	virtual void mousePressEvent(QMouseEvent* e);
 

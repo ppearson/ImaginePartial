@@ -26,7 +26,7 @@
 namespace Imagine
 {
 
-UIntControl::UIntControl(const std::string& name, unsigned int* pairedValue, unsigned int min, unsigned int max, std::string label,
+UIntControl::UIntControl(const std::string& name, unsigned int* pairedValue, unsigned int min, unsigned int max, const std::string& label,
 						 bool scrubHandle) :
 	Control(name, label), m_minimum(min), m_maximum(max)
 {

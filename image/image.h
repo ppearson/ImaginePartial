@@ -26,10 +26,10 @@
 namespace Imagine
 {
 
-class Image : public RefCountCallback
+class Image : public RefCountCallbackInterface
 {
 public:
-	Image(unsigned int width, unsigned int height) : RefCountCallback(), m_recipeHash(0), m_width(width), m_height(height)
+	Image(unsigned int width, unsigned int height) : RefCountCallbackInterface(), m_recipeHash(0), m_width(width), m_height(height)
 	{
 	}
 

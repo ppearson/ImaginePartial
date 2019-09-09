@@ -81,13 +81,16 @@ public:
 	class RenderThreadInitTask2 : public ThreadPoolTask
 	{
 	public:
-		RenderThreadInitTask2(DistributionDiscrete* pLightDistribution, const LightsAndSamples* pLightSamples, unsigned int localisedSampleCount,
+		RenderThreadInitTask2(unsigned int lightCount, DistributionDiscrete* pLightDistribution, const LightsAndSamples* pLightSamples, unsigned int localisedSampleCount,
 							  unsigned int threadIndex) :
-			m_pLightDistribution(pLightDistribution), m_pLightsAndSamples(pLightSamples), m_localisedSampleCount(localisedSampleCount), m_threadIndex(threadIndex)
+		    m_lightCount(lightCount),
+			m_pLightDistribution(pLightDistribution), m_pLightsAndSamples(pLightSamples),
+		    m_localisedSampleCount(localisedSampleCount), m_threadIndex(threadIndex)
 		{
 
 		}
 
+		unsigned int			m_lightCount;
 		DistributionDiscrete*	m_pLightDistribution;
 		const LightsAndSamples* m_pLightsAndSamples;
 		unsigned int			m_localisedSampleCount;
@@ -111,13 +114,13 @@ public:
 		return m_results1.size() == m_numberOfThreads;
 	}
 
-	bool init2(DistributionDiscrete* pLightDistribution, const LightsAndSamples* pLightSamples, unsigned int localisedSampleCount)
+	bool init2(unsigned int lightCount, DistributionDiscrete* pLightDistribution, const LightsAndSamples* pLightSamples, unsigned int localisedSampleCount)
 	{
 		m_type1 = false;
 
 		for (unsigned int i = 0; i < m_numberOfThreads; i++)
 		{
-			RenderThreadInitTask2* pTask = new RenderThreadInitTask2(pLightDistribution, pLightSamples, localisedSampleCount, i);
+			RenderThreadInitTask2* pTask = new RenderThreadInitTask2(lightCount, pLightDistribution, pLightSamples, localisedSampleCount, i);
 			addTaskNoLock(pTask);
 		}
 
@@ -174,11 +177,12 @@ protected:
 			if (pThisTask->m_localisedSampleCount == 0)
 			{
 				// we're not localised, so just do the constant one
-				pNewLightSampler = new LightSamplerConstant(pThisTask->m_pLightDistribution, pThisTask->m_pLightsAndSamples);
+				pNewLightSampler = new LightSamplerConstant(pThisTask->m_lightCount, pThisTask->m_pLightDistribution, pThisTask->m_pLightsAndSamples);
 			}
 			else
 			{
-				pNewLightSampler = new LightSamplerLocalised(pThisTask->m_pLightDistribution, pThisTask->m_pLightsAndSamples, pThisTask->m_localisedSampleCount);
+				pNewLightSampler = new LightSamplerLocalised(pThisTask->m_lightCount, pThisTask->m_pLightDistribution, pThisTask->m_pLightsAndSamples,
+				                                             pThisTask->m_localisedSampleCount);
 			}
 
 			m_results2[pThisTask->m_threadIndex] = pNewLightSampler;

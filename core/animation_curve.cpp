@@ -298,6 +298,12 @@ void AnimationCurve::deleteKey(float time)
 
 	if (pKeys)
 	{
+		if (pKeys->keys.size() == 1)
+		{
+			// if it's the last one, just set it to not be animated
+			setAnimated(false);
+			return;
+		}
 		pKeys->keys.erase(time);
 	}
 }

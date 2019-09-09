@@ -316,8 +316,8 @@ void ThreadPoolThread::deleteTasksInBundle()
 ThreadPool::ThreadPool(unsigned int threads, bool useBundles) : m_controller(threads),
 	m_pAsyncFinishThread(NULL),
     m_numberOfThreads(threads),
-	m_setAffinity(false), m_lowPriorityThreads(false), m_useBundles(useBundles), m_isActive(false),
-	m_startedThreads(0),
+	m_setAffinity(false), m_lowPriorityThreads(false), m_useBundles(useBundles),
+	m_startedThreads(0), m_isActive(false),
 	m_wasCancelled(false), m_originalNumberOfTasks(0)
 {
 	for (unsigned int i = 0; i < m_numberOfThreads; i++)

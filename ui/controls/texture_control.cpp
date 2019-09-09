@@ -25,7 +25,7 @@
 namespace Imagine
 {
 
-TextureControl::TextureControl(const std::string& name, TextureParameters* pairedValue, std::string label, unsigned int flags) : Control(name, label),
+TextureControl::TextureControl(const std::string& name, TextureParameters* pairedValue, const std::string& label, unsigned int flags) : Control(name, label),
 	m_pTextureWidget(NULL), m_pairedValue(NULL)
 {
 	m_pTextureWidget = new TextureWidget(pairedValue, NULL, flags);

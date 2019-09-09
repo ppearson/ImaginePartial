@@ -107,6 +107,10 @@ void TerrainBuilder::createScene(Scene& scene)
 
 	if (!pHeightMapTexture)
 	{
+		if (pNewMesh)
+		{
+			delete pNewMesh;
+		}
 		return;
 	}
 

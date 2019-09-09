@@ -29,7 +29,7 @@ namespace Imagine
 class EnumControl : public Control
 {
 public:
-	EnumControl(const std::string& name, unsigned char* pairedValue, const char** options, std::string label);
+	EnumControl(const std::string& name, unsigned char* pairedValue, const char** options, const std::string& label);
 	virtual ~EnumControl();
 
 	virtual bool valueChanged();

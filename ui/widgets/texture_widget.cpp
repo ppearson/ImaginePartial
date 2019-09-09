@@ -220,7 +220,7 @@ void TextureWidget::initCommon()
 
 		pNewMenu->addAction(m_pMenuConstant);
 	}
-	else if (m_outputType == Texture::eTypeFloatExact)
+	else if (m_outputType == Texture::eTypeFloatExact || m_outputType == Texture::eTypeFloatAlpha)
 	{
 		// it's a single float value that will be used to drive something else
 
@@ -284,10 +284,10 @@ void TextureWidget::initCommon()
 	}
 	
 	// sort them for display
-	std::map<std::string, unsigned char> aSortedNames;
+	std::map<std::string, unsigned char> aSortedNames;	
 
-	TextureRegistry::TextureNames::iterator itTexture = TextureRegistry::instance().standardTextureNamesBegin();
-	for (; itTexture != TextureRegistry::instance().standardTextureNamesEnd(); ++itTexture)
+	TextureRegistry::TextureNames::iterator itTexture = TextureRegistry::instance().texture2DNamesBegin();
+	for (; itTexture != TextureRegistry::instance().texture2DNamesEnd(); ++itTexture)
 	{
 		const std::string& textureName = (*itTexture).second;
 		int textureTypeID = (int)(*itTexture).first;
@@ -299,70 +299,43 @@ void TextureWidget::initCommon()
 		aSortedNames[textureName] = (unsigned char)textureTypeID;
 	}
 	
-	int menuIndex = m_offset;
+	unsigned int menuIndex = m_offset;
 	
-	std::map<std::string, unsigned char>::const_iterator itTextName = aSortedNames.begin();
-	for (; itTextName != aSortedNames.end(); ++itTextName)
-	{
-		const std::string& textureName = (*itTextName).first;
-		int textureTypeID = (int)(*itTextName).second;
-		
-		m_aTextureIDs.push_back((unsigned char)textureTypeID);
-
-		QAction* pNewTextureType = new QAction(textureName.c_str(), m_pTypeButton);
-		m_pTypeButton->connect(pNewTextureType, SIGNAL(triggered()), m_pSignalMapper, SLOT(map()));
-		m_pSignalMapper->setMapping(pNewTextureType, menuIndex);
-
-		pNewTextureType->setCheckable(true);
-		m_aMenuOther.push_back(pNewTextureType);
-
-		// hack to set procedural texture menu checked state if it matched paired value
-		if (m_pPairedValue)
-		{
-			if ((int)m_pPairedValue->getTextureTypeID() == textureTypeID)
-			{
-				pNewTextureType->setChecked(true);
-			}
-		}
-
-		pNewMenu->addAction(pNewTextureType);
-
-		menuIndex++;
-	}
-
-	// now add advanced ones
-	pNewMenu->addSeparator();
-
-	itTexture = TextureRegistry::instance().advancedTextureNamesBegin();
-	for (; itTexture != TextureRegistry::instance().advancedTextureNamesEnd(); ++itTexture)
+	QMenu* p2DTexturesMenu = pNewMenu->addMenu("2D");
+	
+	addMenuItems(aSortedNames, p2DTexturesMenu, menuIndex);
+	
+	// now 3D nodes...
+	aSortedNames.clear();
+	
+	QMenu* p3DTexturesMenu = pNewMenu->addMenu("3D");
+	
+	itTexture = TextureRegistry::instance().texture3DNamesBegin();
+	for (; itTexture != TextureRegistry::instance().texture3DNamesEnd(); ++itTexture)
 	{
 		const std::string& textureName = (*itTexture).second;
-
 		int textureTypeID = (int)(*itTexture).first;
-
-		m_aTextureIDs.push_back((unsigned char)textureTypeID);
-
-		QAction* pNewTextureType = new QAction(textureName.c_str(), m_pTypeButton);
-		m_pTypeButton->connect(pNewTextureType, SIGNAL(triggered()), m_pSignalMapper, SLOT(map()));
-		m_pSignalMapper->setMapping(pNewTextureType, menuIndex);
-
-		pNewTextureType->setCheckable(true);
-		m_aMenuOther.push_back(pNewTextureType);
-
-		// hack to set procedural texture menu checked state if it matched paired value
-		if (m_pPairedValue)
-		{
-			if ((int)m_pPairedValue->getTextureTypeID() == textureTypeID)
-			{
-				pNewTextureType->setChecked(true);
-			}
-		}
-
-		pNewMenu->addAction(pNewTextureType);
-
-		menuIndex++;
+		
+		aSortedNames[textureName] = (unsigned char)textureTypeID;
 	}
-
+	
+	addMenuItems(aSortedNames, p3DTexturesMenu, menuIndex);
+	
+	// now Advanced / other
+	aSortedNames.clear();
+	
+	QMenu* pAdvancedTexturesMenu = pNewMenu->addMenu("Advanced");
+	
+	itTexture = TextureRegistry::instance().textureAdvancedNamesBegin();
+	for (; itTexture != TextureRegistry::instance().textureAdvancedNamesEnd(); ++itTexture)
+	{
+		const std::string& textureName = (*itTexture).second;
+		int textureTypeID = (int)(*itTexture).first;
+		
+		aSortedNames[textureName] = (unsigned char)textureTypeID;
+	}
+	
+	addMenuItems(aSortedNames, pAdvancedTexturesMenu, menuIndex);
 
 	if (m_pPairedValue)
 	{
@@ -1028,6 +1001,41 @@ void TextureWidget::updateScalesFromPairedTexture()
 void TextureWidget::textureHasChanged()
 {
 	emit textureChanged();
+}
+
+//
+
+void TextureWidget::addMenuItems(const std::map<std::string, unsigned char>& items, QMenu* newMenu,
+								 unsigned int& nextMenuIndex)
+{
+	std::map<std::string, unsigned char>::const_iterator itTextName = items.begin();
+	for (; itTextName != items.end(); ++itTextName)
+	{
+		const std::string& textureName = (*itTextName).first;
+		int textureTypeID = (int)(*itTextName).second;
+		
+		m_aTextureIDs.push_back((unsigned char)textureTypeID);
+
+		QAction* pNewTextureType = new QAction(textureName.c_str(), m_pTypeButton);
+		m_pTypeButton->connect(pNewTextureType, SIGNAL(triggered()), m_pSignalMapper, SLOT(map()));
+		m_pSignalMapper->setMapping(pNewTextureType, nextMenuIndex);
+
+		pNewTextureType->setCheckable(true);
+		m_aMenuOther.push_back(pNewTextureType);
+
+		// hack to set procedural texture menu checked state if it matched paired value
+		if (m_pPairedValue)
+		{
+			if ((int)m_pPairedValue->getTextureTypeID() == textureTypeID)
+			{
+				pNewTextureType->setChecked(true);
+			}
+		}
+
+		newMenu->addAction(pNewTextureType);
+
+		nextMenuIndex++;
+	}
 }
 
 //

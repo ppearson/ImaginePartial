@@ -50,6 +50,12 @@ public:
 		float len = (x * x) + (y * y);
 		return sqrtf(len);
 	}
+	
+	float lengthSquared() const
+	{
+		float len = (x * x) + (y * y);
+		return len;
+	}
 
 	static float angleBetween(const Vector2& point1, const Vector2& point2)
 	{

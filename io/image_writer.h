@@ -23,6 +23,9 @@
 
 #include "file_io_registry.h"
 
+namespace Imagine
+{
+
 class OutputImage;
 
 class ImageWriter
@@ -53,5 +56,7 @@ public:
 
 	virtual bool writeImage(const std::string& filePath, const OutputImage& image, unsigned int channels, unsigned int flags) = 0;
 };
+
+} // namespace Imagine
 
 #endif // IMAGE_WRITER_H

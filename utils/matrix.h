@@ -103,6 +103,9 @@ public:
 		{
 			m_data.setBoth(static_cast<T*>(::operator new(sizeof(T) * width * height)), 1);
 		}
+		
+		m_width = width;
+		m_height = height;
 	}
 
 	T* rowPtr(unsigned int row)

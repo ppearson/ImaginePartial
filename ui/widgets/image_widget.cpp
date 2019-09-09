@@ -30,6 +30,9 @@
 
 #include "io/image_writer.h"
 
+// this has quite a bit less overhead
+#define USE_SCANLINE_QIMAGE 1
+
 namespace Imagine
 {
 
@@ -354,7 +357,7 @@ void ImageWidget::showImage(const OutputImage& image, float gamma)
 	}
 	
 	// apply exposure to the display image only
-	m_pDisplayImage->applyExposure(gamma);
+	m_pDisplayImage->applyExposure(gamma, OutputImage::eGamma);
 
 	m_width = image.getWidth();
 	m_height = image.getHeight();
@@ -364,6 +367,7 @@ void ImageWidget::showImage(const OutputImage& image, float gamma)
 
 	if (!m_pQImage)
 	{
+		// Note: this RGB32 format is important for the USE_SCANLINE_QIMAGE optimisation...
 		m_pQImage = new QImage(m_width, m_height, QImage::Format_RGB32);
 	}
 
@@ -388,6 +392,10 @@ void ImageWidget::convertImageValues()
 	for (unsigned int y = 0; y < m_height; y++)
 	{
 		const Colour4f* pSrcRawColour = m_pDisplayImage->colourRowPtr(y);
+#if USE_SCANLINE_QIMAGE
+		// because we're format RGB32, we can get away with this cast...
+		unsigned int* pDstValue = (unsigned int*)m_pQImage->scanLine(y);
+#endif
 
 		if (m_displayChannel == eA)
 		{
@@ -396,8 +404,12 @@ void ImageWidget::convertImageValues()
 				float finalA = pSrcRawColour->a * gainValue;
 				int a = std::min((int)(finalA), 255);
 
+#if USE_SCANLINE_QIMAGE
+				*pDstValue++ = qRgb(a, a, a);
+#else		
 				value = qRgb(a, a, a);
 				m_pQImage->setPixel(x, y, value);
+#endif
 
 				pSrcRawColour++;
 			}
@@ -413,30 +425,38 @@ void ImageWidget::convertImageValues()
 				int red = std::min((int)(finalR), 255);
 				int green = std::min((int)(finalG), 255);
 				int blue = std::min((int)(finalB), 255);
-
+				
+#if USE_SCANLINE_QIMAGE
+				*pDstValue++ = qRgb(red, green, blue);
+#else			
 				value = qRgb(red, green, blue);
 				m_pQImage->setPixel(x, y, value);
-
+#endif			
+				
 				pSrcRawColour++;
 			}
 		}
 		else
-		{
+		{					   
 			// we're one (maybe two in the future?!) of the options
 			for (unsigned int x = 0; x < m_width; x++)
 			{
 				float finalR = pSrcRawColour->r * rMult;
 				float finalG = pSrcRawColour->g * gMult;
 				float finalB = pSrcRawColour->b * bMult;
-
+				
 				// we can just max to get the single value we want for greyscale...
-
+				
 				float singleValue = std::max(finalR, std::max(finalG, finalB));
-
+				
 				int grey = std::min((int)(singleValue), 255);
-
+				
+#if USE_SCANLINE_QIMAGE
+				*pDstValue++ = qRgb(grey, grey, grey);
+#else	
 				value = qRgb(grey, grey, grey);
 				m_pQImage->setPixel(x, y, value);
+#endif
 
 				pSrcRawColour++;
 			}

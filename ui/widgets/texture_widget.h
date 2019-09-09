@@ -24,10 +24,12 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include "textures/texture.h"
 
 class QComboBox;
+class QMenu;
 class QLineEdit;
 class QPushButton;
 class QAction;
@@ -91,6 +93,10 @@ public:
 	void updateScalesFromPairedTexture();
 
 	void textureHasChanged();
+	
+protected:
+	void addMenuItems(const std::map<std::string, unsigned char>& items, QMenu* newMenu,
+					  unsigned int& nextMenuIndex);
 
 public slots:
 	// internal

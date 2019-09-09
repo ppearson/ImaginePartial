@@ -613,6 +613,9 @@ void GeoHelperObj::copyPointItemsToGeometry(std::vector<Point>& points, std::set
 
 void GeoHelperObj::copyUVItemsToGeometry(std::vector<UV>& uvs, std::set<unsigned int>& vertexUVsRequired, StandardGeometryInstance* pGeoInstance)
 {
+	if (vertexUVsRequired.empty())
+		return;
+	
 	std::vector<UV>& geoUVs = pGeoInstance->getUVs();
 	std::map<unsigned int, unsigned int> aMapToFaceVerticesUV;
 

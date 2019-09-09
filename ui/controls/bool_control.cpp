@@ -21,7 +21,7 @@
 namespace Imagine
 {
 
-BoolControl::BoolControl(const std::string& name, bool* pairedValue, std::string label) : Control(name, label)
+BoolControl::BoolControl(const std::string& name, bool* pairedValue, const std::string& label) : Control(name, label)
 {
 	m_checkBox = new QCheckBox();
 

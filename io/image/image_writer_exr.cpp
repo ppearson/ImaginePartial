@@ -86,7 +86,7 @@ bool ImageWriterEXR::writeStandardImage(const std::string& filePath, const Outpu
 	Imf::Header header(width, height);
 
 	Imf::StringAttribute sourceAttribute;
-	sourceAttribute.value() = "Created with Imagine 0.99";
+	sourceAttribute.value() = "Created with Imagine 1.00";
 	header.insert("comments", sourceAttribute);
 
 	Imf::PixelType pixelType = (fullFloat) ? Imf::FLOAT : Imf::HALF;

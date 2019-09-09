@@ -50,7 +50,8 @@ struct AccelStructureConfig
 		kdtreeIntersectCost = 20.0f;
 		kdtreeTraverseCost = 15.0f;
 		kdtreeEmptyBonus = 0.9f;
-		bvhIntersectCost = 1.0f; // 1.0f is triangle
+		
+		bvhIntersectCost = 2.0f; // 2.0f is triangle
 
 		maxDepth = 24;
 		switch (type)

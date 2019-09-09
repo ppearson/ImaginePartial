@@ -143,7 +143,7 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 				Object* pSubObject = pCO->getSubObject(i);
 				
 				// TODO: do this properly
-				bool localWriteNormals = pSubObject->getRotation().isNull();
+				bool localWriteNormals = writeNormals && pSubObject->getRotation().isNull();
 				
 				bool localWriteUVs = writeUVs;
 
@@ -173,7 +173,7 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 				{
 					EditableGeometryInstance* pEditableGeoInstance = reinterpret_cast<EditableGeometryInstance*>(pGeoInstance);
 
-					fileStream << "\n# Object\n" << "g OBJECT\n";
+					fileStream << "# Object\n" << "g OBJECT\n";
 
 					unsigned int pointsWritten = writeGeoInstanceEditablePoints(pEditableGeoInstance, fileStream, &combinedSubObjectTransform);
 					

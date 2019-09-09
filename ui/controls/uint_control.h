@@ -31,7 +31,7 @@ namespace Imagine
 class UIntControl : public Control
 {
 public:
-	UIntControl(const std::string& name, unsigned int* pairedValue, unsigned int min, unsigned int max, std::string label,
+	UIntControl(const std::string& name, unsigned int* pairedValue, unsigned int min, unsigned int max, const std::string& label,
 				bool scrubHandle = false);
 	virtual ~UIntControl();
 

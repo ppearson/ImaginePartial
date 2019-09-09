@@ -31,7 +31,7 @@ class MaterialWidget;
 class MaterialEditControl : public Control
 {
 public:
-	MaterialEditControl(const std::string& name, Material** pairedMaterial, std::string label = "");
+	MaterialEditControl(const std::string& name, Material** pairedMaterial, const std::string& label = "");
 	virtual ~MaterialEditControl();
 
 	virtual bool valueChanged();

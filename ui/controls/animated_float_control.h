@@ -34,8 +34,8 @@ namespace Imagine
 class AnimatedFloatControl : public Control
 {
 public:
-	AnimatedFloatControl(const std::string& name, AnimationCurve* pairedValue, float min, float max, std::string label,
-						 bool scrubHandle = false);
+	AnimatedFloatControl(const std::string& name, AnimationCurve* pairedValue, float min, float max, const std::string& label,
+						 unsigned int flags);
 	virtual ~AnimatedFloatControl();
 
 	virtual bool valueChanged();
@@ -57,6 +57,8 @@ protected:
 
 	float				m_minimum;
 	float				m_maximum;
+	
+	float				m_delta;
 
 	// actions
 

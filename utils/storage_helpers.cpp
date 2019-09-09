@@ -57,7 +57,7 @@ void loadString(std::string& string, std::fstream& stream)
 	delete [] buf;
 }
 
-void storeFloat(float& fValue, std::fstream& stream)
+void storeFloat(const float& fValue, std::fstream& stream)
 {
 	stream.write((char*)&fValue, sizeof(float));
 }
@@ -67,7 +67,7 @@ void loadFloat(float& fValue, std::fstream& stream)
 	stream.read((char*)&fValue, sizeof(float));
 }
 
-void storeUInt(unsigned int& uValue, std::fstream& stream)
+void storeUInt(const unsigned int& uValue, std::fstream& stream)
 {
 	uint32_t value32 = static_cast<uint32_t>(uValue);
 	stream.write((char*)&value32, sizeof(uint32_t));
@@ -95,7 +95,7 @@ unsigned int loadEnum(std::fstream& stream)
 	return eValue;
 }
 
-void storeUintAsUChar(unsigned int& uValue, std::fstream& stream)
+void storeUintAsUChar(const unsigned int& uValue, std::fstream& stream)
 {
 	unsigned char temp = uValue;
 	stream.write((char*)&temp, sizeof(unsigned char));
@@ -108,7 +108,7 @@ void loadUIntFromUChar(unsigned int& uValue, std::fstream& stream)
 	uValue = temp;
 }
 
-void storeUChar(unsigned char& cValue, std::fstream& stream)
+void storeUChar(const unsigned char& cValue, std::fstream& stream)
 {
 	stream.write((char*)&cValue, sizeof(unsigned char));
 }
@@ -118,7 +118,7 @@ void loadUChar(unsigned char& cValue, std::fstream& stream)
 	stream.read((char*)&cValue, sizeof(unsigned char));
 }
 
-void storeHash(HashValue& value, std::fstream& stream)
+void storeHash(const HashValue& value, std::fstream& stream)
 {
 	stream.write((char*)&value, sizeof(HashValue));
 }
@@ -128,7 +128,7 @@ void loadHash(HashValue& value, std::fstream& stream)
 	stream.read((char*)&value, sizeof(HashValue));
 }
 
-void storeBool(bool& value, std::fstream& stream)
+void storeBool(const bool& value, std::fstream& stream)
 {
 	stream.write((char*)&value, sizeof(bool));
 }

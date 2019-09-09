@@ -269,7 +269,7 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 				line = line.substr(0, line.size() - 1);
 
 			std::string mtlPath(line.substr(7));
-			GeoHelperObj::readMaterialFile(basePath + mtlPath, materials);
+			GeoHelperObj::readMaterialFile(basePath + mtlPath, true, "", materials);
 		}
 		else if (stringCompare(buf, "usemtl", 6))
 		{

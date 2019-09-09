@@ -23,7 +23,7 @@
 namespace Imagine
 {
 
-MaterialEditControl::MaterialEditControl(const std::string& name, Material** pairedMaterial, std::string label) :
+MaterialEditControl::MaterialEditControl(const std::string& name, Material** pairedMaterial, const std::string& label) :
 	Control(name, label), m_pActualWidget(NULL)
 {
 	m_pActualWidget = new MaterialWidget(pairedMaterial, NULL);

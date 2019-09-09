@@ -40,6 +40,7 @@
 #include "utils/time_counter.h"
 
 #define ENABLE_SAMPLE_BUNDLE_REUSE 1
+#define ENABLE_CACHED_SAMPLE_BUNDLE_REUSE 1
 
 namespace Imagine
 {
@@ -83,7 +84,6 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 	
 #if ENABLE_SAMPLE_BUNDLE_REUSE
 	SampleBundleReuse samples;
-	sampleGenerator.allocateSampleBundleReuse(samples);
 #endif
 
 	Colour4f colour;
@@ -94,8 +94,12 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 	const CameraRayCreator* pCamRayCreator = this->getCameraRayCreator();
 
 	// if we're the first iteration, do a draft basic run
-	if (iteration == 0 && this->m_iterations > 1)
+	if (iteration == 0)
 	{
+#if ENABLE_SAMPLE_BUNDLE_REUSE
+		sampleGenerator.allocateSampleBundleReuse(samples);
+#endif
+		
 		IntegratorState draftIntegratorState(*this, this->getScene(), rng);
 		float totalAlphaForTile = 0.0f;
 
@@ -140,6 +144,14 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 		// copy our finished tile into the output image
 		this->getOutputImage()->addColourTile(startX - this->getRenderWindowX(), startY - this->getRenderWindowY(),
 												  tileWidth, tileHeight, 0, 0, *pOurImage);
+		
+		// on for ID-picking in Katana...
+		// do extra channels that can't be anti-aliased or averaged
+		if (!pRTask->extraChannelsDone())
+		{
+			this->m_raytracer.processExtraChannels(pRTask, threadID);
+			pRTask->setExtraChannelsDone(true);
+		}
 
 		if ((!this->hasDepthOfField() && !this->hasMotionBlur()) && totalAlphaForTile == 0.0f)
 		{
@@ -156,20 +168,28 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 			return true; // we've finished with it...
 		}
 	}
-/*
-	// do extra channels that can't be anti-aliased or averaged
-	if (!pRTask->extraChannelsDone())
-	{
-		this->m_raytracer.processExtraChannels(pRTask, threadID);
-		pRTask->setExtraChannelsDone(true);
-	}
-*/
+
 	sgReq.samplesPerPixel = this->m_globalIlluminationSamplesPerIteration;
 	sampleGenerator.configureSampler(sgReq, this->m_pLights, this->getLightSampleCount());
 	
 #if ENABLE_SAMPLE_BUNDLE_REUSE
-	samples = SampleBundleReuse();
+#if ENABLE_CACHED_SAMPLE_BUNDLE_REUSE
+	SampleBundleReuse* pCachedSampleBundle = pRenderThreadCtx->getSampleBundleReuse();
+	if (!pCachedSampleBundle)
+	{
+		// create a new one and set it on the render thread context
+		pCachedSampleBundle = new SampleBundleReuse();
+		pRenderThreadCtx->setSampleBundleReuse(pCachedSampleBundle);
+		sampleGenerator.allocateSampleBundleReuse(*pCachedSampleBundle);
+	}
+	else
+	{
+		// TODO: cache this bit as well
+		sampleGenerator.allocateScratchBuffersForSampleBundleReuse();
+	}
+#else
 	sampleGenerator.allocateSampleBundleReuse(samples);
+#endif
 #endif
 
 	float fSamples = (float)this->m_globalIlluminationSamplesPerIteration;
@@ -192,26 +212,32 @@ bool PreviewRenderer<Integrator, Accumulator, TimeCounter>::processTask(RenderTa
 			float fPixelXPos = (float)x + startX;
 
 #if ENABLE_SAMPLE_BUNDLE_REUSE
-			samples.setNextPixel(fPixelXPos, fPixelYPos);
-			sampleGenerator.generateSampleBundleReuse(samples);
+#if ENABLE_CACHED_SAMPLE_BUNDLE_REUSE
+			SampleBundleReuse& finalSamples = *pCachedSampleBundle;
+#else
+			SampleBundleReuse& finalSamples = samples;
+#endif
+			finalSamples.setNextPixel(fPixelXPos, fPixelYPos);
+			sampleGenerator.generateSampleBundleReuse(finalSamples);
 #else
 			SampleBundle samples(fPixelXPos, fPixelYPos);
 			sampleGenerator.generateSampleBundle(samples);
 #endif
 
+			const Sample2DPacket& cameraSamples = this->m_aCameraSamples[iteration - 1];
 			for (unsigned int sample = 0; sample < this->m_globalIlluminationSamplesPerIteration; sample++)
 			{
-				const Sample2D& samplePos = this->m_aCameraSamples[iteration - 1].get2DSample(sample);
+				const Sample2D& samplePos = cameraSamples.get2DSample(sample);
 
 				float pixelXPos = fPixelXPos + samplePos.x;
 				float pixelYPos = fPixelYPos + samplePos.y;
 
-				Ray viewRay = pCamRayCreator->createCameraRay(pixelXPos, pixelYPos, samples, sample);
+				Ray viewRay = pCamRayCreator->createCameraRay(pixelXPos, pixelYPos, finalSamples, sample);
 
 				if (viewRay.type == RAY_UNDEFINED)
 					continue;
 
-				colour += this->m_integrator.processRay(*pRenderThreadCtx, shadingContext, viewRay, integratorState, samples, sample);
+				colour += this->m_integrator.processRay(*pRenderThreadCtx, shadingContext, viewRay, integratorState, finalSamples, sample);
 			}
 
 			pOurImage->colourAt(x, y) = colour;

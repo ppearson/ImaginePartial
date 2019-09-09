@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2017 Peter Pearson.
+ Copyright 2011-2019 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -182,7 +182,10 @@ bool GeoReaderPly::readHeader(std::fstream& fileStream, PlyHeader& header) const
 				std::string remainder;
 				splitInTwo(other, mainType, remainder, " ");
 
-				if (mainType == "uchar")
+				// several apps which use rply to save out ply files
+				// use the non-standard 'uint8' type, so we need to cope
+				// with this...
+				if (mainType == "uchar" || mainType == "uint8")
 				{
 					newProperty.mainDataType = Property::eUChar;
 				}
@@ -299,6 +302,21 @@ bool GeoReaderPly::readASCIIFile(std::fstream& fileStream, const PlyHeader& head
 					newFace.addVertex(vertices[1]);
 					newFace.addVertex(vertices[2]);
 					newFace.addVertex(vertices[3]);
+				}
+				else
+				{
+					// only pay this penalty if we need to, on the assumption it will be rare...
+					std::vector<std::string> aValues;
+					splitString(remainder, aValues, " ");
+					
+					std::vector<std::string>::const_iterator itVal = aValues.begin();
+					for (; itVal != aValues.end(); ++itVal)
+					{
+						const std::string& val = *itVal;
+						
+						unsigned int vertex = atoi(val.c_str());
+						newFace.addVertex(vertex);
+					}
 				}
 				
 				faces.push_back(newFace);
@@ -472,6 +490,8 @@ bool GeoReaderPly::readBinaryFile(std::fstream& fileStream, const std::string& p
 			
 			std::deque<Face>& faces = pNewEditableGeoInstance->getFaces();
 			
+			std::vector<unsigned int> aNGonVertices;
+			
 			if (header.type == eBinaryLittleEndian)
 			{
 				if (options.meshType == GeoReaderOptions::eStandardMesh)
@@ -511,6 +531,13 @@ bool GeoReaderPly::readBinaryFile(std::fstream& fileStream, const std::string& p
 							aPolyIndices.push_back(vertices[1]);
 							aPolyIndices.push_back(vertices[2]);
 							aPolyIndices.push_back(vertices[3]);
+						}
+						else
+						{
+							// only pay this penalty if we need to, on the assumption it'll be pretty rare...
+							aNGonVertices.resize(numVerts);
+							fileStream.read((char*)aNGonVertices.data(), sizeof(unsigned int) * numVerts);
+							std::copy(aNGonVertices.begin(), aNGonVertices.end(), std::back_inserter(aPolyIndices));
 						}
 						
 						aPolyOffsets.push_back(aPolyIndices.size());
@@ -556,6 +583,18 @@ bool GeoReaderPly::readBinaryFile(std::fstream& fileStream, const std::string& p
 							newFace.addVertex(vertices[1]);
 							newFace.addVertex(vertices[2]);
 							newFace.addVertex(vertices[3]);
+						}
+						else
+						{
+							// only pay this penalty if we need to, on the assumption it'll be pretty rare...
+							aNGonVertices.resize(numVerts);
+							fileStream.read((char*)aNGonVertices.data(), sizeof(unsigned int) * numVerts);
+							
+							std::vector<unsigned int>::const_iterator itVert = aNGonVertices.begin();
+							for (; itVert != aNGonVertices.end(); ++itVert)
+							{
+								newFace.addVertex(*itVert);
+							}
 						}
 						
 						faces.push_back(newFace);
@@ -623,6 +662,20 @@ bool GeoReaderPly::readBinaryFile(std::fstream& fileStream, const std::string& p
 							aPolyIndices.push_back(vertices[2]);
 							aPolyIndices.push_back(vertices[3]);
 						}
+						else
+						{
+							// only pay this penalty if we need to, on the assumption it'll be pretty rare...
+							aNGonVertices.resize(numVerts);
+							fileStream.read((char*)aNGonVertices.data(), sizeof(unsigned int) * numVerts);
+							
+							std::vector<unsigned int>::const_iterator itVert = aNGonVertices.begin();
+							for (; itVert != aNGonVertices.end(); ++itVert)
+							{
+								unsigned int vertexIndex = *itVert;
+								
+								aPolyIndices.push_back(reverseUIntBytes(vertexIndex));
+							}
+						}
 						
 						aPolyOffsets.push_back(aPolyIndices.size());
 						
@@ -680,6 +733,20 @@ bool GeoReaderPly::readBinaryFile(std::fstream& fileStream, const std::string& p
 							newFace.addVertex(vertices[1]);
 							newFace.addVertex(vertices[2]);
 							newFace.addVertex(vertices[3]);
+						}
+						else
+						{
+							// only pay this penalty if we need to, on the assumption it'll be pretty rare...
+							aNGonVertices.resize(numVerts);
+							fileStream.read((char*)aNGonVertices.data(), sizeof(unsigned int) * numVerts);
+							
+							std::vector<unsigned int>::const_iterator itVert = aNGonVertices.begin();
+							for (; itVert != aNGonVertices.end(); ++itVert)
+							{
+								unsigned int vertexIndex = *itVert;
+								
+								newFace.addVertex(reverseUIntBytes(vertexIndex));
+							}
 						}
 						
 						faces.push_back(newFace);

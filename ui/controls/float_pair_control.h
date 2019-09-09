@@ -32,12 +32,12 @@ class FloatPairControl : public Control
 {
 public:
 	// two float spin controls with the same range - i.e. UV params
-	FloatPairControl(const std::string& name, float* pairedValue1, float* pairedValue2, float min, float max, std::string label,
+	FloatPairControl(const std::string& name, float* pairedValue1, float* pairedValue2, float min, float max, const std::string& label,
 				 unsigned int flags = 0);
 
 	// two float spin controls with different ranges
 	FloatPairControl(const std::string& name, float* pairedValue1, float* pairedValue2, float min1, float max1,
-					 float min2, float max2, std::string label, unsigned int flags = 0);
+					 float min2, float max2, const std::string& label, unsigned int flags = 0);
 
 	virtual ~FloatPairControl();
 

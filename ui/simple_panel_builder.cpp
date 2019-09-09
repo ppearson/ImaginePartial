@@ -24,6 +24,7 @@
 #include "controls/string_control.h"
 #include "controls/float_control.h"
 #include "controls/uint_control.h"
+#include "controls/int_control.h"
 #include "controls/float_slider_control.h"
 #include "controls/enum_control.h"
 #include "controls/colour_control.h"
@@ -42,13 +43,14 @@ SimplePanelBuilder::SimplePanelBuilder()
 
 SimpleParametersPanel* SimplePanelBuilder::buildParametersPanel(Parameters& parameters, ParametersInterface* pParent, ParameterPanelType panelType)
 {
-	if (parameters.m_aParameters.empty())
+	std::vector<Parameter*>& params = parameters.getParameters();
+	if (params.empty())
 		return NULL;
 
 	SimpleParametersPanel* pSPP = new SimpleParametersPanel(pParent);
 
-	std::vector<Parameter*>::iterator it = parameters.m_aParameters.begin();
-	for (; it != parameters.m_aParameters.end(); ++it)
+	std::vector<Parameter*>::iterator it = params.begin();
+	for (; it != params.end(); ++it)
 	{
 		Parameter* pParam = *it;
 
@@ -78,6 +80,13 @@ SimpleParametersPanel* SimplePanelBuilder::buildParametersPanel(Parameters& para
 				RangeParameter<unsigned int, unsigned int>* pTypedParam = static_cast<RangeParameter<unsigned int, unsigned int>*>(pParam);
 				bool scrub = pTypedParam->getFlags() & eParameterScrubButton;
 				pControl = new UIntControl(name, pTypedParam->getPairedValue(), pTypedParam->getMin(), pTypedParam->getMax(), label, scrub);
+				break;
+			}
+			case eParameterInt:
+			{
+				RangeParameter<int, int>* pTypedParam = static_cast<RangeParameter<int, int>*>(pParam);
+				bool scrub = pTypedParam->getFlags() & eParameterScrubButton;
+				pControl = new IntControl(name, pTypedParam->getPairedValue(), pTypedParam->getMin(), pTypedParam->getMax(), label, scrub);
 				break;
 			}
 			case eParameterFloat:
@@ -128,13 +137,17 @@ SimpleParametersPanel* SimplePanelBuilder::buildParametersPanel(Parameters& para
 			{
 				BasicParameter<std::string>* pTypedParam = static_cast<BasicParameter<std::string>*>(pParam);
 				// flags for type of category
-				FileControl::FileCategory category = FileControl::eNormal;
-				if (flags & eParameterFileParamTexture)
-					category = FileControl::eTexture;
-				else if (flags & eParameterFileParamEnvMap)
-					category = FileControl::eEnvironmentMap;
-				else if (flags & eParameterFileParamVolumeBuffer)
-					category = FileControl::eVolumeBuffer;
+				FileControl::FileCategory category = FileControl::eGeneralOpen;
+				if (flags & eParameterFileParamTextureOpen)
+					category = FileControl::eTextureOpen;
+				else if (flags & eParameterFileParamEnvMapOpen)
+					category = FileControl::eEnvironmentMapOpen;
+				else if (flags & eParameterFileParamVolumeBufferOpen)
+					category = FileControl::eVolumeBufferOpen;
+				else if (flags & eParameterFileParamGeneralOpen)
+					category = FileControl::eGeneralOpen;
+				else if (flags & eParameterFileParamGeneralSave)
+					category = FileControl::eGeneralSave;
 
 				pControl = new FileControl(name, pTypedParam->getPairedValue(), label, category);
 				break;

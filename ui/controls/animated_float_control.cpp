@@ -24,14 +24,16 @@
 
 #include <math.h>
 
+#include "parameter.h"
+
 #include "ui/widgets/push_button_ex.h"
 #include "ui/widgets/scrub_button.h"
 
 namespace Imagine
 {
 
-AnimatedFloatControl::AnimatedFloatControl(const std::string& name, AnimationCurve* pairedValue, float min, float max, std::string label,
-										   bool scrubHandle) : Control(name, label), m_minimum(min), m_maximum(max)
+AnimatedFloatControl::AnimatedFloatControl(const std::string& name, AnimationCurve* pairedValue, float min, float max, const std::string& label,
+										   unsigned int flags) : Control(name, label), m_minimum(min), m_maximum(max)
 {
 	QWidget* mainWidget = new QWidget();
 
@@ -55,15 +57,28 @@ AnimatedFloatControl::AnimatedFloatControl(const std::string& name, AnimationCur
 
 	m_pSpin->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-	m_pSpin->setBGColour(isKey ? QColor(192, 192, 255) : Qt::white);
+	m_pSpin->setBGColour(isKey ? QColor(192, 192, 255) : m_pSpin->palette().color(QPalette::Base));
 
 	m_pSpin->setValue(value);
 
 	layout->addWidget(m_pSpin);
 	layout->addSpacing(5);
-
-	if (scrubHandle)
+	
+	if (flags & eParameterScrubButton || flags & eParameterScrubButtonFine)
 	{
+		m_delta = 0.1f;
+		if (flags & eParameterScrubButtonFine)
+		{
+			if (flags & eParameterFloatEditHighPrecision)
+			{
+				m_delta = 0.00001f;
+			}
+			else
+			{
+				m_delta = 0.01f;
+			}
+		}
+		
 		ScrubButton* pScrubButton = new ScrubButton();
 
 		layout->addWidget(pScrubButton);
@@ -229,7 +244,7 @@ void AnimatedFloatControl::refreshFromValue()
 
 	float value = m_pairedValue->getValue();
 
-	m_pSpin->setBGColour(isKey ? QColor(192, 192, 255) : Qt::white);
+	m_pSpin->setBGColour(isKey ? QColor(192, 192, 255) : m_pSpin->palette().color(QPalette::Base));
 
 	m_pSpin->setValue(value);
 }
@@ -259,7 +274,7 @@ bool AnimatedFloatControl::deltaChange(float delta, unsigned int index)
 {
 	bool changed = false;
 	float currentValue = m_pairedValue->getValue();
-	delta *= 0.1f;
+	delta *= m_delta;
 	if (delta > 0.0f)
 	{
 		if (currentValue <= m_maximum - delta)

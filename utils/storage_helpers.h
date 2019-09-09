@@ -34,25 +34,25 @@ typedef unsigned long long HashValue;
 void storeString(const std::string& string, std::fstream& stream);
 void loadString(std::string& string, std::fstream& stream);
 
-void storeFloat(float& fValue, std::fstream& stream);
+void storeFloat(const float& fValue, std::fstream& stream);
 void loadFloat(float& fValue, std::fstream& stream);
 
-void storeUInt(unsigned int& uValue, std::fstream& stream);
+void storeUInt(const unsigned int& uValue, std::fstream& stream);
 void loadUInt(unsigned int& uValue, std::fstream& stream);
 
 void storeEnum(unsigned int eValue, std::fstream& stream);
 unsigned int loadEnum(std::fstream& stream);
 
-void storeUintAsUChar(unsigned int& uValue, std::fstream& stream);
+void storeUintAsUChar(const unsigned int& uValue, std::fstream& stream);
 void loadUIntFromUChar(unsigned int& uValue, std::fstream& stream);
 
-void storeUChar(unsigned char& cValue, std::fstream& stream);
+void storeUChar(const unsigned char& cValue, std::fstream& stream);
 void loadUChar(unsigned char& cValue, std::fstream& stream);
 
-void storeHash(HashValue& value, std::fstream& stream);
+void storeHash(const HashValue& value, std::fstream& stream);
 void loadHash(HashValue& value, std::fstream& stream);
 
-void storeBool(bool& value, std::fstream& stream);
+void storeBool(const bool& value, std::fstream& stream);
 void loadBool(bool& value, std::fstream& stream);
 
 } // namespace Imagine

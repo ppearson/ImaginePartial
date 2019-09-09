@@ -600,8 +600,11 @@ void ObjectGLTextureBakerWorker::bakeTextureToImage(ImageColour3b* pTargetImage,
 
 		startLine += segHeight;
 
-		if (i == (tasks - 1))
+		if (i == (tasks - 2))
 		{
+			// The next run of this loop will be the last one, so set end line to be the remainder of the image space.
+			// On the assumption that this threaded worker will never get called with tasks = 1,
+			// this should be safe.
 			endLine = mainHeight;
 		}
 		else

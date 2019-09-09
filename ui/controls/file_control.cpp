@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2012 Peter Pearson.
+ Copyright 2011-2019 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@
 namespace Imagine
 {
 
-FileControl::FileControl(const std::string& name, std::string* pairedValue, std::string label, FileCategory category) : Control(name, label),
+FileControl::FileControl(const std::string& name, std::string* pairedValue, const std::string& label, FileCategory category) : Control(name, label),
 	m_category(category)
 {
 	QWidget* mainWidget = new QWidget();
@@ -113,11 +113,11 @@ bool FileControl::buttonClicked(unsigned int index)
 		QString newDefaultPathForCategory;
 		Settings& settings = Settings::instance();
 		// if we've got an empty path, work out what default one to display, based on the category we are
-		if (m_category == eTexture)
+		if (m_category == eTextureOpen)
 			newDefaultPathForCategory = settings.getInternal().value("location_settings/texture_path").toString();
-		else if (m_category == eEnvironmentMap)
+		else if (m_category == eEnvironmentMapOpen)
 			newDefaultPathForCategory = settings.getInternal().value("location_settings/environment_map_path").toString();
-		else if (m_category == eVolumeBuffer)
+		else if (m_category == eVolumeBufferOpen)
 		{
 			newDefaultPathForCategory = settings.getInternal().value("location_settings/volume_buffer_path").toString();
 			specificFilterDesc = "Volumes";
@@ -135,7 +135,10 @@ bool FileControl::buttonClicked(unsigned int index)
 		fullFilterString = specificFilterDesc + " (" + specificFileFilter + ")";
 	}
 	dialog.setNameFilter(fullFilterString.c_str());
-	dialog.setFileMode(QFileDialog::ExistingFiles);
+	if (m_category != eGeneralSave)
+	{
+		dialog.setFileMode(QFileDialog::ExistingFiles);
+	}
 	dialog.setDirectory(defaultDirPath);
 	dialog.setViewMode(QFileDialog::Detail);
 

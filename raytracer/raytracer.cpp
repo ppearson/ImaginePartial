@@ -99,7 +99,7 @@ RenderTask::~RenderTask()
 
 static const unsigned int kTileSize = 32;
 
-Raytracer::Raytracer(SceneInterface& scene, OutputImage* outputImage, Params& settings, bool preview, unsigned int threads)
+Raytracer::Raytracer(SceneInterface& scene, OutputImage* outputImage, const Params& settings, bool preview, unsigned int threads)
 	: ThreadPool(threads, false), m_scene(scene), m_pOutputImage(outputImage), m_useRemoteClients(false), m_pRenderer(NULL), m_pFilter(NULL),
 	  m_tileApronSize(0), m_pSampleGeneratorFactory(NULL), m_progressive(settings.getBool("progressive")), m_extraChannels(0),
 	  m_statsType(eStatisticsNone), m_statsOutputType(eStatsOutputConsole), m_preview(preview), m_pRenderCamera(NULL), m_pCameraRayCreator(NULL),
@@ -280,7 +280,7 @@ void Raytracer::initialise(OutputImage* outputImage, const Params& settings, boo
 	GlobalContext::TextureCachingType textureCacheType = GlobalContext::instance().getTextureCachingType();
 	if (!m_pGlobalImageCache && (textureCacheType != GlobalContext::eTextureCachingNone || useTextureCacheSet))
 	{
-		bool textureFileHandleCaching = settings.getBool("useTextureFileHandleCaching", false);
+		bool textureFileHandleCaching = GlobalContext::instance().getTextureCacheCacheFileHandles();
 
 		size_t memLimit = GlobalContext::instance().getTextureCacheMemoryLimit();
 		// ImageTextureCache needs memory size specified as KB
@@ -819,8 +819,9 @@ void Raytracer::renderScene(float time, const Params* pParams, bool waitForCompl
 
 	m_timeSeed = std::clock();
 
-	// this is needed after the tasks have been added... is it??
-	// sets up lights and lightsamples
+	// this is needed after the tasks have been added.
+	// sets up lights and lightsamples, and other things which are done
+	// after camera samplers are set up, etc.
 	m_pRenderer->init(time);
 
 	// if we're doing light sampling, set up per render thread context config
@@ -1166,6 +1167,19 @@ void Raytracer::updateCameraRayCreator()
 	}
 }
 
+CameraRayCreator* Raytracer::generateAlternativeCameraRayCreator(unsigned int width, unsigned int height) const
+{
+	CameraRayCreator* pAlternativeCRC =	m_pRenderCamera->createCameraRayCreator(width, height, OutputContext::instance().getFrame(),
+																	  m_depthOfField, m_motionBlur);
+	
+	if (GlobalContext::instance().getTextureCachingType() != GlobalContext::eTextureCachingNone)
+	{
+		pAlternativeCRC->setCreateDifferentials(true);
+	}
+	
+	return pAlternativeCRC;
+}
+
 size_t Raytracer::getRendererMemoryUsage() const
 {
 	size_t memSize = 0;
@@ -1211,7 +1225,7 @@ void Raytracer::setupRenderThreadContextLightSampling()
 			taskLocalisedSampleCount = 0;
 		}
 
-		if (threadInitHelper.init2(pLightDistribution, pLightsAndSamples, taskLocalisedSampleCount))
+		if (threadInitHelper.init2(numLights, pLightDistribution, pLightsAndSamples, taskLocalisedSampleCount))
 		{
 			// just need to hook everything up...
 			std::map<unsigned int, LightSampler*>& threadResults = threadInitHelper.getResults2();
@@ -1249,11 +1263,11 @@ void Raytracer::setupRenderThreadContextLightSampling()
 
 			if (m_lightSampling != eLSSampleLightsRadianceLocalised)
 			{
-				pNewLightSampler = new LightSamplerConstant(pLightDistribution, pLightsAndSamples);
+				pNewLightSampler = new LightSamplerConstant(numLights, pLightDistribution, pLightsAndSamples);
 			}
 			else
 			{
-				pNewLightSampler = new LightSamplerLocalised(pLightDistribution, pLightsAndSamples, localisedSampleCount);
+				pNewLightSampler = new LightSamplerLocalised(numLights, pLightDistribution, pLightsAndSamples, localisedSampleCount);
 			}
 
 			pRTC->setLightSampler(pNewLightSampler);

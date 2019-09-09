@@ -25,6 +25,9 @@
 #include "image/image_colour3b.h"
 #include "colour/colour_space.h"
 
+namespace Imagine
+{
+
 ImageReader::ImageReader()
 {
 }
@@ -145,3 +148,5 @@ Image* ImageReader::readGreyscaleImage(const std::string& filePath, unsigned int
 
 	return NULL;
 }
+
+} // namespace Imagine

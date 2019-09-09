@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2012 Peter Pearson.
+ Copyright 2011-2019 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -34,13 +34,14 @@ class FileControl : public Control
 public:
 	enum FileCategory
 	{
-		eNormal,
-		eTexture,
-		eEnvironmentMap,
-		eVolumeBuffer
+		eTextureOpen,
+		eEnvironmentMapOpen,
+		eVolumeBufferOpen,
+		eGeneralOpen,
+		eGeneralSave
 	};
 
-	FileControl(const std::string& name, std::string* pairedValue, std::string label = "", FileCategory category = eNormal);
+	FileControl(const std::string& name, std::string* pairedValue, const std::string& label = "", FileCategory category = eGeneralOpen);
 	virtual ~FileControl();
 
 	virtual bool valueChanged();

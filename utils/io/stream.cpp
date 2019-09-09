@@ -33,20 +33,20 @@ void Stream::storeString(const std::string& string)
 {
 	size_t size = string.size();
 
-	if (size <= 256)
+	if (size <= 255)
 	{
 		const unsigned char csize = (unsigned char)size;
 
-		write((char *) &csize, sizeof(unsigned char));
+		write((char*) &csize, sizeof(unsigned char));
 		write(string.c_str(), csize);
 	}
-	else // cap the string at 256
+	else // cap the string at 255
 	{
-		std::string strLimitedString = string.substr(0, 256);
+		std::string strLimitedString = string.substr(0, 255);
 
-		const unsigned char csize = (unsigned char)256;
+		const unsigned char csize = (unsigned char)255;
 
-		write((char *) &csize, sizeof(unsigned char));
+		write((char*) &csize, sizeof(unsigned char));
 		write(strLimitedString.c_str(), csize);
 	}
 }
@@ -54,8 +54,8 @@ void Stream::storeString(const std::string& string)
 void Stream::loadString(std::string& string)
 {
 	unsigned char size = 0;
-	read((char *) &size, sizeof(unsigned char));
-
+	read((char*) &size, sizeof(unsigned char));
+/*
 	char* buf = new char[size + 1];
 	read(buf, size);
 	buf[size] = 0;
@@ -63,54 +63,57 @@ void Stream::loadString(std::string& string)
 	string.assign(buf);
 
 	delete [] buf;
+*/
+	string.resize(size);
+	read(&string[0], size);
 }
 
 void Stream::storeFloat(const float& fValue)
 {
-	write((char *) &fValue, sizeof(float));
+	write((const char*) &fValue, sizeof(float));
 }
 
 void Stream::loadFloat(float& fValue)
 {
-	read((char *) &fValue, sizeof(float));
+	read((char*) &fValue, sizeof(float));
 }
 
 void Stream::storeUInt(const unsigned int& uValue)
 {
 	uint32_t value32 = static_cast<uint32_t>(uValue);
-	write((char *) &value32, sizeof(uint32_t));
+	write((const char*) &value32, sizeof(uint32_t));
 }
 
 void Stream::loadUInt(unsigned int& uValue)
 {
 	uint32_t value32;
-	read((char *) &value32, sizeof(uint32_t));
+	read((char*) &value32, sizeof(uint32_t));
 	uValue = static_cast<unsigned int>(value32);
 }
 
 void Stream::storeInt(const int& iValue)
 {
 	int32_t value32 = static_cast<int32_t>(iValue);
-	write((char *) &value32, sizeof(int32_t));
+	write((const char*) &value32, sizeof(int32_t));
 }
 
 void Stream::loadInt(int& iValue)
 {
 	int32_t value32;
-	read((char *) &value32, sizeof(int32_t));
+	read((char*) &value32, sizeof(int32_t));
 	iValue = static_cast<unsigned int>(value32);
 }
 
 void Stream::storeEnum(unsigned int eValue)
 {
 	unsigned char cValue = static_cast<unsigned char>(eValue);
-	write((char *) &cValue, sizeof(unsigned char));
+	write((char*) &cValue, sizeof(unsigned char));
 }
 
 unsigned int Stream::loadEnum()
 {
 	unsigned char cValue;
-	read((char *) &cValue, sizeof(unsigned char));
+	read((char*) &cValue, sizeof(unsigned char));
 
 	unsigned int eValue = static_cast<unsigned int>(cValue);
 	return eValue;
@@ -119,7 +122,7 @@ unsigned int Stream::loadEnum()
 unsigned char Stream::loadEnumChar()
 {
 	unsigned char cValue;
-	read((char *) &cValue, sizeof(unsigned char));
+	read((char*) &cValue, sizeof(unsigned char));
 
 	return cValue;
 }
@@ -127,57 +130,57 @@ unsigned char Stream::loadEnumChar()
 void Stream::storeUIntAsUChar(const unsigned int& uValue)
 {
 	unsigned char temp = uValue;
-	write((char *) &temp, sizeof(unsigned char));
+	write((const char*) &temp, sizeof(unsigned char));
 }
 
 void Stream::loadUIntFromUChar(unsigned int& uValue)
 {
 	unsigned char temp;
-	read((char *) &temp, sizeof(unsigned char));
+	read((char*) &temp, sizeof(unsigned char));
 	uValue = temp;
 }
 
 void Stream::storeUIntAsUShort(const unsigned int& uValue)
 {
 	unsigned short temp = uValue;
-	write((char *) &temp, sizeof(unsigned short));
+	write((const char*) &temp, sizeof(unsigned short));
 }
 
 void Stream::loadUIntFromUShort(unsigned int& uValue)
 {
 	unsigned short temp;
-	read((char *) &temp, sizeof(unsigned short));
+	read((char*) &temp, sizeof(unsigned short));
 	uValue = temp;
 }
 
 void Stream::storeUChar(const unsigned char& cValue)
 {
-	write((char *) &cValue, sizeof(unsigned char));
+	write((const char*) &cValue, sizeof(unsigned char));
 }
 
 void Stream::loadUChar(unsigned char& cValue)
 {
-	read((char *) &cValue, sizeof(unsigned char));
+	read((char*) &cValue, sizeof(unsigned char));
 }
 
 void Stream::storeHash(const HashValue& value)
 {
-	write((char *) &value, sizeof(HashValue));
+	write((const char*) &value, sizeof(HashValue));
 }
 
 void Stream::loadHash(HashValue& value)
 {
-	read((char *) &value, sizeof(HashValue));
+	read((char*) &value, sizeof(HashValue));
 }
 
 void Stream::storeBool(const bool& value)
 {
-	write((char *) &value, sizeof(bool));
+	write((const char*) &value, sizeof(bool));
 }
 
 void Stream::loadBool(bool& value)
 {
-	read((char *) &value, sizeof(bool));
+	read((char*) &value, sizeof(bool));
 }
 
 } // namespace Imagine

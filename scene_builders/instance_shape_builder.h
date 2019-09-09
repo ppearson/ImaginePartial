@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2012 Peter Pearson.
+ Copyright 2012-2019 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -34,12 +34,31 @@ class Object;
 
 class InstanceShapeBuilder;
 
-class ObjectDetectorTask : public Task
+class ObjectDetector
+{
+public:
+	ObjectDetector(const Object* pObject, float intersectionEpsilon) : m_pObject(pObject),
+					m_intersectionEpsilon(intersectionEpsilon)
+	{
+	}
+
+	virtual ~ObjectDetector()
+	{
+	}
+	
+	virtual bool isInObject(const Point& position) const = 0;
+	
+protected:
+	const Object*	m_pObject;
+	float			m_intersectionEpsilon;
+};
+
+class ObjectDetectorTask : public ThreadPoolTask
 {
 public:
 	struct ObjectDetectorSpecs
 	{
-		Object*			pTestObject;
+		ObjectDetector*	pObjectDetector;
 		Vector			startPos;
 		Point			rawTestObjectBBMin;
 		Vector			blockShapeExtent;
@@ -70,7 +89,7 @@ public:
 	void addResults(const std::vector<Point>& results);
 
 protected:
-	virtual bool doTask(Task* pTask, unsigned int threadID);
+	virtual bool doTask(ThreadPoolTask* pTask, unsigned int threadID);
 
 protected:
 	InstanceShapeBuilder*	m_pHost;
@@ -91,6 +110,8 @@ public:
 		eSecondSelectedObject,
 		eSphere
 	};
+	
+	friend class ObjectDetectorWorker;
 
 	virtual unsigned char getSceneBuilderTypeID();
 	virtual std::string getSceneBuilderDescription();
@@ -98,11 +119,50 @@ public:
 	virtual void buildParameters(Parameters& parameters, unsigned int flags);
 
 	virtual void createScene(Scene& scene);
+	
+protected:
 
-	static bool isInObject(const Point& position, Object* pObject);
+	class ObjectDetectorSixAxisOcclusion : public ObjectDetector
+	{
+	public:
+		ObjectDetectorSixAxisOcclusion(const Object* pObject, float intersectionEpsilon) : ObjectDetector(pObject, intersectionEpsilon)
+		{
+		}
+		
+		virtual bool isInObject(const Point& position) const;
+	};
+	
+	class ObjectDetectorSixAxisSurfaceCount : public ObjectDetector
+	{
+	public:
+		ObjectDetectorSixAxisSurfaceCount(const Object* pObject, float intersectionEpsilon) : ObjectDetector(pObject, intersectionEpsilon)
+		{
+		}
+		
+		virtual bool isInObject(const Point& position) const;
+	};
+	
+	class ObjectDetectorFortySixDirectionOcclusion : public ObjectDetector
+	{
+	public:
+		ObjectDetectorFortySixDirectionOcclusion(const Object* pObject, float intersectionEpsilon) : ObjectDetector(pObject, intersectionEpsilon)
+		{
+		}
+		
+		virtual bool isInObject(const Point& position) const;
+	};
+	
+	class ObjectDetectorFortySixDirectionSurfaceCount : public ObjectDetector
+	{
+	public:
+		ObjectDetectorFortySixDirectionSurfaceCount(const Object* pObject, float intersectionEpsilon) : ObjectDetector(pObject, intersectionEpsilon)
+		{
+		}
+		
+		virtual bool isInObject(const Point& position) const;
+	};
 
 	GeometryInstanceGathered* createScaledGeoInstanceCopy(GeometryInstanceGathered* pGeoInstance, const Vector& scale);
-
 
 protected:
 	float			m_scale;
@@ -112,6 +172,13 @@ protected:
 	bool			m_useBakedInstances;
 	float			m_gap;
 	bool			m_parallelBuild;
+	float			m_intersectionEpsilon;
+	
+	unsigned char	m_intersectionTestType;
+	unsigned char	m_testDistributionType;
+	
+	unsigned char	m_savePositionsType;
+	std::string		m_savePath;
 };
 
 } // namespace Imagine

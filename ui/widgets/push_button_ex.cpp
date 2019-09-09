@@ -36,6 +36,11 @@ PushButtonEx::PushButtonEx(const QIcon& icon, const QString& text, QWidget* pare
 
 }
 
+PushButtonEx::PushButtonEx(const QString& text, QWidget* parent) : QPushButton(text, parent)
+{
+	
+}
+
 void PushButtonEx::mousePressEvent(QMouseEvent* e)
 {
 	QStyleOptionButton style_option;

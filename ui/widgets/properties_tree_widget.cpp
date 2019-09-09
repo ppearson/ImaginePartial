@@ -126,7 +126,7 @@ void PropertiesTreeWidget::refreshItems()
 {
 	// hack to set items to always be in edit mode, so we don't have to mess about with overriding paint() methods
 	// in delegates to draw custom controls at all times (and not just when editing) (although checkboxes are catered for already to do this
-	// with Qt::CheckStateRole, it's not possible to get things like spin controls and combo boxes doing this), which seems rediculously
+	// with Qt::CheckStateRole, it's not possible to get things like spin controls and combo boxes doing this), which seems ridiculously
 	// over-complicated for what we want...
 	
 	// iterate over first level items (so categories) of column 0 to get the children - it's a bit round-about this way of

@@ -28,7 +28,7 @@
 namespace Imagine
 {
 
-FloatControl::FloatControl(const std::string& name, float* pairedValue, float min, float max, std::string label, unsigned int flags)
+FloatControl::FloatControl(const std::string& name, float* pairedValue, float min, float max, const std::string& label, unsigned int flags)
 	: Control(name, label), m_minimum(min), m_maximum(max)
 {
 	m_doubleSpin = new DoubleSpinBoxEx();

@@ -24,6 +24,7 @@
 #include <QScrollArea>
 
 #include "view_context.h"
+#include "object.h" // not happy about this, but need the deferred-ness...
 
 namespace Imagine
 {
@@ -56,11 +57,13 @@ ParametersPanel::~ParametersPanel()
 		m_form = NULL;
 	}
 
-	std::map<std::string, Control*>::iterator it = m_aControls.begin();
-	std::map<std::string, Control*>::iterator itEnd = m_aControls.end();
+	std::map<std::string, ControlData>::iterator it = m_aControls.begin();
+	std::map<std::string, ControlData>::iterator itEnd = m_aControls.end();
 	for (; it != itEnd; ++it)
 	{
-		Control* pControl = (*it).second;
+		const ControlData& controlData = (*it).second;
+
+		Control* pControl = controlData.control;
 
 		if (pControl)
 			delete pControl;
@@ -78,6 +81,22 @@ void ParametersPanel::controlChanged(const std::string& name)
 
 	if (changeHandled)
 	{
+		// do these first to wait until re-rendering has finished...
+		if (postChangedActions.shouldRefreshReRenderer())
+		{
+			ViewContext::instance().cancelReRender();
+		}
+		
+		if (postChangedActions.shouldReconstructObjectGeometry())
+		{
+			// atrociously hacky...
+			Object* pTestObject = dynamic_cast<Object*>(m_pParent);
+			if (pTestObject)
+			{
+				pTestObject->constructGeometry();
+			}
+		}
+		
 		if (postChangedActions.hasRefreshItems())
 		{
 			const std::vector<std::string>& refreshItems = postChangedActions.getRefreshItems();
@@ -86,6 +105,28 @@ void ParametersPanel::controlChanged(const std::string& name)
 			{
 				const std::string& controlName = *it;
 				refreshControl(controlName);
+			}
+		}
+
+		if (postChangedActions.hasHideItems())
+		{
+			const std::vector<std::string>& hideItems = postChangedActions.getHideItems();
+			std::vector<std::string>::const_iterator it = hideItems.begin();
+			for (; it != hideItems.end(); ++it)
+			{
+				const std::string& controlName = *it;
+				hideControl(controlName);
+			}
+		}
+
+		if (postChangedActions.hasShowItems())
+		{
+			const std::vector<std::string>& showItems = postChangedActions.getShowItems();
+			std::vector<std::string>::const_iterator it = showItems.begin();
+			for (; it != showItems.end(); ++it)
+			{
+				const std::string& controlName = *it;
+				showControl(controlName);
 			}
 		}
 
@@ -109,7 +150,7 @@ void ParametersPanel::controlChanged(const std::string& name)
 		{
 			ViewContext::instance().forceRedraw();
 		}
-
+		
 		if (postChangedActions.shouldRefreshReRenderer())
 		{
 			ViewContext::instance().sceneChanged();
@@ -154,7 +195,7 @@ void ParametersPanel::addTab(const std::string& title)
 	m_pParent->setLastParametersPanelTab(cachedLastTab);
 }
 
-void ParametersPanel::addControl(Control* pControl, unsigned int tab)
+void ParametersPanel::addControl(Control* pControl, bool addLabel, unsigned int tab)
 {
 	if (!pControl)
 		return;
@@ -181,10 +222,17 @@ void ParametersPanel::addControl(Control* pControl, unsigned int tab)
 	QWidget* pScrollArea = pTabPage->widget();
 	QFormLayout* pTabLayout = (QFormLayout*)pScrollArea->layout();
 
-	std::string label = pControl->getLabelOrName();
-	pTabLayout->addRow(label.c_str(), pControl->getWidget());
+	if (addLabel)
+	{
+		std::string label = pControl->getLabelOrName();
+		pTabLayout->addRow(label.c_str(), pControl->getWidget());
+	}
+	else
+	{
+		pTabLayout->addRow(pControl->getWidget());
+	}
 
-	m_aControls[pControl->getName()] = pControl;
+	m_aControls[pControl->getName()] = ControlData(pControl, pTabLayout);
 }
 
 bool ParametersPanel::removeControl(const std::string& controlName)
@@ -210,11 +258,13 @@ void ParametersPanel::addDescriptorLine(const std::string& desc, unsigned int ta
 
 void ParametersPanel::refreshControls()
 {
-	std::map<std::string, Control*>::iterator it = m_aControls.begin();
-	std::map<std::string, Control*>::iterator itEnd = m_aControls.end();
+	std::map<std::string, ControlData>::iterator it = m_aControls.begin();
+	std::map<std::string, ControlData>::iterator itEnd = m_aControls.end();
 	for (; it != itEnd; ++it)
 	{
-		Control* pControl = (*it).second;
+		const ControlData& controlData = (*it).second;
+
+		Control* pControl = controlData.control;
 
 		pControl->refreshFromValue();
 	}
@@ -222,14 +272,54 @@ void ParametersPanel::refreshControls()
 
 void ParametersPanel::refreshControl(const std::string& name)
 {
-	std::map<std::string, Control*>::iterator itFind = m_aControls.find(name);
+	std::map<std::string, ControlData>::iterator itFind = m_aControls.find(name);
 
 	if (itFind == m_aControls.end())
 		return;
 
-	Control* pControl = (*itFind).second;
+	Control* pControl = (*itFind).second.control;
 
 	pControl->refreshFromValue();
+}
+
+void ParametersPanel::hideControl(const std::string& name)
+{
+	std::map<std::string, ControlData>::iterator itFind = m_aControls.find(name);
+
+	if (itFind == m_aControls.end())
+		return;
+
+	const ControlData& controlData = (*itFind).second;
+
+	Control* pControl = controlData.control;
+
+	QWidget* pWidget = pControl->getWidget();
+	pWidget->setVisible(false);
+
+	if (controlData.layout)
+	{
+		controlData.layout->labelForField(pWidget)->setVisible(false);
+	}
+}
+
+void ParametersPanel::showControl(const std::string& name)
+{
+	std::map<std::string, ControlData>::iterator itFind = m_aControls.find(name);
+
+	if (itFind == m_aControls.end())
+		return;
+
+	const ControlData& controlData = (*itFind).second;
+
+	Control* pControl = controlData.control;
+
+	QWidget* pWidget = pControl->getWidget();
+	pWidget->setVisible(true);
+
+	if (controlData.layout)
+	{
+		controlData.layout->labelForField(pWidget)->setVisible(true);
+	}
 }
 
 void ParametersPanel::showTab(int tabIndex)

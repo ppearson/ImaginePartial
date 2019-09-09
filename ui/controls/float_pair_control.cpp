@@ -28,7 +28,7 @@
 namespace Imagine
 {
 
-FloatPairControl::FloatPairControl(const std::string& name, float* pairedValue1, float* pairedValue2, float min, float max, std::string label,
+FloatPairControl::FloatPairControl(const std::string& name, float* pairedValue1, float* pairedValue2, float min, float max, const std::string& label,
 			 unsigned int flags) : Control(name, label), m_minimum1(min), m_maximum1(max), m_minimum2(min), m_maximum2(max)
 {
 	QWidget* mainWidget = new QWidget();
@@ -99,7 +99,7 @@ FloatPairControl::FloatPairControl(const std::string& name, float* pairedValue1,
 }
 
 FloatPairControl::FloatPairControl(const std::string& name, float* pairedValue1, float* pairedValue2, float min1, float max1,
-				 float min2, float max2, std::string label, unsigned int flags) : Control(name, label), m_minimum1(min1), m_maximum1(max1),
+				 float min2, float max2, const std::string& label, unsigned int flags) : Control(name, label), m_minimum1(min1), m_maximum1(max1),
 				m_minimum2(min2), m_maximum2(max2)
 {
 	QWidget* mainWidget = new QWidget();

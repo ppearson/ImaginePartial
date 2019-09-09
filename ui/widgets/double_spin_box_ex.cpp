@@ -53,7 +53,23 @@ void DoubleSpinBoxEx::stepBy(int steps)
 
 void DoubleSpinBoxEx::wheelEvent(QWheelEvent* event)
 {
-	QDoubleSpinBox::wheelEvent(event);
+//	QDoubleSpinBox::wheelEvent(event);
+	
+	QString textValue = cleanText();
+	int posTemp = 0;
+	if (validate(textValue, posTemp) == QValidator::Acceptable)
+	{
+		double dCurrentValue = valueFromText(textValue);
+		
+		double valueChange = (event->delta() > 0) ? 1.0 : -1.0;
+		if (event->modifiers() == Qt::SHIFT)
+			valueChange *= 0.1;
+		else if (event->modifiers() & Qt::SHIFT && event->modifiers() & Qt::CTRL)
+			valueChange *= 0.01;
+		
+		double newValue = dCurrentValue + valueChange;
+		setValue(newValue);
+	}	
 
 	editingFinished();
 }

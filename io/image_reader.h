@@ -26,6 +26,9 @@
 #include "image/image_texture_common.h"
 #include "image/image.h"
 
+namespace Imagine
+{
+
 class ImageColour3b;
 
 class ImageReader
@@ -73,5 +76,7 @@ public:
 		return false;
 	}
 };
+
+} // namespace Imagine
 
 #endif // IMAGE_READER_H

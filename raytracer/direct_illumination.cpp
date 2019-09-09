@@ -345,6 +345,8 @@ bool DirectIllumination<Accumulator>::doProgressiveTask(RenderTask* pTask, unsig
 
 #define USE_ACCUMULATOR 0
 
+#define ENABLE_SAMPLE_BUNDLE_REUSE 1
+
 template <typename Accumulator>
 bool DirectIllumination<Accumulator>::doFullTask(RenderTask* pTask, unsigned int threadID)
 {
@@ -374,6 +376,11 @@ bool DirectIllumination<Accumulator>::doFullTask(RenderTask* pTask, unsigned int
 	}
 #endif
 	sampleGenerator.configureSampler(sgReq, m_pLights, this->getLightSampleCount());
+	
+#if ENABLE_SAMPLE_BUNDLE_REUSE
+	SampleBundleReuse samples;
+	sampleGenerator.allocateSampleBundleReuse(samples);
+#endif
 
 	Colour4f colour;
 
@@ -391,8 +398,13 @@ bool DirectIllumination<Accumulator>::doFullTask(RenderTask* pTask, unsigned int
 
 				colour = Colour4f();
 
+#if ENABLE_SAMPLE_BUNDLE_REUSE
+				samples.setNextPixel(pixelXPos, pixelYPos);
+				sampleGenerator.generateSampleBundleReuse(samples);
+#else
 				SampleBundle samples(pixelXPos, pixelYPos);
 				sampleGenerator.generateSampleBundle(samples);
+#endif
 
 				float fPixelXPos = pixelXPos + 0.5f;
 				float fPixelYPos = pixelYPos + 0.5f;
@@ -422,8 +434,13 @@ bool DirectIllumination<Accumulator>::doFullTask(RenderTask* pTask, unsigned int
 
 				colour = Colour4f();
 
+#if ENABLE_SAMPLE_BUNDLE_REUSE
+				samples.setNextPixel(pixelXPos, pixelYPos);
+				sampleGenerator.generateSampleBundleReuse(samples);
+#else
 				SampleBundle samples(pixelXPos, pixelYPos);
 				sampleGenerator.generateSampleBundle(samples);
+#endif
 
 				for (unsigned int sample = 0; sample < m_samplesPerPixel; sample++)
 				{

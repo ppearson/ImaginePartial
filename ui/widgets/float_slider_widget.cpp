@@ -243,6 +243,8 @@ void FloatSliderWidget::sliderActionTriggered(int actionTriggered)
 	// annoyingly, on OS X, clicking the mouse outside the handle only triggers SliderMove,
 	// which is also triggered by scrubbing, which makes things much more complicated to isolate
 	// this event, so for the moment, don't bother catering for OS X...
+	// This has the unfortunate side-effect of not allowing us to process mouse-wheel events, which
+	// are classed as SliderMove, but don't trigger sliderMoved() which seems a bit inconsistent...
 
 	if (actionTriggered != QAbstractSlider::SliderSingleStepAdd &&
 		actionTriggered != QAbstractSlider::SliderSingleStepSub &&

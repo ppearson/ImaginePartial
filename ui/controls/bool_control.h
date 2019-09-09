@@ -29,7 +29,7 @@ namespace Imagine
 class BoolControl : public Control
 {
 public:
-	BoolControl(const std::string& name, bool* pairedValue, std::string label);
+	BoolControl(const std::string& name, bool* pairedValue, const std::string& label);
 	virtual ~BoolControl();
 
 	virtual bool valueChanged();

@@ -39,7 +39,7 @@ class Material;
 class MaterialControl : public Control
 {
 public:
-	MaterialControl(const std::string& name, Object* parentObject, std::string label);
+	MaterialControl(const std::string& name, Object* parentObject, const std::string& label);
 	void initCommon();
 	~MaterialControl();
 

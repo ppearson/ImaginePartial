@@ -21,7 +21,7 @@
 namespace Imagine
 {
 
-StringControl::StringControl(const std::string& name, std::string* pairedValue, std::string label) :
+StringControl::StringControl(const std::string& name, std::string* pairedValue, const std::string& label) :
 		Control(name, label)
 {
 	m_lineEdit = new QLineEdit();

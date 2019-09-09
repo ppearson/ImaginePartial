@@ -139,7 +139,7 @@ public:
 		ImaginePluginOutputDriver = 10, // (basically a display driver)
 		ImaginePluginBSDF = 11,
 		ImaginePluginTexture = 12,
-		ImaginePluginShapeOp = 13
+		ImaginePluginShadeOp = 13
 	};
 
 

@@ -153,7 +153,8 @@ ParametersPanel* ParametersPanelBuilder::buildParametersPanel(Parameters& parame
 			case eParameterColour:
 			{
 				BasicParameter<Colour3f>* pTypedParam = static_cast<BasicParameter<Colour3f>*>(pParam);
-				pControl = new ColourControl(name, pTypedParam->getPairedValue(), label);
+				bool editControls = pTypedParam->getFlags() & eParameterColourPickerEditBoxes;
+				pControl = new ColourControl(name, pTypedParam->getPairedValue(), label, editControls);
 				break;
 			}
 			case eParameterVector:
@@ -171,8 +172,7 @@ ParametersPanel* ParametersPanelBuilder::buildParametersPanel(Parameters& parame
 			case eParameterAnimatedFloat:
 			{
 				RangeParameter<AnimationCurve, float>* pTypedParam = static_cast<RangeParameter<AnimationCurve, float>*>(pParam);
-				bool scrub = pTypedParam->getFlags() & eParameterScrubButton;
-				pControl = new AnimatedFloatControl(name, pTypedParam->getPairedValue(), pTypedParam->getMin(), pTypedParam->getMax(), label, scrub);
+				pControl = new AnimatedFloatControl(name, pTypedParam->getPairedValue(), pTypedParam->getMin(), pTypedParam->getMax(), label, pTypedParam->getFlags());
 				break;
 			}
 			case eParameterMaterial:
@@ -197,13 +197,17 @@ ParametersPanel* ParametersPanelBuilder::buildParametersPanel(Parameters& parame
 			{
 				BasicParameter<std::string>* pTypedParam = static_cast<BasicParameter<std::string>*>(pParam);
 				// flags for type of category
-				FileControl::FileCategory category = FileControl::eNormal;
-				if (flags & eParameterFileParamTexture)
-					category = FileControl::eTexture;
-				else if (flags & eParameterFileParamEnvMap)
-					category = FileControl::eEnvironmentMap;
-				else if (flags & eParameterFileParamVolumeBuffer)
-					category = FileControl::eVolumeBuffer;
+				FileControl::FileCategory category = FileControl::eGeneralOpen;
+				if (flags & eParameterFileParamTextureOpen)
+					category = FileControl::eTextureOpen;
+				else if (flags & eParameterFileParamEnvMapOpen)
+					category = FileControl::eEnvironmentMapOpen;
+				else if (flags & eParameterFileParamVolumeBufferOpen)
+					category = FileControl::eVolumeBufferOpen;
+				else if (flags & eParameterFileParamGeneralOpen)
+					category = FileControl::eGeneralOpen;
+				else if (flags & eParameterFileParamGeneralSave)
+					category = FileControl::eGeneralSave;
 
 				pControl = new FileControl(name, pTypedParam->getPairedValue(), label, category);
 				break;

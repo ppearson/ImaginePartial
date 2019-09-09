@@ -29,7 +29,7 @@ namespace Imagine
 class RayVisibilityControl : public Control
 {
 public:
-	RayVisibilityControl(const std::string& name, unsigned char* pairedValue, std::string label);
+	RayVisibilityControl(const std::string& name, unsigned char* pairedValue, const std::string& label);
 	virtual ~RayVisibilityControl();
 
 	virtual bool valueChanged();

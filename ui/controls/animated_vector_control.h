@@ -34,7 +34,7 @@ namespace Imagine
 class AnimatedVectorControl : public Control
 {
 public:
-	AnimatedVectorControl(const std::string& name, AnimatedVector* pairedValue, float min, float max, std::string label);
+	AnimatedVectorControl(const std::string& name, AnimatedVector* pairedValue, float min, float max, const std::string& label);
 	virtual ~AnimatedVectorControl();
 
 	virtual bool valueChanged();

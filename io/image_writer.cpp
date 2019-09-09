@@ -18,6 +18,9 @@
 
 #include "image_writer.h"
 
+namespace Imagine
+{
+
 ImageWriter::ImageWriter()
 {
 }
@@ -25,3 +28,5 @@ ImageWriter::ImageWriter()
 ImageWriter::~ImageWriter()
 {
 }
+
+} // namespace Imagine

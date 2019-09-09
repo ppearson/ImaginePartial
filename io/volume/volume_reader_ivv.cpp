@@ -49,6 +49,7 @@ bool VolumeReaderIVV::readHeaderAndBBox(const std::string& filePath, unsigned in
 	
 	if (bytesRead != sizeof(unsigned char))
 	{
+		fclose(pFile);
 		GlobalContext::instance().getLogger().error("Can't read volume file: %s", filePath.c_str());
 		return false;
 	}
@@ -130,6 +131,7 @@ VolumeInstance* VolumeReaderIVV::readVolume(const std::string& filePath, unsigne
 	
 	if (bytesRead != sizeof(unsigned char))
 	{
+		fclose(pFile);
 		GlobalContext::instance().getLogger().error("Can't read volume file: %s", filePath.c_str());
 		return NULL;
 	}

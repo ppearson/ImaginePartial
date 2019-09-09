@@ -41,9 +41,25 @@ public:
 	ParametersPanel(ParametersInterface* pParent, ParameterPanelType type);
 	virtual ~ParametersPanel();
 
+	struct ControlData
+	{
+		ControlData() : control(NULL), layout(NULL)
+		{
+
+		}
+
+		ControlData(Control* pControl, QFormLayout* pLayout) : control(pControl), layout(pLayout)
+		{
+
+		}
+
+		Control*		control;
+		QFormLayout*	layout;
+	};
+
 	void addTab(const std::string& title);
 
-	void addControl(Control* pControl, unsigned int tab = 0);
+	void addControl(Control* pControl, bool addLabel, unsigned int tab);
 	bool removeControl(const std::string& controlName);
 
 	void addDescriptorLine(const std::string& desc, unsigned int tab = 0);
@@ -52,6 +68,8 @@ public:
 
 	void refreshControls();
 	void refreshControl(const std::string& name);
+	void hideControl(const std::string& name);
+	void showControl(const std::string& name);
 
 	// these are used to try and remember the active tab page on a per class basis
 	void tabIndexChanged(int tabIndex);
@@ -70,7 +88,7 @@ protected:
 	TabWidgetEx*						m_tabWidget;
 
 	std::vector<QWidget*>				m_aTabs;
-	std::map<std::string, Control*>		m_aControls;
+	std::map<std::string, ControlData>	m_aControls;
 
 	unsigned int						m_ownerID;
 
