@@ -33,7 +33,7 @@
 namespace Imagine
 {
 
-RaytracerAmbientOcclusion::RaytracerAmbientOcclusion() : m_pScene(NULL), m_pRaytracer(NULL)
+RaytracerAmbientOcclusion::RaytracerAmbientOcclusion() : m_pScene(nullptr), m_pRaytracer(nullptr)
 {
 	m_distanceAttenuation = 0.25f;
 }

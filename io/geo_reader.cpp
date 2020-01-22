@@ -33,7 +33,7 @@
 namespace Imagine
 {
 
-GeoReader::GeoReader() : m_newObject(NULL), m_pScene(NULL)
+GeoReader::GeoReader() : m_newObject(nullptr), m_pScene(nullptr)
 {
 }
 
@@ -208,7 +208,7 @@ void GeoReader::discardDuplicateGeometry(unsigned short precisionThreshold)
 		}
 
 		if (allMatch)
-			aFinalList.push_back(overviewItem);
+			aFinalList.emplace_back(overviewItem);
 	}
 
 	fprintf(stderr, "Final list: %zu items.\n", aFinalList.size());

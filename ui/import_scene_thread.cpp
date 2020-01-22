@@ -79,7 +79,7 @@ void ImportSceneThread::run()
 		pReader->readFile(path, m_importOptions, results);
 
 		delete pReader;
-		pReader = NULL;
+		pReader = nullptr;
 	}
 
 	// add results objects to final ones on heap...
@@ -88,14 +88,14 @@ void ImportSceneThread::run()
 	for (; itObject != results.objects.end(); ++itObject)
 	{
 		Object* pObject = *itObject;
-		aObjects->push_back(pObject);
+		aObjects->emplace_back(pObject);
 	}
 
 	std::vector<Material*>::iterator itMat = results.materials.begin();
 	for (; itMat != results.materials.end(); ++itMat)
 	{
 		Material* pMaterial = *itMat;
-		aMaterials->push_back(pMaterial);
+		aMaterials->emplace_back(pMaterial);
 	}
 
 	emit importedScene(true, aObjects, aMaterials);

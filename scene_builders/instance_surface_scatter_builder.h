@@ -52,7 +52,7 @@ protected:
 
 	struct TestPosInfo
 	{
-		TestPosInfo() : pNewCO(NULL), pCurrentSelectedObject(NULL), pSrcCOForBakedInstances(NULL),
+		TestPosInfo() : pNewCO(nullptr), pCurrentSelectedObject(nullptr), pSrcCOForBakedInstances(nullptr),
 			 altMaterialIndex(0), createdCount(0), testedCount(0), switchCount(0)
 		{
 

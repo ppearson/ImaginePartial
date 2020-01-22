@@ -49,27 +49,27 @@ class Ray
 {
 public:
 	__finline Ray() : type(RAY_UNDEFINED), flags(0), importance(1.0f), width(0.0f), time(0.0f), timeFull(0.0f),
-		tMin(0.0f),	tMax(std::numeric_limits<float>::max()), pCustPayload1(NULL), custValue1(0.0f)
+		tMin(0.0f),	tMax(std::numeric_limits<float>::max()), pCustPayload1(nullptr), custValue1(0.0f)
 	{
 	}
 
 	__finline Ray(const Point& startPos, const Normal& dir, const RayType& rayType)
 		: type(rayType), startPosition(startPos), direction(dir), flags(0), importance(1.0f), width(0.0f), time(0.0f),
 			timeFull(0.0f), tMin(0.0f), tMax(std::numeric_limits<float>::max()),
-			pCustPayload1(NULL), custValue1(0.0f)
+			pCustPayload1(nullptr), custValue1(0.0f)
 	{
 	}
 
 	__finline Ray(const Point& startPos, const Normal& dir, float timet, float timeFullt, const RayType& rayType, float rayWidth = 0.0f)
 		: type(rayType), startPosition(startPos), direction(dir), flags(0), importance(1.0f), width(rayWidth), time(timet), timeFull(timeFullt),
-			tMin(0.0f), tMax(std::numeric_limits<float>::max()), pCustPayload1(NULL), custValue1(0.0f)
+			tMin(0.0f), tMax(std::numeric_limits<float>::max()), pCustPayload1(nullptr), custValue1(0.0f)
 	{
 	}
 
 	__finline Ray(const Ray& ray) : type(ray.type), startPosition(ray.startPosition), direction(ray.direction), inverseDirection(ray.inverseDirection),
 			diffXStartPos(ray.diffXStartPos), diffYStartPos(ray.diffYStartPos), diffXDirection(ray.diffXDirection), diffYDirection(ray.diffYDirection),
 			flags(ray.flags), importance(ray.importance), width(ray.width), time(ray.time), timeFull(ray.timeFull),
-			tMin(ray.tMin), tMax(ray.tMax), pCustPayload1(NULL), custValue1(0.0f)
+			tMin(ray.tMin), tMax(ray.tMax), pCustPayload1(nullptr), custValue1(0.0f)
 	{
 	}
 

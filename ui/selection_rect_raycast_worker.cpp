@@ -67,7 +67,7 @@ bool SelectionRectRaycastWorker::performRaycast(unsigned int startX, unsigned in
 
 	for (unsigned int i = 0; i < outputObjectsToCreate; i++)
 	{
-		m_aFinalSelectedObjects.push_back(new SelectedObjects());
+		m_aFinalSelectedObjects.emplace_back(new SelectedObjects());
 	}
 
 	unsigned int width = endX - startX;

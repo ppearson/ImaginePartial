@@ -18,9 +18,9 @@
 
 #include "thread.h"
 
-#include <stdio.h>
-#include <assert.h>
-#include <string.h>
+#include <cstdio>
+#include <cassert>
+#include <cstring>
 
 #ifdef _MSC_VER
 
@@ -101,7 +101,7 @@ void* threadProc(void* ptr)
 	return 0;
 #endif
 	
-	return NULL;
+	return nullptr;
 }
 
 // TODO: if this is called twice in a row, the handle to the first thread will be lost, but
@@ -125,7 +125,7 @@ bool Thread::start()
 
 	if (m_priority != ePriorityNormal)
 	{
-		ret = pthread_create(&m_thread, NULL, threadProc, (void*)this);
+		ret = pthread_create(&m_thread, nullptr, threadProc, (void*)this);
 
 		if (ret)
 		{
@@ -188,7 +188,7 @@ bool Thread::start()
 	}
 	else
 	{
-		ret = pthread_create(&m_thread, NULL, threadProc, (void*)this);
+		ret = pthread_create(&m_thread, nullptr, threadProc, (void*)this);
 //		ret = pthread_create(&m_thread, &m_attr, threadProc, (void*)this);
 
 		if (ret)
@@ -240,7 +240,7 @@ void Thread::waitForCompletion()
 	WaitForSingleObject(m_thread, INFINITE);
 #else
  //   pthread_attr_destroy(&m_attr);
-	int error = pthread_join(m_thread, NULL);
+	int error = pthread_join(m_thread, nullptr);
 //    assert(error == 0);
 
 	/*

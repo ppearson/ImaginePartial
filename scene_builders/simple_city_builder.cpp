@@ -19,7 +19,7 @@
 #include "simple_city_builder.h"
 
 #include <ctime>
-#include <stdio.h>
+#include <cstdio>
 
 #include "objects/primitives/plane.h"
 #include "objects/primitives/cube.h"
@@ -98,13 +98,13 @@ void SimpleCityBuilder::createScene(Scene& scene)
 			float xPos = rng.randomFloat(0.0f, 1.0f);
 			float yPos = rng.randomFloat(0.0f, 1.0f);
 
-			samples.samples.push_back(Sample2D(xPos, yPos));
+			samples.samples.emplace_back(Sample2D(xPos, yPos));
 		}
 	}
 
 	char szName[32];
 
-	Object* pNewBuilding = NULL;
+	Object* pNewBuilding = nullptr;
 
 	float xStart = -(float(m_width) / 2.0f);
 	float yStart = -(float(m_depth) / 2.0f);

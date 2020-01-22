@@ -19,8 +19,8 @@
 #include "points_lookup_accel.h"
 
 #include <fstream>
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 
 #include "core/matrix4.h"
 
@@ -68,7 +68,7 @@ bool PointsLookupAccel::readPointCloudFile(const std::string& filePath, std::vec
 			newPoint.colour.g = (float)colG / 255.0f;
 			newPoint.colour.b = (float)colB / 255.0f;
 	
-			points.push_back(newPoint);
+			points.emplace_back(newPoint);
 		}
 	
 		fileStream.close();

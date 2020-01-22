@@ -31,7 +31,7 @@ namespace Imagine
 
 PropertiesTreeWidget::PropertiesTreeWidget(QWidget* parent, PropertiesTreeHost* pHost) :
     QWidget(parent),
-    m_pTreeView(NULL), m_pModel(NULL), m_pItemDelgate(NULL), m_pPropHost(pHost)
+    m_pTreeView(nullptr), m_pModel(nullptr), m_pItemDelgate(nullptr), m_pPropHost(pHost)
 {
 	QHBoxLayout* layout = new QHBoxLayout();
 	layout->setMargin(0);
@@ -95,7 +95,7 @@ void PropertiesTreeWidget::buildItems()
 		// see if we've got the category in the map already...
 		std::map<std::string, PropertiesTreeItem*>::iterator itFind = aFirstLevelItems.find(item.m_category);
 		
-		PropertiesTreeItem* pCategoryItem = NULL;
+		PropertiesTreeItem* pCategoryItem = nullptr;
 		if (itFind != aFirstLevelItems.end())
 		{
 			pCategoryItem = (*itFind).second;

@@ -93,7 +93,7 @@ void BackgroundWorkerUpdateAllGeometryInstancesForPickingTask::doTask()
 	threadPool.doBuildAccel(aGeoInstances, eAccelStructureStatusPicking);
 }
 
-BackgroundWorkerThread::BackgroundWorkerThread(QObject* parent) : QThread(parent), m_pTask(NULL)
+BackgroundWorkerThread::BackgroundWorkerThread(QObject* parent) : QThread(parent), m_pTask(nullptr)
 {
 }
 
@@ -118,7 +118,7 @@ void BackgroundWorkerThread::run()
 	{
 		m_pTask->doTask();
 		delete m_pTask;
-		m_pTask = NULL;
+		m_pTask = nullptr;
 	}
 }
 

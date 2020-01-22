@@ -117,6 +117,14 @@ public:
 		tmp -= rhs;
 		return tmp;
 	}
+	
+	Vector2 operator*(const Vector2& rhs) const
+	{
+		Vector2 tmp(*this);
+		tmp.x *= rhs.x;
+		tmp.y *= rhs.y;
+		return tmp;
+	}
 
 	Vector2& operator*=(float scale)
 	{

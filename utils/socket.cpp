@@ -17,7 +17,7 @@
 */
 
 #include "socket.h"
-#include <errno.h>
+#include <cerrno>
 #include <unistd.h>
 
 namespace Imagine
@@ -105,7 +105,7 @@ bool Socket::connect()
 
 #ifdef _MSC_VER
 	PHOSTENT hostinfo;
-	if ((hostinfo = gethostbyname(m_host.c_str())) != NULL)
+	if ((hostinfo = gethostbyname(m_host.c_str())) != nullptr)
 	{
 		memcpy(&(m_addr.sin_addr), hostinfo->h_addr, hostinfo->h_length);
 	}
@@ -314,7 +314,7 @@ std::string Socket::getClientAddress()
 #else
 
 		hostent* hostinfo;
-		if ((hostinfo = gethostbyaddr((char*) &addr.sin_addr, 4, AF_INET)) != NULL)
+		if ((hostinfo = gethostbyaddr((char*) &addr.sin_addr, 4, AF_INET)) != nullptr)
 		{
 			char* pAddr = inet_ntoa(*(struct in_addr*)*hostinfo->h_addr_list);
 			sprintf(clientAddress, "%s", pAddr);

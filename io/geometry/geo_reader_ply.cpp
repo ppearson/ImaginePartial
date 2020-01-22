@@ -20,7 +20,7 @@
 
 
 #include <algorithm>
-#include <stdio.h>
+#include <cstdio>
 
 #include "global_context.h"
 
@@ -91,7 +91,7 @@ bool GeoReaderPly::readHeader(std::fstream& fileStream, PlyHeader& header) const
 		{
 			if (newElement.count > 0)
 			{
-				header.elements.push_back(newElement);
+				header.elements.emplace_back(newElement);
 			}
 			break;
 		}
@@ -115,7 +115,7 @@ bool GeoReaderPly::readHeader(std::fstream& fileStream, PlyHeader& header) const
 		{
 			if (newElement.count > 0)
 			{
-				header.elements.push_back(newElement);
+				header.elements.emplace_back(newElement);
 				newElement = Element();
 			}
 
@@ -147,7 +147,7 @@ bool GeoReaderPly::readHeader(std::fstream& fileStream, PlyHeader& header) const
 			if (type == "float")
 			{
 				newProperty.mainDataType = Property::eFloat;
-				std::string propertyName = other;
+				const std::string& propertyName = other;
 				newProperty.name = propertyName;
 
 				if (newElement.type == Element::eEVertex)
@@ -166,15 +166,15 @@ bool GeoReaderPly::readHeader(std::fstream& fileStream, PlyHeader& header) const
 					}
 				}
 
-				newElement.properties.push_back(newProperty);
+				newElement.properties.emplace_back(newProperty);
 			}
 			else if (type == "uchar")
 			{
 				newProperty.mainDataType = Property::eUChar;
-				std::string propertyName = other;
+				const std::string& propertyName = other;
 				newProperty.name = propertyName;
 
-				newElement.properties.push_back(newProperty);
+				newElement.properties.emplace_back(newProperty);
 			}
 			else if (type == "list")
 			{
@@ -201,15 +201,15 @@ bool GeoReaderPly::readHeader(std::fstream& fileStream, PlyHeader& header) const
 					newProperty.listDataType = Property::eInt;
 				}
 
-				newElement.properties.push_back(newProperty);
+				newElement.properties.emplace_back(newProperty);
 			}
 			else if (type == "int")
 			{
 				newProperty.mainDataType = Property::eInt;
-				std::string propertyName = other;
+				const std::string& propertyName = other;
 				newProperty.name = propertyName;
 
-				newElement.properties.push_back(newProperty);
+				newElement.properties.emplace_back(newProperty);
 			}
 		}
 	}
@@ -236,7 +236,7 @@ bool GeoReaderPly::readASCIIFile(std::fstream& fileStream, const PlyHeader& head
 	
 	std::vector<Point> aPoints;
 		
-	EditableGeometryInstance* pNewGeoInstance = NULL;
+	EditableGeometryInstance* pNewGeoInstance = nullptr;
 
 	pNewGeoInstance = new EditableGeometryInstance();
 
@@ -263,7 +263,7 @@ bool GeoReaderPly::readASCIIFile(std::fstream& fileStream, const PlyHeader& head
 				Point newPoint;
 				sscanf(buf, "%f %f %f", &newPoint.x, &newPoint.y, &newPoint.z);
 				
-				aPoints.push_back(newPoint);
+				aPoints.emplace_back(newPoint);
 			}
 		}
 		else if (element.type == Element::eEFace)
@@ -319,7 +319,7 @@ bool GeoReaderPly::readASCIIFile(std::fstream& fileStream, const PlyHeader& head
 					}
 				}
 				
-				faces.push_back(newFace);
+				faces.emplace_back(newFace);
 			}
 		}
 	}
@@ -358,10 +358,10 @@ bool GeoReaderPly::readBinaryFile(std::fstream& fileStream, const std::string& p
 	
 	std::vector<Point> aTempPoints; // for use with EditableGeo
 	
-	std::vector<Point>* pActualPoints = NULL;
+	std::vector<Point>* pActualPoints = nullptr;
 		
-	EditableGeometryInstance* pNewEditableGeoInstance = NULL;
-	StandardGeometryInstance* pNewStandardGeoInstance = NULL;
+	EditableGeometryInstance* pNewEditableGeoInstance = nullptr;
+	StandardGeometryInstance* pNewStandardGeoInstance = nullptr;
 	
 	if (options.meshType == GeoReaderOptions::eStandardMesh)
 	{
@@ -420,7 +420,7 @@ bool GeoReaderPly::readBinaryFile(std::fstream& fileStream, const std::string& p
 					newPoint = rotate.transformAffine(newPoint);
 				}
 
-				pActualPoints->push_back(newPoint);
+				pActualPoints->emplace_back(newPoint);
 				
 				if (skipSize > 0)
 				{
@@ -519,18 +519,18 @@ bool GeoReaderPly::readBinaryFile(std::fstream& fileStream, const std::string& p
 						{
 							fileStream.read((char*)&vertices[0], sizeof(unsigned int) * 3);
 							
-							aPolyIndices.push_back(vertices[0]);
-							aPolyIndices.push_back(vertices[1]);
-							aPolyIndices.push_back(vertices[2]);
+							aPolyIndices.emplace_back(vertices[0]);
+							aPolyIndices.emplace_back(vertices[1]);
+							aPolyIndices.emplace_back(vertices[2]);
 						}
 						else if (numVerts == 4)
 						{
 							fileStream.read((char*)&vertices[0], sizeof(unsigned int) * 4);
 							
-							aPolyIndices.push_back(vertices[0]);
-							aPolyIndices.push_back(vertices[1]);
-							aPolyIndices.push_back(vertices[2]);
-							aPolyIndices.push_back(vertices[3]);
+							aPolyIndices.emplace_back(vertices[0]);
+							aPolyIndices.emplace_back(vertices[1]);
+							aPolyIndices.emplace_back(vertices[2]);
+							aPolyIndices.emplace_back(vertices[3]);
 						}
 						else
 						{
@@ -540,7 +540,7 @@ bool GeoReaderPly::readBinaryFile(std::fstream& fileStream, const std::string& p
 							std::copy(aNGonVertices.begin(), aNGonVertices.end(), std::back_inserter(aPolyIndices));
 						}
 						
-						aPolyOffsets.push_back(aPolyIndices.size());
+						aPolyOffsets.emplace_back(aPolyIndices.size());
 						
 						if (afterSkipSize > 0)
 						{
@@ -597,7 +597,7 @@ bool GeoReaderPly::readBinaryFile(std::fstream& fileStream, const std::string& p
 							}
 						}
 						
-						faces.push_back(newFace);
+						faces.emplace_back(newFace);
 						
 						if (afterSkipSize > 0)
 						{
@@ -642,9 +642,9 @@ bool GeoReaderPly::readBinaryFile(std::fstream& fileStream, const std::string& p
 							vertices[1] = reverseUIntBytes(vertices[1]);
 							vertices[2] = reverseUIntBytes(vertices[2]);
 							
-							aPolyIndices.push_back(vertices[0]);
-							aPolyIndices.push_back(vertices[1]);
-							aPolyIndices.push_back(vertices[2]);
+							aPolyIndices.emplace_back(vertices[0]);
+							aPolyIndices.emplace_back(vertices[1]);
+							aPolyIndices.emplace_back(vertices[2]);
 						}
 						else if (numVerts == 4)
 						{
@@ -657,10 +657,10 @@ bool GeoReaderPly::readBinaryFile(std::fstream& fileStream, const std::string& p
 							vertices[2] = reverseUIntBytes(vertices[2]);
 							vertices[3] = reverseUIntBytes(vertices[3]);
 							
-							aPolyIndices.push_back(vertices[0]);
-							aPolyIndices.push_back(vertices[1]);
-							aPolyIndices.push_back(vertices[2]);
-							aPolyIndices.push_back(vertices[3]);
+							aPolyIndices.emplace_back(vertices[0]);
+							aPolyIndices.emplace_back(vertices[1]);
+							aPolyIndices.emplace_back(vertices[2]);
+							aPolyIndices.emplace_back(vertices[3]);
 						}
 						else
 						{
@@ -673,11 +673,11 @@ bool GeoReaderPly::readBinaryFile(std::fstream& fileStream, const std::string& p
 							{
 								unsigned int vertexIndex = *itVert;
 								
-								aPolyIndices.push_back(reverseUIntBytes(vertexIndex));
+								aPolyIndices.emplace_back(reverseUIntBytes(vertexIndex));
 							}
 						}
 						
-						aPolyOffsets.push_back(aPolyIndices.size());
+						aPolyOffsets.emplace_back(aPolyIndices.size());
 						
 						if (afterSkipSize > 0)
 						{
@@ -749,7 +749,7 @@ bool GeoReaderPly::readBinaryFile(std::fstream& fileStream, const std::string& p
 							}
 						}
 						
-						faces.push_back(newFace);
+						faces.emplace_back(newFace);
 						
 						if (afterSkipSize > 0)
 						{

@@ -33,7 +33,8 @@ class StandardGeometryInstance;
 struct GeoWriterOptions
 {
 	GeoWriterOptions() : exportNormals(false), exportUVs(true),
-		exportMaterials(true), exportSubObjects(true), applyTransform(true)
+		exportMaterials(true), exportSubObjects(true), applyTransform(true),
+		geoAsSubDiv(false)
 	{
 	}
 
@@ -42,6 +43,8 @@ struct GeoWriterOptions
 	bool exportMaterials;
 	bool exportSubObjects;
 	bool applyTransform;
+	
+	bool geoAsSubDiv;
 };
 
 class GeoWriter

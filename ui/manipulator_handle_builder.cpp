@@ -41,7 +41,7 @@ bool ManipulatorHandleBuilder::buildManipulatorHandles(Manipulators& manipulator
 		Object* pObject = pManipulator->getObject();
 		std::string name = pManipulator->getName();
 
-		ManipulatorHandle* pNewHandle = NULL;
+		ManipulatorHandle* pNewHandle = nullptr;
 
 		if (type == ePosition3D)
 		{
@@ -51,7 +51,7 @@ bool ManipulatorHandleBuilder::buildManipulatorHandles(Manipulators& manipulator
 
 		if (pNewHandle)
 		{
-			manHandles.push_back(pNewHandle);
+			manHandles.emplace_back(pNewHandle);
 		}
 	}
 

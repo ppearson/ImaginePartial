@@ -42,7 +42,7 @@ protected:
 	typedef std::map<unsigned char, CreateSceneBuilderCallback>		SceneBuilderCallbacks;
 
 public:
-	typedef std::map<unsigned char, std::string>					SceneBuilderNames;
+	typedef std::map<std::string, unsigned char>					SceneBuilderNames;
 
 public:
 	bool registerSceneBuilder(unsigned char id, std::string description, CreateSceneBuilderCallback createSceneBuilderCB);

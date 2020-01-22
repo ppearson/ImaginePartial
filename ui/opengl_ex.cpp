@@ -94,13 +94,13 @@ Colour3b OpenGLExTextSampler::getColourBlend(float u, float v) const
 		float alpha = u * m_floatWidth - x;
 		float beta = v * m_floatHeight - y;
 
-		Colour3b fColour0 = m_pImage->colour3bAt(x, y);
-		Colour3b fColour1 = m_pImage->colour3bAt(xOther, y);
-		Colour3b fColour2 = m_pImage->colour3bAt(xOther, yOther);
-		Colour3b fColour3 = m_pImage->colour3bAt(x, yOther);
+		Colour3b bColour0 = m_pImage->colour3bAt(x, y);
+		Colour3b bColour1 = m_pImage->colour3bAt(xOther, y);
+		Colour3b bColour2 = m_pImage->colour3bAt(xOther, yOther);
+		Colour3b bColour3 = m_pImage->colour3bAt(x, yOther);
 
-		Colour3b item0 = (fColour3 * beta) + fColour0 * (1.0f - beta);
-		Colour3b item1 = (fColour2 * beta) + fColour1 * (1.0f - beta);
+		Colour3b item0 = (bColour3 * beta) + bColour0 * (1.0f - beta);
+		Colour3b item1 = (bColour2 * beta) + bColour1 * (1.0f - beta);
 
 		Colour3b blendedColour = (item1 * alpha + (item0 * (1.0f - alpha)));
 		return blendedColour;
@@ -113,14 +113,14 @@ Colour3b OpenGLExTextSampler::getColourBlend(float u, float v) const
 ImageColour3b* OpenGLEx::makeImageColour3bFromTexture(Texture* pTexture, unsigned int width, unsigned int height)
 {
 	if (!pTexture || pTexture->disableGLPreviews())
-		return NULL;
+		return nullptr;
 
 	ImageColour3b* pImage = new ImageColour3b();
 	if (!pImage)
-		return NULL;
+		return nullptr;
 
 	if (!pImage->initialise(width, height))
-		return NULL;
+		return nullptr;
 
 	float glWidth = 1.0f / (float)width;
 	float glHeight = 1.0f / (float)height;
@@ -192,7 +192,7 @@ bool OpenGLEx::resampleByteImageForTexture(Texture* pTexture, unsigned int maxGL
 		pImage = pTypeImage->getRawImagePointer();
 	}
 
-	if (!pImage || !pImage->isValidImage()) // TODO: this second check shouldn't be needed - why is pImage actually non-NULL but with bad data?
+	if (!pImage || !pImage->isValidImage()) // TODO: this second check shouldn't be needed - why is pImage actually non-nullptr but with bad data?
 		return false;
 
 	unsigned int textureSourceMax = pTexture->getMaxSourceResolution();
@@ -322,10 +322,10 @@ bool OpenGLEx::generateTexture(Texture* pTexture, unsigned int& textureID)
 		else
 		{
 			// for whatever reason, we couldn't create a new resized image for OpenGL, so delete the original image
-			// and set it to NULL
-			pTexture->setTempDiffuseOpenGLImage(NULL);
+			// and set it to nullptr
+			pTexture->setTempDiffuseOpenGLImage(nullptr);
 
-			pImage = NULL;
+			pImage = nullptr;
 		}
 	}
 
@@ -358,7 +358,7 @@ bool OpenGLEx::generateTexture(Texture* pTexture, unsigned int& textureID)
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, pImage->getWidth(), pImage->getHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, pImage->colour3bRowPtr(0)->getStartPointer());
 
-	pTexture->setTempDiffuseOpenGLImage(NULL); // delete the cached image...
+	pTexture->setTempDiffuseOpenGLImage(nullptr); // delete the cached image...
 
 	textureID = texture;
 

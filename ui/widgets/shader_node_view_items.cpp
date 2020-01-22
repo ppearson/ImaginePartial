@@ -19,7 +19,7 @@
 #include "shader_node_view_items.h"
 
 #include <cmath>
-#include <stdio.h>
+#include <cstdio>
 
 #include <QColor>
 #include <QPen>
@@ -80,7 +80,7 @@ void ShaderNodeUI::initStateFromShaderNode()
 	m_aInputPortConnectionItems.resize(numInputs);
 	for (unsigned int i = 0; i < numInputs; i++)
 	{
-		m_aInputPortConnectionItems[i] = NULL;
+		m_aInputPortConnectionItems[i] = nullptr;
 	}
 
 	unsigned int numOutputs = m_pActualNode->getOutputPorts().size();
@@ -365,7 +365,7 @@ void ShaderNodeUI::addOutputPortConnectionItem(unsigned int portIndex, ShaderCon
 {
 	// set the UI-only state
 	std::vector<ShaderConnectionUI*>& outputPortConnections = m_aOutputPortConnectionItems[portIndex];
-	outputPortConnections.push_back(pItem);
+	outputPortConnections.emplace_back(pItem);
 }
 
 void ShaderNodeUI::removeOutputPortConnectionItem(unsigned int portIndex, ShaderConnectionUI* pItem)
@@ -414,7 +414,7 @@ void ShaderNodeUI::getConnectionItems(std::set<ShaderConnectionUI*>& aConnection
 
 ////
 
-ShaderConnectionUI::ShaderConnectionUI(ShaderNodeUI* pSrc) : QGraphicsLineItem(NULL), m_pSrcNode(pSrc), m_pDstNode(NULL),
+ShaderConnectionUI::ShaderConnectionUI(ShaderNodeUI* pSrc) : QGraphicsLineItem(nullptr), m_pSrcNode(pSrc), m_pDstNode(nullptr),
 	m_srcNodePortIndex(-1), m_dstNodePortIndex(-1)
 {
 //	setCacheMode(QGraphicsItem::NoCache);
@@ -424,7 +424,7 @@ ShaderConnectionUI::ShaderConnectionUI(ShaderNodeUI* pSrc) : QGraphicsLineItem(N
 	setZValue(1.0);
 }
 
-ShaderConnectionUI::ShaderConnectionUI(ShaderNodeUI* pSrc, ShaderNodeUI* pDst) : QGraphicsLineItem(NULL), m_pSrcNode(pSrc), m_pDstNode(pDst),
+ShaderConnectionUI::ShaderConnectionUI(ShaderNodeUI* pSrc, ShaderNodeUI* pDst) : QGraphicsLineItem(nullptr), m_pSrcNode(pSrc), m_pDstNode(pDst),
 	m_srcNodePortIndex(-1), m_dstNodePortIndex(-1)
 {
 	setFlag(ItemIsMovable);

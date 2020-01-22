@@ -19,8 +19,8 @@
 #include "animation_curve.h"
 
 #include <cstddef>
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
 
 #include "output_context.h"
 
@@ -56,7 +56,7 @@ AnimationCurve::~AnimationCurve()
 	if (pKeys)
 	{
 		delete pKeys;
-		setPointer(NULL);
+		setPointer(nullptr);
 	}
 }
 
@@ -188,7 +188,7 @@ float AnimationCurve::getValue() const
 
 bool AnimationCurve::isAnimated() const
 {
-	return (getPointer() != NULL);
+	return (getPointer() != nullptr);
 }
 
 void AnimationCurve::setAnimated(bool animated)
@@ -249,7 +249,7 @@ bool AnimationCurve::isKey() const
 	return pKeys->keys.count(OutputContext::instance().getFrame()) > 0;
 }
 
-CurveInterpolationType AnimationCurve::getInterpolationType() const
+AnimationCurve::CurveInterpolationType AnimationCurve::getInterpolationType() const
 {
 	const AnimatedKeys* pKeys = getPointer();
 
@@ -366,7 +366,7 @@ void AnimationCurve::store(Stream* stream) const
 {
 	const AnimatedKeys* pKeys = getPointer();
 
-	bool isAnimated = (pKeys != NULL);
+	bool isAnimated = (pKeys != nullptr);
 	stream->storeBool(isAnimated);
 
 	if (!isAnimated)
@@ -392,42 +392,42 @@ void AnimationCurve::store(Stream* stream) const
 	}
 }
 
-float AnimationCurve::linearTween(float time, float start, float end)
+float AnimationCurve::linearTween(float timeDelta, float start, float end)
 {
-	if (time > 1.0f)
+	if (timeDelta > 1.0f)
 		return end;
 
-	return time * end + (1.0f - time) * start;
+	return timeDelta * end + (1.0f - timeDelta) * start;
 }
 
-float AnimationCurve::cubicTween(float time, float start, float end)
+float AnimationCurve::cubicTween(float timeDelta, float start, float end)
 {
 	float b = start;
 	float c = end - start;
 	float d = 1.0f;
 
-	if (time > 1.0f)
+	if (timeDelta > 1.0f)
 		return end;
-	else if (time < 0.0f)
+	else if (timeDelta < 0.0f)
 		return start;
 
-	if ((time /= d / 2.0f) < 1.0f)
-		return c / 2.0f * powf(time, 3.0f) + b;
+	if ((timeDelta /= d / 2.0f) < 1.0f)
+		return c / 2.0f * powf(timeDelta, 3.0f) + b;
 
-	return c / 2.0f * (powf(time - 2.0f, 3.0f) + 2.0f) + b;
+	return c / 2.0f * (powf(timeDelta - 2.0f, 3.0f) + 2.0f) + b;
 }
 
-float AnimationCurve::quadraticTween(float time, float start, float end)
+float AnimationCurve::quadraticTween(float timeDelta, float start, float end)
 {
 	float b = start;
 	float c = end - start;
 	float d = 1.0f;
 
-	if ((time /= d / 2.0f) < 1.0f)
-		return c / 2.0f * time * time + b;
+	if ((timeDelta /= d / 2.0f) < 1.0f)
+		return c / 2.0f * timeDelta * timeDelta + b;
 
-	--time;
-	return -c / 2.0f * ((time) * (time - 2.0f) - 1.0f) + b;
+	--timeDelta;
+	return -c / 2.0f * ((timeDelta) * (timeDelta - 2.0f) - 1.0f) + b;
 }
 
 } // namespace Imagine

@@ -50,7 +50,7 @@ bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, bool importTextu
 	std::string line;
 	line.resize(256);
 
-	StandardMaterial* pNewMaterial = NULL;
+	StandardMaterial* pNewMaterial = nullptr;
 
 	float r;
 	float g;
@@ -132,7 +132,7 @@ bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, bool importTextu
 			if (line[line.size() - 1] == '\r')
 				line = line.substr(0, line.size() - 1);
 
-			size_t spacePos = line.find(" ");
+			size_t spacePos = line.find(' ');
 
 			std::string bumpTextureMapFile;
 			bumpTextureMapFile.assign(line.substr(spacePos + 1));
@@ -162,7 +162,7 @@ bool GeoHelperObj::readMaterialFile(const std::string& mtlPath, bool importTextu
 			if (line[line.size() - 1] == '\r')
 				line = line.substr(0, line.size() - 1);
 
-			size_t spacePos = line.find(" ");
+			size_t spacePos = line.find(' ');
 
 			std::string alphaTextureMapFile;
 			alphaTextureMapFile.assign(line.substr(spacePos + 1));
@@ -275,7 +275,7 @@ bool GeoHelperObj::extractPathFilenameFromTexturePathString(const std::string& o
 	
 	// assume the filename will have a "." char in it - technically (UNIX) it doesn't need to, but in practice, it always will,
 	// so we can use this fact to detect which bit is the filename
-	if (originalPathString.find(".") == std::string::npos)
+	if (originalPathString.find('.') == std::string::npos)
 		return false;
 	
 	std::vector<std::string> tokens;
@@ -309,7 +309,7 @@ bool GeoHelperObj::extractPathFilenameFromTexturePathString(const std::string& o
 		const std::string& tokenString = *itToken;
 		
 		bool isOption = (tokenString.substr(0, 1) == "-");
-		bool containsExtension = (tokenString.find(".") != std::string::npos);
+		bool containsExtension = (tokenString.find('.') != std::string::npos);
 		// check it's really an extension with a non-numeric character after the last ".".
 		// This is unfortunately necessary due to options like -bm 0.18 which can come after a real filename.
 		// To cope with this properly we'd need to detect options and their args in this loop and skip them
@@ -465,7 +465,7 @@ void GeoHelperObj::copyPointsToGeometry(std::vector<Point>& points, std::set<uns
 	for (; it != pointIndexesRequired.end(); ++it)
 	{
 		unsigned int index = *it;
-		geoPoints.push_back(points[index]);
+		geoPoints.emplace_back(points[index]);
 
 		aMapToFaceVertices[index] = localIndex;
 
@@ -493,7 +493,7 @@ void GeoHelperObj::copyPointsToGeometry(std::vector<Point>& points, std::set<uns
 
 			unsigned int newIndex = aMapToFaceVertices[vertexIndex];
 
-			aNewFaceIndexes.push_back(newIndex);
+			aNewFaceIndexes.emplace_back(newIndex);
 		}
 
 		face.clear();
@@ -522,7 +522,7 @@ void GeoHelperObj::copyUVsToGeometry(std::vector<UV>& uvs, std::set<unsigned int
 	for (; it != vertexUVsRequired.end(); ++it)
 	{
 		unsigned int index = *it;
-		geoUVs.push_back(uvs[index]);
+		geoUVs.emplace_back(uvs[index]);
 
 		aMapToFaceUVs[index] = localIndex;
 
@@ -554,7 +554,7 @@ void GeoHelperObj::copyUVsToGeometry(std::vector<UV>& uvs, std::set<unsigned int
 
 			unsigned int newIndex = aMapToFaceUVs[UVIndex];
 
-			aNewFaceIndexes.push_back(newIndex);
+			aNewFaceIndexes.emplace_back(newIndex);
 		}
 
 		face.clearUVs();
@@ -593,7 +593,7 @@ void GeoHelperObj::copyPointItemsToGeometry(std::vector<Point>& points, std::set
 	for (; it != pointIndexesRequired.end(); ++it)
 	{
 		unsigned int index = *it;
-		geoPoints.push_back(points[index]);
+		geoPoints.emplace_back(points[index]);
 
 		aMapToFaceVertices[index] = localIndex;
 
@@ -625,12 +625,15 @@ void GeoHelperObj::copyUVItemsToGeometry(std::vector<UV>& uvs, std::set<unsigned
 	for (; it != vertexUVsRequired.end(); ++it)
 	{
 		unsigned int index = *it;
-		geoUVs.push_back(uvs[index]);
+		geoUVs.emplace_back(uvs[index]);
 
 		aMapToFaceVerticesUV[index] = localIndex;
 
 		localIndex++;
 	}
+	
+	if (!geoUVs.empty())
+		pGeoInstance->setHasPerVertexUVs(true);
 
 	unsigned int numUVIndices = pGeoInstance->getUVIndicesCount();
 	uint32_t* pUVI = const_cast<uint32_t*>(pGeoInstance->m_pUVIndices);

@@ -99,7 +99,7 @@ Image* ImageReaderTIFF::readColourImage(const std::string& filePath, unsigned in
 	if (!pTiff)
 	{
 		GlobalContext::instance().getLogger().error("Can't open file: %s", filePath.c_str());
-		return NULL;
+		return nullptr;
 	}
 
 	TiffInfo tiffInfo;
@@ -107,14 +107,14 @@ Image* ImageReaderTIFF::readColourImage(const std::string& filePath, unsigned in
 	{
 		GlobalContext::instance().getLogger().error("Invalid tiff file: %s", filePath.c_str());
 		TIFFClose(pTiff);
-		return NULL;
+		return nullptr;
 	}
 
 	if (tiffInfo.bitDepth < 8)
 	{
 		GlobalContext::instance().getLogger().error("Unsupported TIFF format for file: %s", filePath.c_str());
 		TIFFClose(pTiff);
-		return NULL;
+		return nullptr;
 	}
 
 	if (!tiffInfo.isTiled)
@@ -129,9 +129,9 @@ Image* ImageReaderTIFF::readColourImage(const std::string& filePath, unsigned in
 
 Image* ImageReaderTIFF::readScanlineColourImage(const std::string& filePath, TIFF* pTiff, TiffInfo& tiffInfo, unsigned int requiredTypeFlags)
 {
-	ImageColour3f* pImage3f = NULL;
-	ImageColour3h* pImage3h = NULL;
-	ImageColour3b* pImage3b = NULL;
+	ImageColour3f* pImage3f = nullptr;
+	ImageColour3h* pImage3h = nullptr;
+	ImageColour3b* pImage3b = nullptr;
 
 	unsigned int bitDepthToCreate = tiffInfo.bitDepth;
 	if (!(requiredTypeFlags & Image::IMAGE_FORMAT_NATIVE))
@@ -157,7 +157,7 @@ Image* ImageReaderTIFF::readScanlineColourImage(const std::string& filePath, TIF
 	{
 		GlobalContext::instance().getLogger().error("Couldn't allocate memory for new image for file: %s", filePath.c_str());
 		TIFFClose(pTiff);
-		return NULL;
+		return nullptr;
 	}
 
 	if (bitDepthToCreate == 8)
@@ -190,11 +190,11 @@ Image* ImageReaderTIFF::readScanlineColourImage(const std::string& filePath, TIF
 			if (pImage3b)
 			{
 				delete pImage3b;
-				pImage3b = NULL;
+				pImage3b = nullptr;
 			}
 
 			TIFFClose(pTiff);
-			return NULL;
+			return nullptr;
 		}
 
 		unsigned int index = 0;
@@ -242,17 +242,17 @@ Image* ImageReaderTIFF::readScanlineColourImage(const std::string& filePath, TIF
 			if (pImage3f)
 			{
 				delete pImage3f;
-				pImage3f = NULL;
+				pImage3f = nullptr;
 			}
 
 			if (pImage3h)
 			{
 				delete pImage3h;
-				pImage3h = NULL;
+				pImage3h = nullptr;
 			}
 
 			TIFFClose(pTiff);
-			return NULL;
+			return nullptr;
 		}
 
 		const float invShortConvert = 1.0f / 65536.0f;
@@ -362,14 +362,14 @@ Image* ImageReaderTIFF::readScanlineColourImage(const std::string& filePath, TIF
 	if (pImage3b)
 		return pImage3b;
 
-	return NULL;
+	return nullptr;
 }
 
 Image* ImageReaderTIFF::readTiledColourImage(const std::string& filePath, TIFF* pTiff, TiffInfo& tiffInfo, unsigned int requiredTypeFlags)
 {
-	ImageColour3f* pImage3f = NULL;
-	ImageColour3h* pImage3h = NULL;
-	ImageColour3b* pImage3b = NULL;
+	ImageColour3f* pImage3f = nullptr;
+	ImageColour3h* pImage3h = nullptr;
+	ImageColour3b* pImage3b = nullptr;
 
 	unsigned int bitDepthToCreate = tiffInfo.bitDepth;
 	if (!(requiredTypeFlags & Image::IMAGE_FORMAT_NATIVE))
@@ -413,7 +413,7 @@ Image* ImageReaderTIFF::readTiledColourImage(const std::string& filePath, TIFF* 
 	{
 		GlobalContext::instance().getLogger().error("Couldn't allocate memory for new image for file: %s", filePath.c_str());
 		TIFFClose(pTiff);
-		return NULL;
+		return nullptr;
 	}
 
 	// allocate memory to store a single tile
@@ -563,7 +563,7 @@ Image* ImageReaderTIFF::readTiledColourImage(const std::string& filePath, TIFF* 
 	if (pTileBuffer)
 	{
 		delete [] pTileBuffer;
-		pTileBuffer = NULL;
+		pTileBuffer = nullptr;
 	}
 
 	TIFFClose(pTiff);
@@ -575,7 +575,7 @@ Image* ImageReaderTIFF::readTiledColourImage(const std::string& filePath, TIFF* 
 	if (pImage3b)
 		return pImage3b;
 
-	return NULL;
+	return nullptr;
 }
 
 Image* ImageReaderTIFF::readGreyscaleImage(const std::string& filePath, unsigned int requiredTypeFlags)
@@ -584,7 +584,7 @@ Image* ImageReaderTIFF::readGreyscaleImage(const std::string& filePath, unsigned
 	if (!pTiff)
 	{
 		GlobalContext::instance().getLogger().error("Error reading file: %s", filePath.c_str());
-		return NULL;
+		return nullptr;
 	}
 
 	TiffInfo tiffInfo;
@@ -592,14 +592,14 @@ Image* ImageReaderTIFF::readGreyscaleImage(const std::string& filePath, unsigned
 	{
 		GlobalContext::instance().getLogger().error("Invalid tiff file: %s", filePath.c_str());
 		TIFFClose(pTiff);
-		return NULL;
+		return nullptr;
 	}
 
 	if (tiffInfo.bitDepth < 8)
 	{
 		GlobalContext::instance().getLogger().error("Unsupported TIFF format for file: %s", filePath.c_str());
 		TIFFClose(pTiff);
-		return NULL;
+		return nullptr;
 	}
 
 	if (!tiffInfo.isTiled)
@@ -614,8 +614,8 @@ Image* ImageReaderTIFF::readGreyscaleImage(const std::string& filePath, unsigned
 
 Image* ImageReaderTIFF::readScanlineGreyscaleImage(const std::string& filePath, TIFF* pTiff, TiffInfo& tiffInfo, unsigned int requiredTypeFlags)
 {
-	Image1f* pImage1f = NULL;
-	Image1b* pImage1b = NULL;
+	Image1f* pImage1f = nullptr;
+	Image1b* pImage1b = nullptr;
 
 	bool makeFloat = tiffInfo.bitDepth >= 16 || !(requiredTypeFlags & Image::IMAGE_FORMAT_NATIVE);
 
@@ -633,7 +633,7 @@ Image* ImageReaderTIFF::readScanlineGreyscaleImage(const std::string& filePath, 
 	{
 		GlobalContext::instance().getLogger().error("Couldn't allocate memory for new image for file: %s", filePath.c_str());
 		TIFFClose(pTiff);
-		return NULL;
+		return nullptr;
 	}
 
 	if (!makeFloat)
@@ -666,11 +666,11 @@ Image* ImageReaderTIFF::readScanlineGreyscaleImage(const std::string& filePath, 
 			if (pImage1b)
 			{
 				delete pImage1b;
-				pImage1b = NULL;
+				pImage1b = nullptr;
 			}
 
 			TIFFClose(pTiff);
-			return NULL;
+			return nullptr;
 		}
 
 		unsigned int index = 0;
@@ -795,10 +795,10 @@ Image* ImageReaderTIFF::readScanlineGreyscaleImage(const std::string& filePath, 
 			if (pImage1f)
 			{
 				delete pImage1f;
-				pImage1f = NULL;
+				pImage1f = nullptr;
 			}
 			TIFFClose(pTiff);
-			return NULL;
+			return nullptr;
 		}
 
 		const float invShortConvert = 1.0f / 65536.0f;
@@ -972,7 +972,7 @@ Image* ImageReaderTIFF::readScanlineGreyscaleImage(const std::string& filePath, 
 
 Image* ImageReaderTIFF::readTiledGreyscaleImage(const std::string& filePath, TIFF* pTiff, TiffInfo& tiffInfo, unsigned int requiredTypeFlags)
 {
-	return NULL;
+	return nullptr;
 }
 
 bool ImageReaderTIFF::readImageDetails(const std::string& filePath, ImageTextureDetails& textureDetails) const
@@ -1044,7 +1044,7 @@ bool ImageReaderTIFF::readImageDetails(const std::string& filePath, ImageTexture
 	while (imageWidth > 1 || imageHeight > 1)
 	{
 		ImageTextureItemDetails mipmapDetails(imageWidth, imageHeight, tileWidth, tileHeight);
-		mipmaps.push_back(mipmapDetails);
+		mipmaps.emplace_back(mipmapDetails);
 
 		mipmapLevel += 1;
 		if (TIFFSetDirectory(pTiff, mipmapLevel) == 0)
@@ -1128,7 +1128,7 @@ bool ImageReaderTIFF::readImageTile(const ImageTextureTileReadParams& readParams
 	unsigned int tilePosX = readParams.tileX * tileWidth;
 	unsigned int tilePosY = readParams.tileY * tileHeight;
 
-	// should be okay with this, but MSVC used to be fussy about static_casting NULL pointers...
+	// should be okay with this, but MSVC used to be fussy about static_casting nullptr pointers...
 	// seems to work on Linux/Mac anyway...
 	const TiffCustomData* pCustData = static_cast<const TiffCustomData*>(textureDetails.getCustomData());
 
@@ -1196,7 +1196,7 @@ bool ImageReaderTIFF::readImageTile(const ImageTextureTileReadParams& readParams
 		if (pTempData)
 		{
 			delete [] pTempData;
-			pTempData = NULL;
+			pTempData = nullptr;
 		}
 	}
 	else

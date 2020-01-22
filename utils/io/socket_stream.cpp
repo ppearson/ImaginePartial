@@ -23,7 +23,7 @@
 namespace Imagine
 {
 
-SocketStream::SocketStream() : Stream(), m_pSocket(NULL), m_ownSocket(true)
+SocketStream::SocketStream() : Stream(), m_pSocket(nullptr), m_ownSocket(true)
 {
 }
 
@@ -37,7 +37,7 @@ SocketStream::~SocketStream()
 		if (m_pSocket)
 		{
 			delete m_pSocket;
-			m_pSocket = NULL;
+			m_pSocket = nullptr;
 		}
 	}
 }

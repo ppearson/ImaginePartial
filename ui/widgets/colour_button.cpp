@@ -32,7 +32,7 @@ namespace Imagine
 
 static const int kDropArrowX = 30;
 
-ColourButton::ColourButton(QWidget* parent) : QPushButton(parent), m_popupActive(false), m_popup(NULL)
+ColourButton::ColourButton(QWidget* parent) : QPushButton(parent), m_popupActive(false), m_popup(nullptr)
 {
 	m_popup = new ColourChooserPopup(this);
 
@@ -57,7 +57,7 @@ ColourButton::~ColourButton()
 	if (m_popup)
 	{
 		delete m_popup;
-		m_popup = NULL;
+		m_popup = nullptr;
 	}
 }
 
@@ -250,7 +250,7 @@ void ColourButton::mouseMoveEvent(QMouseEvent* event)
 //		event->ignore();
 		updateInternalColourValues();
 
-		changed();
+		emit changed();
 	}
 }
 
@@ -290,7 +290,7 @@ void ColourButton::colourPicked(QColor& colour)
 
 	updateInternalColourValues();
 
-	changed();
+	emit changed();
 }
 
 void ColourButton::showPopup()

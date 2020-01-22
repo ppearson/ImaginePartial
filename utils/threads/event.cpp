@@ -20,7 +20,7 @@
 
 #include "mutex.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 namespace Imagine
 {
@@ -28,12 +28,12 @@ namespace Imagine
 Event::Event() : m_hasHappened(false)
 {
 #ifdef _MSC_VER
-	m_event = CreateEvent(NULL, FALSE, FALSE, NULL);
+	m_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 #else
 	pthread_mutexattr_t mutexAttr;
 	pthread_mutexattr_init(&mutexAttr);
 	pthread_mutex_init(&m_lock, &mutexAttr);
-	pthread_cond_init(&m_ready, NULL);
+	pthread_cond_init(&m_ready, nullptr);
 #endif
 }
 

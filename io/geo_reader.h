@@ -100,8 +100,8 @@ struct GeoInstanceOverview
 
 	void add(EditableGeometryInstance* pGeoInstance, Object* pObject)
 	{
-		aGeoInstances.push_back(pGeoInstance);
-		aOwnerObjects.push_back(pObject);
+		aGeoInstances.emplace_back(pGeoInstance);
+		aOwnerObjects.emplace_back(pObject);
 		count ++;
 	}
 };

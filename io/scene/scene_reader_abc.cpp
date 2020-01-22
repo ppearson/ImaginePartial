@@ -80,7 +80,7 @@ bool SceneReaderAbc::readFile(const std::string& path, const SceneReaderOptions&
 	{
 		Object* pObject = *itObject;
 
-		results.objects.push_back(pObject);
+		results.objects.emplace_back(pObject);
 	}
 
 	std::vector<Material*>::iterator itMaterial = newMaterials.begin();
@@ -88,7 +88,7 @@ bool SceneReaderAbc::readFile(const std::string& path, const SceneReaderOptions&
 	{
 		Material* pMaterial = *itMaterial;
 
-		results.materials.push_back(pMaterial);
+		results.materials.emplace_back(pMaterial);
 	}
 
 	return true;
@@ -96,7 +96,7 @@ bool SceneReaderAbc::readFile(const std::string& path, const SceneReaderOptions&
 
 void SceneReaderAbc::processObjectsInstances(IObject& object, std::vector<Object*>& objects, std::vector<Material*>& materials, chrono_t time, unsigned int currentDepth)
 {
-	Object* pNewObject = NULL;
+	Object* pNewObject = nullptr;
 	unsigned int childrenCount = object.getNumChildren();
 	for (unsigned int i = 0; i < childrenCount; i++)
 	{
@@ -249,7 +249,7 @@ void SceneReaderAbc::processObjectsInstances(IObject& object, std::vector<Object
 						pSubMesh->setGeometryInstance(pNewGeoInstance);
 					}
 
-					Material* pObjectMaterial = NULL;
+					Material* pObjectMaterial = nullptr;
 
 					MaterialManager& matManager = pSubMesh->getMaterialManager();
 
@@ -264,7 +264,7 @@ void SceneReaderAbc::processObjectsInstances(IObject& object, std::vector<Object
 							pObjectMaterial = new StandardMaterial();
 							pObjectMaterial->setName(facesetName);
 
-							materials.push_back(pObjectMaterial);
+							materials.emplace_back(pObjectMaterial);
 
 							matManager.addMaterial(pObjectMaterial);
 						}
@@ -419,7 +419,7 @@ void SceneReaderAbc::processObjectsInstances(IObject& object, std::vector<Object
 						pSubMesh->setGeometryInstance(pNewGeoInstance);
 					}
 
-					Material* pObjectMaterial = NULL;
+					Material* pObjectMaterial = nullptr;
 
 					MaterialManager& matManager = pSubMesh->getMaterialManager();
 
@@ -434,7 +434,7 @@ void SceneReaderAbc::processObjectsInstances(IObject& object, std::vector<Object
 							pObjectMaterial = new StandardMaterial();
 							pObjectMaterial->setName(facesetName);
 
-							materials.push_back(pObjectMaterial);
+							materials.emplace_back(pObjectMaterial);
 							matManager.addMaterial(pObjectMaterial);
 						}
 					}
@@ -501,7 +501,7 @@ void SceneReaderAbc::processObjectsInstances(IObject& object, std::vector<Object
 				{
 					if (!pGeoInstance->getPoints().empty())
 					{
-						objects.push_back(pNewObject);
+						objects.emplace_back(pNewObject);
 					}
 				}
 			}
@@ -510,14 +510,14 @@ void SceneReaderAbc::processObjectsInstances(IObject& object, std::vector<Object
 				// we've got the GeoInstance already...
 				if (pNewObject)
 				{
-					objects.push_back(pNewObject);
+					objects.emplace_back(pNewObject);
 				}
 			}
 		}
 		else
 		{
 			// it was from a faceset, so add the CompoundObject which itself should be complete
-			objects.push_back(pNewObject);
+			objects.emplace_back(pNewObject);
 		}
 	}
 }
@@ -532,7 +532,7 @@ void SceneReaderAbc::addPolyPoints(IPolyMeshSchema& meshSchema, IPolyMeshSchema:
 	{
 		V3d point = (*(meshSample.getPositions()))[i];
 
-		meshPoints.push_back(Point(point.x, point.y, point.z));
+		meshPoints.emplace_back(Point(point.x, point.y, point.z));
 	}
 }
 
@@ -546,7 +546,7 @@ void SceneReaderAbc::addSubDPoints(ISubDSchema& subDSchema, ISubDSchema::Sample&
 	{
 		V3d point = (*(subDSample.getPositions()))[i];
 
-		meshPoints.push_back(Point(point.x, point.y, point.z));
+		meshPoints.emplace_back(Point(point.x, point.y, point.z));
 	}
 }
 
@@ -599,7 +599,7 @@ void SceneReaderAbc::addFacesAndUVs(P3fArraySamplePtr pPoints, Int32ArraySampleP
 				{
 					unsigned int thisUVIndex = startUVIndex - j;
 					V2f uvValue = (*uvValues)[(*uvIndices)[thisUVIndex]];
-					geoInstanceUVs.push_back(UV(uvValue[0], uvValue[1]));
+					geoInstanceUVs.emplace_back(UV(uvValue[0], uvValue[1]));
 					newFace.addUV(uvIndex++);
 				}
 
@@ -609,7 +609,7 @@ void SceneReaderAbc::addFacesAndUVs(P3fArraySamplePtr pPoints, Int32ArraySampleP
 			newFace.calculateNormal(pGeoInstance);
 			newFace.reverse(true);
 
-			geoInstanceFaces.push_back(newFace);
+			geoInstanceFaces.emplace_back(newFace);
 
 			indexCount += numVertices;
 		}
@@ -636,7 +636,7 @@ void SceneReaderAbc::addFacesAndUVs(P3fArraySamplePtr pPoints, Int32ArraySampleP
 					unsigned int finalUVIndex = (*pFaceIndices)[thisUVIndex];
 
 					V2f uvValue = (*uvValues)[(*uvIndices)[finalUVIndex]];
-					geoInstanceUVs.push_back(UV(uvValue[0], uvValue[1]));
+					geoInstanceUVs.emplace_back(UV(uvValue[0], uvValue[1]));
 					newFace.addUV(uvIndex++);
 				}
 
@@ -646,7 +646,7 @@ void SceneReaderAbc::addFacesAndUVs(P3fArraySamplePtr pPoints, Int32ArraySampleP
 			newFace.calculateNormal(pGeoInstance);
 			newFace.reverse(true);
 
-			geoInstanceFaces.push_back(newFace);
+			geoInstanceFaces.emplace_back(newFace);
 
 			indexCount += numVertices;
 		}
@@ -728,7 +728,7 @@ void SceneReaderAbc::addFacesAndUVsWithFacesets(P3fArraySamplePtr pPoints, Int32
 				if (addFace)
 				{
 					V3d point = (*pPoints)[vertex];
-					geoInstancePoints.push_back(Point(point.x, point.y, point.z));
+					geoInstancePoints.emplace_back(Point(point.x, point.y, point.z));
 					newFace.addVertex(newPointIndex++);
 
 					if (addUVs)
@@ -736,7 +736,7 @@ void SceneReaderAbc::addFacesAndUVsWithFacesets(P3fArraySamplePtr pPoints, Int32
 						unsigned int thisUVIndex = startUVIndex - j;
 						V2f uvValue = (*uvValues)[(*uvIndices)[thisUVIndex]];
 
-						geoInstanceUVs.push_back(UV(uvValue[0], uvValue[1]));
+						geoInstanceUVs.emplace_back(UV(uvValue[0], uvValue[1]));
 
 						newFace.addUV(newUVIndex++);
 					}
@@ -750,7 +750,7 @@ void SceneReaderAbc::addFacesAndUVsWithFacesets(P3fArraySamplePtr pPoints, Int32
 				newFace.calculateNormal(pGeoInstance);
 				newFace.reverse(true);
 
-				geoInstanceFaces.push_back(newFace);
+				geoInstanceFaces.emplace_back(newFace);
 			}
 
 			indexCount += numVertices;
@@ -777,7 +777,7 @@ void SceneReaderAbc::addFacesAndUVsWithFacesets(P3fArraySamplePtr pPoints, Int32
 				if (addFace)
 				{
 					V3d point = (*pPoints)[vertex];
-					geoInstancePoints.push_back(Point(point.x, point.y, point.z));
+					geoInstancePoints.emplace_back(Point(point.x, point.y, point.z));
 					newFace.addVertex(newPointIndex++);
 
 				}
@@ -789,7 +789,7 @@ void SceneReaderAbc::addFacesAndUVsWithFacesets(P3fArraySamplePtr pPoints, Int32
 					unsigned int finalUVIndex = (*pFaceIndices)[thisUVIndex];
 
 					V2f uvValue = (*uvValues)[(*uvIndices)[finalUVIndex]];
-					geoInstanceUVs.push_back(UV(uvValue[0], uvValue[1]));
+					geoInstanceUVs.emplace_back(UV(uvValue[0], uvValue[1]));
 
 					if (addFace)
 					{
@@ -810,7 +810,7 @@ void SceneReaderAbc::addFacesAndUVsWithFacesets(P3fArraySamplePtr pPoints, Int32
 				newFace.calculateNormal(pGeoInstance);
 				newFace.reverse(true);
 
-				geoInstanceFaces.push_back(newFace);
+				geoInstanceFaces.emplace_back(newFace);
 			}
 
 			indexCount += numVertices;

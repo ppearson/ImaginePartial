@@ -20,7 +20,7 @@
 #define ANIMATION_CURVE_H
 
 #include <map>
-#include <cstdio>		// needed for NULL
+#include <cstdio>		// needed for nullptr
 #include <stdint.h>		// needed for uintptr_t
 
 namespace Imagine
@@ -28,22 +28,16 @@ namespace Imagine
 
 class Stream;
 
-enum CurveInterpolationType
-{
-	eLinearInterpolation,
-	eQuadraticInterpolation,
-	eCubicInterpolation,
-
-	eNotAnimated
-};
-
+/*
 enum KeyInterpolationType
 {
 	eLinearKeyInterpolation = 1 << 1,
 	eQuadraticKeyInterpolation = 1 << 2,
 	eCubicKeyInterpolation = 1 << 3
 };
+*/
 
+/*
 struct AnimatedKey
 {
 	AnimatedKey(float val)
@@ -54,16 +48,9 @@ struct AnimatedKey
 	unsigned char	preInterpolationType;
 	unsigned char	postInterpolationType;
 };
+*/
 
-struct AnimatedKeys
-{
-	AnimatedKeys() : interpolationType(eLinearInterpolation)
-	{
-	}
 
-	std::map<float, float>	keys;
-	CurveInterpolationType	interpolationType;
-};
 
 class AnimationCurve
 {
@@ -74,6 +61,25 @@ public:
 	~AnimationCurve();
 
 	AnimationCurve& operator=(const AnimationCurve& rhs);
+
+	enum CurveInterpolationType
+	{
+		eLinearInterpolation,
+		eQuadraticInterpolation,
+		eCubicInterpolation,
+
+		eNotAnimated
+	};
+
+	struct AnimatedKeys
+	{
+		AnimatedKeys() : interpolationType(eLinearInterpolation)
+		{
+		}
+
+		std::map<float, float>	keys;
+		CurveInterpolationType	interpolationType;
+	};
 
 	bool isAnimated() const;
 	void setAnimated(bool animated);
@@ -99,9 +105,9 @@ public:
 	void store(Stream* stream) const;
 
 protected:
-	static float linearTween(float time, float start, float end);
-	static float cubicTween(float time, float start, float end);
-	static float quadraticTween(float time, float start, float end);
+	static float linearTween(float timeDelta, float start, float end);
+	static float cubicTween(float timeDelta, float start, float end);
+	static float quadraticTween(float timeDelta, float start, float end);
 
 	// for internal Tagged-pointer stuff
 
@@ -117,7 +123,7 @@ protected:
 		}
 		else
 		{
-			return NULL;
+			return nullptr;
 		}
 	}
 
@@ -130,7 +136,7 @@ protected:
 		}
 		else
 		{
-			return NULL;
+			return nullptr;
 		}
 	}
 
@@ -149,7 +155,7 @@ protected:
 
 protected:
 	//! NOTE: we use a tagged pointer type of thing here to save space
-	//!       if the right-most bit is set, the masked pointer is valid and non-NULL
+	//!       if the right-most bit is set, the masked pointer is valid and non-nullptr
 	//!       otherwise, m_constantValue holds the value
 	union
 	{
@@ -158,7 +164,7 @@ protected:
 
 		struct
 		{
-			//! this is the value used if the above pointer is NULL, and so the value isn't animated
+			//! this is the value used if the above pointer is nullptr, and so the value isn't animated
 			//! these need to be this way around, so that setting m_constantValue doesn't corrupt
 			//! the tag bit
 			unsigned int	m_padding;

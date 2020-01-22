@@ -99,13 +99,9 @@ Colour3f ColourSpace::convertByteHSVToLinearRGB(unsigned char H, unsigned char S
 {
 	if (S == 0)
 	{
-		// TODO:
+		// TODO: should likely return V (grey)
 		return Colour3f(0.0f);
 	}
-
-	unsigned char p;
-	unsigned char q;
-	unsigned char t;
 
 	// do this at full int precision to prevent overflow...
 	unsigned int h = H;
@@ -115,9 +111,9 @@ Colour3f ColourSpace::convertByteHSVToLinearRGB(unsigned char H, unsigned char S
 	unsigned char region = h / 43;
 	unsigned int remainder = (h - (region * 43)) * 6;
 
-	p = (v * (255 - s)) >> 8;
-	q = (v * (255 - ((s * remainder) >> 8))) >> 8;
-	t = (v * (255 - ((s * (255 - remainder)) >> 8))) >> 8;
+	unsigned char p = (v * (255 - s)) >> 8;
+	unsigned char q = (v * (255 - ((s * remainder) >> 8))) >> 8;
+	unsigned char t = (v * (255 - ((s * (255 - remainder)) >> 8))) >> 8;
 
 	Colour3b rgb;
 
@@ -160,7 +156,58 @@ Colour3f ColourSpace::convertByteHSVToLinearRGB(unsigned char H, unsigned char S
 
 Colour3f ColourSpace::convertLinearHSVToLinearRGB(float H, float S, float V)
 {
-	return Colour3f(0.0f);
+	if (S == 0.0f)
+	{
+		// TODO: should likely return V (grey)
+		return Colour3f(0.0f);
+	}
+	
+	H *= 6.0f; // scale for sectors
+	
+	float region = std::floor(H);
+	float factorial = H - region;
+	
+	float p = V * (1.0f - S);
+	float q = V * (1.0f - S * factorial);
+	float t = V * (1.0f - S * (1.0f - factorial));
+	
+	Colour3f rgb;
+	
+	switch ((int)region)
+	{
+		case 0:
+			rgb.r = V;
+			rgb.g = t;
+			rgb.b = p;
+			break;
+		case 1:
+			rgb.r = q;
+			rgb.g = V;
+			rgb.b = p;
+			break;
+		case 2:
+			rgb.r = p;
+			rgb.g = V;
+			rgb.b = t;
+			break;
+		case 3:
+			rgb.r = p;
+			rgb.g = q;
+			rgb.b = V;
+			break;
+		case 4:
+			rgb.r = t;
+			rgb.g = p;
+			rgb.b = V;
+			break;
+		default:
+			rgb.r = V;
+			rgb.g = p;
+			rgb.b = q;
+			break;
+	}
+	
+	return rgb;
 }
 
 void ColourSpace::initLUTs()

@@ -50,7 +50,7 @@ public:
 		};
 
 		PropertyItem();
-		PropertyItem(const std::string& category, const std::string& name, PropertyType type, const void* pData, const char** pOptions = NULL);
+		PropertyItem(const std::string& category, const std::string& name, PropertyType type, const void* pData, const char** pOptions = nullptr);
 
 
 //	protected:
@@ -103,7 +103,7 @@ public:
 class PropertiesTreeItem
 {
 public:
-	PropertiesTreeItem(const QVariant& data, PropertiesTreeItem* parent = NULL, bool subItem = false);
+	PropertiesTreeItem(const QVariant& data, PropertiesTreeItem* parent = nullptr, bool subItem = false);
 	~PropertiesTreeItem();
 
 	PropertiesTreeItem* child(int number);
@@ -182,7 +182,7 @@ class PropertiesTreeItemDelegate : public QStyledItemDelegate
 {
 	Q_OBJECT
 public:
-	PropertiesTreeItemDelegate(PropertiesTreeHost* pWidgetHost, QObject* parent = NULL);
+	PropertiesTreeItemDelegate(PropertiesTreeHost* pWidgetHost, QObject* parent = nullptr);
 	virtual ~PropertiesTreeItemDelegate();
 
 //	virtual QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;

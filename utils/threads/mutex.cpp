@@ -24,7 +24,7 @@ namespace Imagine
 Mutex::Mutex() : m_created(true)
 {
 #ifdef _MSC_VER
-	m_mutex = CreateMutex(NULL, FALSE, NULL);
+	m_mutex = CreateMutex(nullptr, FALSE, nullptr);
 	
 	if (!m_mutex)
 		m_created = false;

@@ -19,7 +19,7 @@
 #include "instance_shape_builder.h"
 
 #include <algorithm>
-#include <stdio.h>
+#include <cstdio>
 
 #include "scene.h"
 
@@ -122,7 +122,7 @@ bool ObjectDetectorWorker::doTask(ThreadPoolTask* pTask, unsigned int threadID)
 				if (specs.pObjectDetector->isInObject(objSpacePos))
 				{
 					Point destinationPoint(xPos, yPos, zPos);
-					aFinalItemPositions.push_back(destinationPoint);
+					aFinalItemPositions.emplace_back(destinationPoint);
 				}
 
 				zPos += specs.blockShapeExtent.z + specs.gap;
@@ -265,13 +265,13 @@ void InstanceShapeBuilder::createScene(Scene& scene)
 
 	Object* pSecondSelectedObject = SelectionManager::instance().getSelection().getSelectedObjectAtIndex(1);
 
-	Object* pNewHolderObject = NULL;
+	Object* pNewHolderObject = nullptr;
 
 	unsigned int numberX = 0;
 	unsigned int numberY = 0;
 	unsigned int numberZ = 0;
 
-	Object* pShapeTestObject = NULL;
+	Object* pShapeTestObject = nullptr;
 	pShapeTestObject = pCurrentSelObject;
 
 	float sphereRadius = 1.0f;
@@ -413,12 +413,12 @@ void InstanceShapeBuilder::createScene(Scene& scene)
 
 	BoundaryBox blockShapebb;
 
-	CompoundObject* pCO = NULL;
+	CompoundObject* pCO = nullptr;
 	if (m_addToGroup && m_objectType != eSphere)
 	{
 		pCO = new CompoundObject();
 
-		blockShapebb = pNewHolderObject->getBoundaryBox();
+		blockShapebb = pNewHolderObject->getTransformedBoundaryBox();
 	}
 	else
 	{
@@ -460,7 +460,7 @@ void InstanceShapeBuilder::createScene(Scene& scene)
 	float zObjSpacePos = rawSrcBBox.getMinimum().z;
 	
 	// Set up ObjectDetector
-	ObjectDetector* pObjectDetector = NULL;
+	ObjectDetector* pObjectDetector = nullptr;
 	if (m_testDistributionType == 0)
 	{
 		// six axis tests
@@ -572,7 +572,7 @@ void InstanceShapeBuilder::createScene(Scene& scene)
 					if (pObjectDetector->isInObject(objSpacePos))
 					{
 						Point destinationPoint(xPos, yPos, zPos);
-						aFinalItemPositions.push_back(destinationPoint);
+						aFinalItemPositions.emplace_back(destinationPoint);
 					}
 
 					zPos += blockShapeExtent.z + gap;
@@ -591,7 +591,7 @@ void InstanceShapeBuilder::createScene(Scene& scene)
 	if (pObjectDetector)
 	{
 		delete pObjectDetector;
-		pObjectDetector = NULL;
+		pObjectDetector = nullptr;
 	}
 
 	unsigned int count = 0;
@@ -654,7 +654,7 @@ void InstanceShapeBuilder::createScene(Scene& scene)
 		if (pNewHolderObject)
 		{
 			delete pNewHolderObject;
-			pNewHolderObject = NULL;
+			pNewHolderObject = nullptr;
 		}
 	}
 	
@@ -819,7 +819,7 @@ GeometryInstanceGathered* InstanceShapeBuilder::createScaledGeoInstanceCopy(Geom
 
 	// make sure we support the GeometryInstanceGathered type for scaling
 	if (geoIDType != 1 && geoIDType != 2 && geoIDType != 3)
-		return NULL;
+		return nullptr;
 
 	GeometryInstance* pNewGeoInstance = pGeoInstance->clone();
 

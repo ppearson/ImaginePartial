@@ -19,7 +19,7 @@
 #include "float_control.h"
 
 #include <QHBoxLayout>
-#include <math.h>
+#include <cmath>
 
 #include "parameter.h"
 

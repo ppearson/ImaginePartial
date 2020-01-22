@@ -18,9 +18,9 @@
 
 #include "image_reader_hdr.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <memory.h>
-#include <string.h>
+#include <cstring>
 
 #include "global_context.h"
 
@@ -45,16 +45,16 @@ Image* ImageReaderHDR::readColourImage(const std::string& filePath, unsigned int
 	if (!pFile)
 	{
 		GlobalContext::instance().getLogger().error("Cannot open file: %s", filePath.c_str());
-		return NULL;
+		return nullptr;
 	}
 
 	char szTemp[64];
 	fread(szTemp, 10, 1, pFile);
-	if (memcmp(szTemp, "#?RADIANCE", 10) && memcmp(szTemp, "#?RGBE", 6))
+	if ((memcmp(szTemp, "#?RADIANCE", 10) != 0) && (memcmp(szTemp, "#?RGBE", 6) != 0))
 	{
 		GlobalContext::instance().getLogger().error("Can't open file: %s - doesn't seem to be an .hdr file...", filePath.c_str());
 		fclose(pFile);
-		return NULL;
+		return nullptr;
 	}
 
 	fseek(pFile, 1, SEEK_CUR);
@@ -98,26 +98,13 @@ Image* ImageReaderHDR::readColourImage(const std::string& filePath, unsigned int
 		else
 		{
 			fclose(pFile);
-			return NULL;
+			return nullptr;
 		}
 	}
 
 	RGBE* pScanline = new RGBE[width];
-	if (!pScanline)
-	{
-		GlobalContext::instance().getLogger().error("Cannot allocate memory to read file: %s", filePath.c_str());
-		fclose(pFile);
-		return NULL;
-	}
 
 	ImageColour3f* pImage = new ImageColour3f(width, height, false);
-	if (!pImage)
-	{
-		GlobalContext::instance().getLogger().error("Cannot allocate memory for image from file: %s", filePath.c_str());
-		delete [] pScanline;
-		fclose(pFile);
-		return NULL;
-	}
 
 	// now process the scanlines...
 	for (unsigned int y = height; y > 0; y--)

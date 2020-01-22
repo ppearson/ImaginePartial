@@ -19,7 +19,7 @@
 #include "logger.h"
 
 #include <ctime>
-#include <stdarg.h>
+#include <cstdarg>
 #include <unistd.h>
 
 namespace Imagine
@@ -38,7 +38,7 @@ static const char* kLogLevelFullNames[] = { "Debug", "Info", "Warning", "Notice"
 static const char* kLogLevelColourCodes[] = { kCodeColourBlack, kCodeColourGreen, kCodeColourOrange,
 											  kCodeColourCyan, kCodeColourRed, kCodeColourRed, kCodeColourBlack, 0 };
 
-Logger::Logger() : m_pFileHandle(NULL), m_pSecondaryStdErr(NULL),
+Logger::Logger() : m_pFileHandle(nullptr), m_pSecondaryStdErr(nullptr),
 					m_initialised(false), m_logLevel(eLevelOff),
 					m_timeStampType(eTimeStampNone), m_colouredOutput(false)
 {
@@ -50,7 +50,7 @@ Logger::~Logger()
 	if (m_logOutputType == eLogFile && m_pFileHandle)
 	{
 		fclose(m_pFileHandle);
-		m_pFileHandle = NULL;
+		m_pFileHandle = nullptr;
 	}
 
 	// Note: we don't need to worry about m_pSecondaryStdErr...
@@ -66,7 +66,7 @@ bool Logger::initialiseFileLogger(const std::string& logPath, LogLevel level, Lo
 
 	m_pFileHandle = fopen(m_logFilePath.c_str(), "w+");
 
-	m_initialised = (m_pFileHandle != NULL);
+	m_initialised = (m_pFileHandle != nullptr);
 
 	// this is a bit silly, but if we weren't initialised, set the mode to stderr mode, so at least the user gets
 	// something...

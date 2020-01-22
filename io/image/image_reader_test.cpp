@@ -48,7 +48,7 @@ bool ImageReaderTXT::readImageDetails(const std::string& filePath, ImageTextureD
 	{
 		ImageTextureItemDetails mipmapDetails(textureSize, textureSize, tileSize, tileSize);
 
-		mipmaps.push_back(mipmapDetails);
+		mipmaps.emplace_back(mipmapDetails);
 
 		textureSize /= 2;
 

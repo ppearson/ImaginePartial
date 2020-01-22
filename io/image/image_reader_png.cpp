@@ -34,12 +34,19 @@ namespace Imagine
 
 struct PNGInfra
 {
+	PNGInfra() : pFile(nullptr),
+		bitDepth(0)
+	{
+	}
+
 	FILE*			pFile;
 	png_structp		pPNG;
 	png_infop		pInfo;
 	png_uint_32		width;
 	png_uint_32		height;
 	png_bytepp		pRows;
+	
+	int				bitDepth;
 };
 
 ImageReaderPNG::ImageReaderPNG() : ImageReader()
@@ -69,7 +76,7 @@ ImageReaderPNG::ImageType ImageReaderPNG::readData(const std::string& filePath, 
 		return eInvalid;
 	}
 
-	infra.pPNG = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	infra.pPNG = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 	if (!infra.pPNG)
 	{
 		fclose(infra.pFile);
@@ -79,14 +86,14 @@ ImageReaderPNG::ImageType ImageReaderPNG::readData(const std::string& filePath, 
 	infra.pInfo = png_create_info_struct(infra.pPNG);
 	if (!infra.pInfo)
 	{
-		png_destroy_read_struct(&infra.pPNG, NULL, NULL);
+		png_destroy_read_struct(&infra.pPNG, nullptr, nullptr);
 		fclose(infra.pFile);
 		return eInvalid;
 	}
 
 	if (setjmp(png_jmpbuf(infra.pPNG)))
 	{
-		png_destroy_read_struct(&infra.pPNG, &infra.pInfo, NULL);
+		png_destroy_read_struct(&infra.pPNG, &infra.pInfo, nullptr);
 		fclose(infra.pFile);
 		return eInvalid;
 	}
@@ -96,9 +103,9 @@ ImageReaderPNG::ImageType ImageReaderPNG::readData(const std::string& filePath, 
 	png_read_info(infra.pPNG, infra.pInfo);
 
 	int colorType;
-	int bitDepth, interlaceType, compressionType;
+	int interlaceType, compressionType;
 
-	png_get_IHDR(infra.pPNG, infra.pInfo, &infra.width, &infra.height, &bitDepth, &colorType, &interlaceType, &compressionType, NULL);
+	png_get_IHDR(infra.pPNG, infra.pInfo, &infra.width, &infra.height, &infra.bitDepth, &colorType, &interlaceType, &compressionType, nullptr);
 
 	if (colorType == PNG_COLOR_TYPE_PALETTE)
 		png_set_palette_to_rgb(infra.pPNG);
@@ -107,9 +114,6 @@ ImageReaderPNG::ImageType ImageReaderPNG::readData(const std::string& filePath, 
 	{
 		png_set_tRNS_to_alpha(infra.pPNG);
 	}
-
-	if (bitDepth == 16)
-		png_set_strip_16(infra.pPNG);
 
 	ImageType type = eInvalid;
 
@@ -157,10 +161,13 @@ Image* ImageReaderPNG::readColourImage(const std::string& filePath, unsigned int
 {
 	PNGInfra infra;
 	if (readData(filePath, infra, false) != eRGBA)
-		return NULL;
+		return nullptr;
+	
+	if (infra.bitDepth == 16)
+		png_set_strip_16(infra.pPNG);
 
-	ImageColour3f* pImage3f = NULL;
-	ImageColour3b* pImage3b = NULL;
+	ImageColour3f* pImage3f = nullptr;
+	ImageColour3b* pImage3b = nullptr;
 
 	const bool makeFloat = !(requiredTypeFlags & Image::IMAGE_FORMAT_NATIVE);
 
@@ -231,7 +238,7 @@ Image* ImageReaderPNG::readColourImage(const std::string& filePath, unsigned int
 		}
 	}
 
-	png_destroy_read_struct(&infra.pPNG, &infra.pInfo, (png_infopp)NULL);
+	png_destroy_read_struct(&infra.pPNG, &infra.pInfo, (png_infopp)nullptr);
 
 	for (unsigned int y = 0; y < infra.height; y++)
 	{
@@ -250,61 +257,61 @@ Image* ImageReaderPNG::readColourImageAndByteCopy(const std::string& filePath, I
 {
 	PNGInfra infra;
 	if (readData(filePath, infra, false) != eRGBA)
-		return NULL;
+		return nullptr;
+	
+	if (infra.bitDepth == 16)
+		png_set_strip_16(infra.pPNG);
 
 	ImageColour3f* pImage = new ImageColour3f(infra.width, infra.height, false);
-	if (pImage)
+	if (!pImageColour3b->initialise(infra.width, infra.height))
 	{
-		if (!pImageColour3b->initialise(infra.width, infra.height))
+		delete pImage;
+		
+		png_destroy_read_struct(&infra.pPNG, &infra.pInfo, (png_infopp)nullptr);
+
+		for (unsigned int y = 0; y < infra.height; y++)
 		{
-            delete pImage;
-            
-			png_destroy_read_struct(&infra.pPNG, &infra.pInfo, (png_infopp)NULL);
-
-			for (unsigned int y = 0; y < infra.height; y++)
-			{
-				delete [] infra.pRows[y];
-			}
-			delete [] infra.pRows;
-
-			fclose(infra.pFile);
-
-			return NULL;
+			delete [] infra.pRows[y];
 		}
+		delete [] infra.pRows;
 
-		// copy data across...
-		for (unsigned int i = 0; i < infra.height; i++)
+		fclose(infra.pFile);
+
+		return nullptr;
+	}
+
+	// copy data across...
+	for (unsigned int i = 0; i < infra.height; i++)
+	{
+		png_byte* pLineData = infra.pRows[i];
+
+		// need to flip the height round...
+		unsigned int y = infra.height - i - 1;
+
+		Colour3f* pImageRow = pImage->colourRowPtr(y);
+		Colour3b* pByteRow = pImageColour3b->colour3bRowPtr(y);
+
+		for (unsigned int x = 0; x < infra.width; x++)
 		{
-			png_byte* pLineData = infra.pRows[i];
+			unsigned char red = *pLineData++;
+			unsigned char green = *pLineData++;
+			unsigned char blue = *pLineData++;
+			pLineData++;
 
-			// need to flip the height round...
-			unsigned int y = infra.height - i - 1;
+			Colour3b newColour(red, green, blue);
 
-			Colour3f* pImageRow = pImage->colourRowPtr(y);
-			Colour3b* pByteRow = pImageColour3b->colour3bRowPtr(y);
+			*pByteRow = newColour;
 
-			for (unsigned int x = 0; x < infra.width; x++)
-			{
-				unsigned char red = *pLineData++;
-				unsigned char green = *pLineData++;
-				unsigned char blue = *pLineData++;
-				pLineData++;
+			pImageRow->r = ColourSpace::convertSRGBToLinearLUT(red);
+			pImageRow->g = ColourSpace::convertSRGBToLinearLUT(green);
+			pImageRow->b = ColourSpace::convertSRGBToLinearLUT(blue);
 
-				Colour3b newColour(red, green, blue);
-
-				*pByteRow = newColour;
-
-				pImageRow->r = ColourSpace::convertSRGBToLinearLUT(red);
-				pImageRow->g = ColourSpace::convertSRGBToLinearLUT(green);
-				pImageRow->b = ColourSpace::convertSRGBToLinearLUT(blue);
-
-				pImageRow++;
-				pByteRow++;
-			}
+			pImageRow++;
+			pByteRow++;
 		}
 	}
 
-	png_destroy_read_struct(&infra.pPNG, &infra.pInfo, (png_infopp)NULL);
+	png_destroy_read_struct(&infra.pPNG, &infra.pInfo, (png_infopp)nullptr);
 
 	for (unsigned int y = 0; y < infra.height; y++)
 	{
@@ -323,12 +330,15 @@ Image* ImageReaderPNG::readGreyscaleImage(const std::string& filePath, unsigned 
 	ImageType actualType = readData(filePath, infra, requiredTypeFlags & Image::IMAGE_FLAGS_ALPHA);
 
 	if (actualType == eInvalid)
-		return NULL;
+		return nullptr;
+	
+	if (infra.bitDepth == 16)
+		png_set_strip_16(infra.pPNG);
 
 	const bool makeFloat = !(requiredTypeFlags & Image::IMAGE_FORMAT_NATIVE);
 
-	Image1f* pImage1f = NULL;
-	Image1b* pImage1b = NULL;
+	Image1f* pImage1f = nullptr;
+	Image1b* pImage1b = nullptr;
 
 	if (makeFloat)
 	{
@@ -566,7 +576,7 @@ Image* ImageReaderPNG::readGreyscaleImage(const std::string& filePath, unsigned 
 		}
 	}
 
-	png_destroy_read_struct(&infra.pPNG, &infra.pInfo, (png_infopp)NULL);
+	png_destroy_read_struct(&infra.pPNG, &infra.pInfo, (png_infopp)nullptr);
 
 	for (unsigned int y = 0; y < infra.height; y++)
 	{

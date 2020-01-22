@@ -82,15 +82,15 @@ void PlankStructureBuilder::createScene(Scene& scene)
 		float yVal = m_plankHeightScale * 0.5f;
 		float zVal = m_plankWidthScale * 0.5f;
 
-		aPoints.push_back(Point(-xVal, yVal, zVal));
-		aPoints.push_back(Point(xVal, yVal, zVal));
-		aPoints.push_back(Point(xVal, yVal, -zVal));
-		aPoints.push_back(Point(-xVal, yVal, -zVal));
+		aPoints.emplace_back(Point(-xVal, yVal, zVal));
+		aPoints.emplace_back(Point(xVal, yVal, zVal));
+		aPoints.emplace_back(Point(xVal, yVal, -zVal));
+		aPoints.emplace_back(Point(-xVal, yVal, -zVal));
 
-		aPoints.push_back(Point(-xVal, -yVal, zVal));
-		aPoints.push_back(Point(xVal, -yVal, zVal));
-		aPoints.push_back(Point(xVal, -yVal, -zVal));
-		aPoints.push_back(Point(-xVal, -yVal, -zVal));
+		aPoints.emplace_back(Point(-xVal, -yVal, zVal));
+		aPoints.emplace_back(Point(xVal, -yVal, zVal));
+		aPoints.emplace_back(Point(xVal, -yVal, -zVal));
+		aPoints.emplace_back(Point(-xVal, -yVal, -zVal));
 
 		std::vector<uint32_t>& aPolyIndices = pNewGeoInstance->getPolygonIndices();
 		std::vector<uint32_t>& aPolyOffsets = pNewGeoInstance->getPolygonOffsets();
@@ -105,7 +105,7 @@ void PlankStructureBuilder::createScene(Scene& scene)
 
 		pNewGeoInstance->buildRawGeometryData(geoBuildFlags);
 
-		m_aSourcePlanks.push_back(pNewGeoInstance);
+		m_aSourcePlanks.emplace_back(pNewGeoInstance);
 	}
 
 	std::vector<Object*> aPlanks;
@@ -155,10 +155,8 @@ void PlankStructureBuilder::createNewPlank(std::vector<Object*>& aPlanks, const 
 {
 	StandardGeometryInstance* pGeo = m_aSourcePlanks[0];
 
-	Mesh* pNewPlank = NULL;
-
-	pNewPlank = new Mesh();
-	pNewPlank->setName("1", false);
+	Mesh* pNewPlank = new Mesh();
+	pNewPlank->setName("Plank", false);
 
 	pNewPlank->setGeometryInstance(pGeo);
 	pNewPlank->setDefaultMaterial();
@@ -166,7 +164,7 @@ void PlankStructureBuilder::createNewPlank(std::vector<Object*>& aPlanks, const 
 	pNewPlank->setPosition(pos);
 	pNewPlank->setRotation(rot);
 
-	aPlanks.push_back(pNewPlank);
+	aPlanks.emplace_back(pNewPlank);
 }
 
 void PlankStructureBuilder::createNewPlank(std::vector<Object*>& aPlanks, const Vector& pos) const

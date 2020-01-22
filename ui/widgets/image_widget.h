@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2012 Peter Pearson.
+ Copyright 2011-2020 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -48,6 +48,13 @@ public:
 		eB,
 		eA
 	};
+	
+	enum ToneMappingType
+	{
+		eNone,
+		eGamma,
+		eReinhard
+	};
 
 	inline int xOffset() const { return horizontalScrollBar()->value(); }
 	inline int yOffset() const { return verticalScrollBar()->value(); }
@@ -75,38 +82,45 @@ public:
 	void renderFinished(float gamma);
 
 public slots:
-	void saveImage();
-	void saveImageFullFloat();
+	void saveImageRGBA();
+	void saveImageRGB();
+	void saveImageRGBAFloat32();
+	void saveImageRGBFloat32();
 	void saveImageExtraAOVs();
 	void saveImageExtraAOVsFullFloat();
 	void saveImageDeep();
 
 protected:
-	QImage*			m_pQImage;
-	OutputImage*	m_pRawImage;
-	OutputImage*	m_pDisplayImage;
+	QImage*				m_pQImage;
+	OutputImage*		m_pRawImage;
+	OutputImage*		m_pDisplayImage;
 
-	QAction*		m_saveEvent;
-	QAction*		m_saveFullFloatEvent;
-	QAction*		m_saveNormalsEvent;
-	QAction*		m_saveNormalsFullFloatEvent;
-	QAction*		m_saveDeepEvent;
+	QAction*			m_saveRGBAEvent;
+	QAction*			m_saveRGBEvent;
+	QAction*			m_saveRGBAFloat32Event;
+	QAction*			m_saveRGBFloat32Event;
+	
+	QAction*			m_saveNormalsEvent;
+	QAction*			m_saveNormalsFloat32Event;
+	QAction*			m_saveDeepEvent;
 
-	QTransform		m_transform;
-	float			m_zoomLevel;
-	QSize			m_workArea;
-	QRectF			m_window;
-	bool			m_gotDimensions;
+	QTransform			m_transform;
+	float				m_zoomLevel;
+	QSize				m_workArea;
+	QRectF				m_window;
+	bool				m_gotDimensions;
 
 	std::vector<TileGrid>	m_aLastTiles;
 
-	DisplayChannel	m_displayChannel;
-	float			m_gain;
+	DisplayChannel		m_displayChannel;
+	float				m_gain;
 
-	unsigned int	m_width;
-	unsigned int	m_height;
+	unsigned int		m_width;
+	unsigned int		m_height;
 
-	bool			m_haveNormalisedRawImage;
+	bool				m_haveNormalisedRawImage;
+	
+	ToneMappingType		m_toneMappingType;
 };
 
 } // namespace Imagine

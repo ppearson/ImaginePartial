@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2012 Peter Pearson.
+ Copyright 2011-2020 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -36,23 +36,28 @@
 namespace Imagine
 {
 
-ImageWidget::ImageWidget(QWidget* parent) : QAbstractScrollArea(parent), m_pQImage(NULL), m_pRawImage(NULL), m_pDisplayImage(NULL),
-	m_zoomLevel(1.0f), m_gotDimensions(false), m_displayChannel(eRGB), m_gain(1.0f), m_haveNormalisedRawImage(false)
+ImageWidget::ImageWidget(QWidget* parent) : QAbstractScrollArea(parent), m_pQImage(nullptr), m_pRawImage(nullptr), m_pDisplayImage(nullptr),
+	m_zoomLevel(1.0f), m_gotDimensions(false), m_displayChannel(eRGB), m_gain(1.0f), m_haveNormalisedRawImage(false),
+	m_toneMappingType(eGamma)
 {
 	adjustScrollbars();
 	viewport()->update();
 
-	m_saveEvent = new QAction("Save Image...", this);
-	m_saveFullFloatEvent = new QAction("Save Image (float 32)...", this);
+	m_saveRGBAEvent = new QAction("Save Image (RGBA)...", this);
+	m_saveRGBEvent = new QAction("Save Image (RGB)...", this);
+	m_saveRGBAFloat32Event = new QAction("Save Image (RGBA, float 32)...", this);
+	m_saveRGBFloat32Event = new QAction("Save Image (RGB, float 32)...", this);
 	m_saveNormalsEvent = new QAction("Save Image with extra AOVs...", this);
-	m_saveNormalsFullFloatEvent = new QAction("Save Image with extra AOVs (float 32)...", this);
+	m_saveNormalsFloat32Event = new QAction("Save Image with extra AOVs (float 32)...", this);
 
 	m_saveDeepEvent = new QAction("Save Deep Image...", this);
 
-	connect(m_saveEvent, SIGNAL(triggered()), this, SLOT(saveImage()));
-	connect(m_saveFullFloatEvent, SIGNAL(triggered()), this, SLOT(saveImageFullFloat()));
+	connect(m_saveRGBAEvent, SIGNAL(triggered()), this, SLOT(saveImageRGBA()));
+	connect(m_saveRGBEvent, SIGNAL(triggered()), this, SLOT(saveImageRGB()));
+	connect(m_saveRGBAFloat32Event, SIGNAL(triggered()), this, SLOT(saveImageRGBAFloat32()));
+	connect(m_saveRGBFloat32Event, SIGNAL(triggered()), this, SLOT(saveImageRGBFloat32()));
 	connect(m_saveNormalsEvent, SIGNAL(triggered()), this, SLOT(saveImageExtraAOVs()));
-	connect(m_saveNormalsFullFloatEvent, SIGNAL(triggered()), this, SLOT(saveImageExtraAOVsFullFloat()));
+	connect(m_saveNormalsFloat32Event, SIGNAL(triggered()), this, SLOT(saveImageExtraAOVsFullFloat()));
 	connect(m_saveDeepEvent, SIGNAL(triggered()), this, SLOT(saveImageDeep()));
 }
 
@@ -61,19 +66,19 @@ ImageWidget::~ImageWidget()
 	if (m_pQImage)
 	{
 		delete m_pQImage;
-		m_pQImage = NULL;
+		m_pQImage = nullptr;
 	}
 
 	if (m_pRawImage)
 	{
 		delete m_pRawImage;
-		m_pRawImage = NULL;
+		m_pRawImage = nullptr;
 	}
 
 	if (m_pDisplayImage)
 	{
 		delete m_pDisplayImage;
-		m_pDisplayImage = NULL;
+		m_pDisplayImage = nullptr;
 	}
 }
 
@@ -254,8 +259,11 @@ void ImageWidget::keyPressEvent(QKeyEvent* event)
 void ImageWidget::contextMenuEvent(QContextMenuEvent* event)
 {
 	QMenu* m = new QMenu(this);
-	m->addAction(m_saveEvent);
-	m->addAction(m_saveFullFloatEvent);
+	m->addAction(m_saveRGBAEvent);
+	m->addAction(m_saveRGBEvent);
+	m->addSeparator();
+	m->addAction(m_saveRGBAFloat32Event);
+	m->addAction(m_saveRGBFloat32Event);
 	m->addSeparator();
 
 	if (m_pRawImage->getComponents() & COMPONENT_DEEP)
@@ -266,7 +274,7 @@ void ImageWidget::contextMenuEvent(QContextMenuEvent* event)
 			 m_pRawImage->getComponents() & COMPONENT_DEPTH || m_pRawImage->getComponents() & COMPONENT_SHADOWS)
 	{
 		m->addAction(m_saveNormalsEvent);
-		m->addAction(m_saveNormalsFullFloatEvent);
+		m->addAction(m_saveNormalsFloat32Event);
 	}
 
 	m->move(mapToGlobal(event->pos()));
@@ -292,7 +300,7 @@ void ImageWidget::setLastTiles(const std::queue<TileGrid>& lastTiles)
 	while (!aLocalCopy.empty())
 	{
 		TileGrid& tg = aLocalCopy.front();
-		m_aLastTiles.push_back(tg);
+		m_aLastTiles.emplace_back(tg);
 
 		aLocalCopy.pop();
 	}
@@ -329,7 +337,7 @@ void ImageWidget::showImage(const OutputImage& image, float gamma)
 	if (m_pRawImage)
 	{
 		delete m_pRawImage;
-		m_pRawImage = NULL;
+		m_pRawImage = nullptr;
 	}
 
 	m_pRawImage = new OutputImage(image);
@@ -502,7 +510,6 @@ void ImageWidget::saveImage(unsigned int channels, unsigned int flags)
 	pWriter->writeImage(path, *m_pRawImage, channels, flags);
 
 	delete pWriter;
-	pWriter = NULL;
 }
 
 void ImageWidget::renderFinished(float gamma)
@@ -512,14 +519,24 @@ void ImageWidget::renderFinished(float gamma)
 	m_pRawImage->normaliseProgressive();
 }
 
-void ImageWidget::saveImage()
+void ImageWidget::saveImageRGBA()
 {
 	saveImage(ImageWriter::RGBA, 0);
 }
 
-void ImageWidget::saveImageFullFloat()
+void ImageWidget::saveImageRGB()
+{
+	saveImage(ImageWriter::RGB, 0);
+}
+
+void ImageWidget::saveImageRGBAFloat32()
 {
 	saveImage(ImageWriter::RGBA, ImageWriter::FLOAT32);
+}
+
+void ImageWidget::saveImageRGBFloat32()
+{
+	saveImage(ImageWriter::RGB, ImageWriter::FLOAT32);
 }
 
 void ImageWidget::saveImageExtraAOVs()

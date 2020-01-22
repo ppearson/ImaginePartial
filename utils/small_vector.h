@@ -96,7 +96,7 @@ public:
 		}
 		else
 		{
-			m_extra.setPointer(NULL);
+			m_extra.setPointer(nullptr);
 		}
 
 		return *this;
@@ -106,7 +106,7 @@ public:
 	class ExtraStorage
 	{
 	public:
-		ExtraStorage() : itemPtr(NULL), size(0)
+		ExtraStorage() : itemPtr(nullptr), size(0)
 		{
 
 		}
@@ -161,7 +161,7 @@ public:
 	class iterator
 	{
 	public:
-		iterator() : m_pVector(NULL), m_currentIndex(-1)
+		iterator() : m_pVector(nullptr), m_currentIndex(-1)
 		{
 
 		}
@@ -232,7 +232,7 @@ public:
 	class const_iterator
 	{
 	public:
-		const_iterator() : m_pVector(NULL), m_currentIndex(-1)
+		const_iterator() : m_pVector(nullptr), m_currentIndex(-1)
 		{
 
 		}
@@ -305,13 +305,13 @@ public:
 					else
 					{
 						m_currentIndex = -1;
-						m_pVector = NULL;
+						m_pVector = nullptr;
 					}
 				}
 				else
 				{
 					m_currentIndex = -1;
-					m_pVector = NULL;
+					m_pVector = nullptr;
 				}
 			}
 			else
@@ -326,7 +326,7 @@ public:
 					else
 					{
 						m_currentIndex = -1u;
-						m_pVector = NULL;
+						m_pVector = nullptr;
 					}
 				}
 				else
@@ -338,7 +338,7 @@ public:
 					if (nextOffset >= pExtra->size)
 					{
 						m_currentIndex = -1u;
-						m_pVector = NULL;
+						m_pVector = nullptr;
 					}
 					else
 					{
@@ -411,7 +411,8 @@ public:
 		return const_iterator();
 	}
 
-	void push_back(const T& value)
+	// TODO: make this really like emplace_back() ...
+	void emplace_back(const T& value)
 	{
 		size_t nextIndex;
 		if (!isUsingExtra())
@@ -477,7 +478,7 @@ private:
 	bool isUsingExtra() const
 	{
 		const ExtraStorage* pExtra = m_extra.getPtr();
-		return pExtra != NULL;
+		return pExtra != nullptr;
 	}
 
 

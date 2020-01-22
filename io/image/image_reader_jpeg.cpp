@@ -42,7 +42,7 @@ Image* ImageReaderJPEG::readColourImage(const std::string& filePath, unsigned in
 	if (!pFile)
 	{
 		GlobalContext::instance().getLogger().error("Can't open file: %s", filePath.c_str());
-		return NULL;
+		return nullptr;
 	}
 
 	struct jpeg_decompress_struct cinfo;
@@ -57,7 +57,7 @@ Image* ImageReaderJPEG::readColourImage(const std::string& filePath, unsigned in
 	{
 		GlobalContext::instance().getLogger().error("Cannot open file: %s", filePath.c_str());
 		fclose(pFile);
-		return NULL;
+		return nullptr;
 	}
 
 	int depth = cinfo.output_components;
@@ -73,11 +73,11 @@ Image* ImageReaderJPEG::readColourImage(const std::string& filePath, unsigned in
 		jpeg_finish_decompress(&cinfo);
 		jpeg_destroy_decompress(&cinfo);
 		fclose(pFile);
-		return NULL;
+		return nullptr;
 	}
 
-	ImageColour3f* pImage3f = NULL;
-	ImageColour3b* pImage3b = NULL;
+	ImageColour3f* pImage3f = nullptr;
+	ImageColour3b* pImage3b = nullptr;
 
 	const bool makeFloat = !(requiredTypeFlags & Image::IMAGE_FORMAT_NATIVE);
 
@@ -99,7 +99,7 @@ Image* ImageReaderJPEG::readColourImage(const std::string& filePath, unsigned in
 
 		delete [] pScanlines;
 
-		return NULL;
+		return nullptr;
 	}
 
 	// read all the scanlines
@@ -226,7 +226,7 @@ Image* ImageReaderJPEG::readColourImageAndByteCopy(const std::string& filePath, 
 	if (!pFile)
 	{
 		GlobalContext::instance().getLogger().error("Can't open file: %s", filePath.c_str());
-		return NULL;
+		return nullptr;
 	}
 
 	struct jpeg_decompress_struct cinfo;
@@ -258,7 +258,7 @@ Image* ImageReaderJPEG::readColourImageAndByteCopy(const std::string& filePath, 
 
 			fclose(pFile);
 
-			return NULL;
+			return nullptr;
 		}
 
 		// read all the scanlines
@@ -351,7 +351,7 @@ Image* ImageReaderJPEG::readGreyscaleImage(const std::string& filePath, unsigned
 	if (!pFile)
 	{
 		GlobalContext::instance().getLogger().error("Can't open file: %s", filePath.c_str());
-		return NULL;
+		return nullptr;
 	}
 
 	struct jpeg_decompress_struct cinfo;
@@ -373,8 +373,8 @@ Image* ImageReaderJPEG::readGreyscaleImage(const std::string& filePath, unsigned
 
 	const bool makeFloat = !(requiredTypeFlags & Image::IMAGE_FORMAT_NATIVE);
 
-	Image1f* pImage1f = NULL;
-	Image1b* pImage1b = NULL;
+	Image1f* pImage1f = nullptr;
+	Image1b* pImage1b = nullptr;
 
 	if (makeFloat)
 	{

@@ -51,8 +51,6 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 	line.resize(2048);
 
 	Mesh* pNewMesh = new Mesh();
-	if (!pNewMesh)
-		return false;
 
 	EditableGeometryInstance* pNewGeoInstance = new EditableGeometryInstance();
 	pNewMesh->setGeometryInstance(pNewGeoInstance);
@@ -100,7 +98,7 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 
 			Point vertex(x, y, z);
 
-			aPoints.push_back(vertex);
+			aPoints.emplace_back(vertex);
 		}
 /*		else if (buf[0] == 'v' && buf[1] == 'n')
 		{
@@ -112,7 +110,7 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 
 			Normal vertex(x, y, z);
 
-			getSubObjectVertexNormals(pNewMesh).push_back(vertex);
+			getSubObjectVertexNormals(pNewMesh).emplace_back(vertex);
 		}
 */		else if (buf[0] == 'v' && buf[1] == 't')
 		{
@@ -123,7 +121,7 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 
 			UV uv(u, v);
 
-			aUVs.push_back(uv);
+			aUVs.emplace_back(uv);
 		}
 		else if ((buf[0] == 'o' || buf[0] == 'g') && buf[1] == ' ')
 		{
@@ -148,12 +146,12 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 				{
 					GeoHelperObj::calculateFaceNormalsForGeometry(pNewGeoInstance);
 					pNewGeoInstance->calculateBoundaryBox();
-					subObjects.push_back(pNewMesh);
+					subObjects.emplace_back(pNewMesh);
 				}
 				else
 				{
 					delete pNewMesh;
-					pNewMesh = NULL;
+					pNewMesh = nullptr;
 				}
 			}
 
@@ -168,13 +166,10 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 
 			// create the new one
 			pNewMesh = new Mesh();
-			if (pNewMesh)
-			{
-				pNewGeoInstance = new EditableGeometryInstance();
-				pNewMesh->setGeometryInstance(pNewGeoInstance);
-				pNewMesh->setMaterial(pDefaultMaterial);
-				pNewMesh->setName(objectName);
-			}
+			pNewGeoInstance = new EditableGeometryInstance();
+			pNewMesh->setGeometryInstance(pNewGeoInstance);
+			pNewMesh->setMaterial(pDefaultMaterial);
+			pNewMesh->setName(objectName);
 		}
 		else if (buf[0] == 'f')
 		{
@@ -204,7 +199,7 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 			{
 				const StringToken& item = aItems[i];
 
-				const std::string& strItem = line.substr(item.start, item.length);
+				const std::string strItem = line.substr(item.start, item.length);
 
 				components = fastSplitNoEmpties(strItem, aComponents, sep2);
 
@@ -215,7 +210,7 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 					if (component.length == 0)
 						continue;
 
-					const std::string& strValue = strItem.substr(component.start, component.length);
+					const std::string strValue = strItem.substr(component.start, component.length);
 
 					int value = atoi(strValue.c_str());
 
@@ -252,7 +247,7 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 				}
 			}
 
-			pNewGeoInstance->getFaces().push_back(newFace);
+			pNewGeoInstance->getFaces().emplace_back(newFace);
 		}
 		else if (stringCompare(buf, "mtllib", 6))
 		{
@@ -299,12 +294,12 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 				{
 					GeoHelperObj::calculateFaceNormalsForGeometry(pNewGeoInstance);
 					pNewGeoInstance->calculateBoundaryBox();
-					subObjects.push_back(pNewMesh);
+					subObjects.emplace_back(pNewMesh);
 				}
 				else
 				{
 					delete pNewMesh;
-					pNewMesh = NULL;
+					pNewMesh = nullptr;
 				}
 
 				aVertexIndexesForObject.clear();
@@ -312,13 +307,10 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 
 				// create the new one
 				pNewMesh = new Mesh();
-				if (pNewMesh)
-				{
-					pNewGeoInstance = new EditableGeometryInstance();
-					pNewMesh->setGeometryInstance(pNewGeoInstance);
-					pNewMesh->setMaterial(pDefaultMaterial);
-					pNewMesh->setName(lastName);
-				}
+				pNewGeoInstance = new EditableGeometryInstance();
+				pNewMesh->setGeometryInstance(pNewGeoInstance);
+				pNewMesh->setMaterial(pDefaultMaterial);
+				pNewMesh->setName(lastName);
 			}
 
 			lastMaterialName = mtlName;
@@ -346,7 +338,7 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 		{
 			GeoHelperObj::calculateFaceNormalsForGeometry(pNewGeoInstance);
 			pNewGeoInstance->calculateBoundaryBox();
-			subObjects.push_back(pNewMesh);
+			subObjects.emplace_back(pNewMesh);
 		}
 	}
 
@@ -368,12 +360,10 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 	{
 		Object* pObject = *it;
 
-		results.objects.push_back(pObject);
+		results.objects.emplace_back(pObject);
 
 //			pCO->addObject(pObject);
 	}
-
-
 
 	std::vector<Material*> aMaterials;
 
@@ -383,9 +373,9 @@ bool SceneReaderObj::readFile(const std::string& path, const SceneReaderOptions&
 	{
 		Material* pMat = *itMat;
 
-		aMaterials.push_back(pMat);
+		aMaterials.emplace_back(pMat);
 
-		results.materials.push_back(pMat);
+		results.materials.emplace_back(pMat);
 	}
 
 	pNewMesh->getMaterialManager().addMaterials(aMaterials, true);

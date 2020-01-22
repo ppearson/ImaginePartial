@@ -70,7 +70,7 @@ public:
 	TextureWidget(TextureParameters* pParams, QWidget* parent, unsigned int flags);
 
 	// without a bound TextureParameters*, so it can be used stand-alone
-	TextureWidget(Texture::RequiredType outputType, bool performAutoFileBrowse, QWidget* parent = NULL);
+	TextureWidget(Texture::RequiredType outputType, bool performAutoFileBrowse, QWidget* parent = nullptr);
 
 	void initCommon();
 
@@ -121,7 +121,7 @@ protected:
 	unsigned int			m_offset; // offset after Constant and Image...
 
 	TextureParameters*		m_pPairedValue;
-	// we're only in control of this if m_pPairedValue is NULL, otherwise it's just a copy
+	// we're only in control of this if m_pPairedValue is nullptr, otherwise it's just a copy
 	Texture*				m_pTexture;
 	float					m_scaleU;
 	float					m_scaleV;

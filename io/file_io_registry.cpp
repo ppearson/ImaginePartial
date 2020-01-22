@@ -98,7 +98,7 @@ GeoReader* FileIORegistry::createGeometryReaderForExtension(const std::string& e
 	if (itFind != m_geoReaders.end())
 		return (itFind->second)();
 
-	return NULL;
+	return nullptr;
 }
 
 GeoWriter* FileIORegistry::createGeometryWriterForExtension(const std::string& extension) const
@@ -107,7 +107,7 @@ GeoWriter* FileIORegistry::createGeometryWriterForExtension(const std::string& e
 	if (itFind != m_geoWriters.end())
 		return (itFind->second)();
 
-	return NULL;
+	return nullptr;
 }
 
 
@@ -117,7 +117,7 @@ SceneReader* FileIORegistry::createSceneReaderForExtension(const std::string& ex
 	if (itFind != m_sceneReaders.end())
 		return (itFind->second)();
 
-	return NULL;
+	return nullptr;
 }
 
 
@@ -127,7 +127,7 @@ ImageReader* FileIORegistry::createImageReaderForExtension(const std::string& ex
 	if (itFind != m_imageReaders.end())
 		return (itFind->second)();
 
-	return NULL;
+	return nullptr;
 }
 
 ImageWriter* FileIORegistry::createImageWriterForExtension(const std::string& extension) const
@@ -136,7 +136,7 @@ ImageWriter* FileIORegistry::createImageWriterForExtension(const std::string& ex
 	if (itFind != m_imageWriters.end())
 		return (itFind->second)();
 
-	return NULL;
+	return nullptr;
 }
 
 VolumeReader* FileIORegistry::createVolumeReaderForExtension(const std::string& extension) const
@@ -145,7 +145,7 @@ VolumeReader* FileIORegistry::createVolumeReaderForExtension(const std::string& 
 	if (itFind != m_volumeReaders.end())
 		return (itFind->second)();
 
-	return NULL;
+	return nullptr;
 }
 
 bool FileIORegistry::doesImageReaderSupportPartialReads(const std::string& extension) const

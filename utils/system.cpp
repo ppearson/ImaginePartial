@@ -37,9 +37,9 @@
 #include <windows.h>
 #endif
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
 
 #include "utils/bitset.h"
 
@@ -66,7 +66,7 @@ unsigned int System::getNumberOfThreads()
 
 	unsigned int coreCount = 0;
 	size = sizeof(coreCount);
-	if (sysctl(mib, 2, &coreCount, &size, NULL, 0) == -1)
+	if (sysctl(mib, 2, &coreCount, &size, nullptr, 0) == -1)
 		return 1;
 
 	return coreCount;
@@ -92,7 +92,7 @@ unsigned int System::getNumberOfCores()
 
 	unsigned int coreCount = 0;
 	size = sizeof(coreCount);
-	if (sysctl(mib, 2, &coreCount, &size, NULL, 0) == -1)
+	if (sysctl(mib, 2, &coreCount, &size, nullptr, 0) == -1)
 		return 1;
 
 	return coreCount;
@@ -130,7 +130,7 @@ size_t System::getTotalMemory()
 	int mib[2];
 	mib[0] = CTL_HW;
 	mib[1] = HW_MEMSIZE;
-	if (sysctl(mib, 2, &memory, &size, NULL, 0) != -1)
+	if (sysctl(mib, 2, &memory, &size, nullptr, 0) != -1)
 	{
 		total = memory;
 	}
@@ -153,7 +153,7 @@ size_t System::getAvailableMemory()
 	int mib[2];
 	mib[0] = CTL_HW;
 	mib[1] = HW_PAGESIZE;
-	if (sysctl(mib, 2, &pageSize, &size, NULL, 0) == -1)
+	if (sysctl(mib, 2, &pageSize, &size, nullptr, 0) == -1)
 	{
 		return 0;
 	}
@@ -297,7 +297,7 @@ bool System::getLinuxCPUInfo(CPUInfo& info)
 	Bitset physicalIDsSeen;
 	physicalIDsSeen.initialise(128);
 
-	while (fgets(szTemp, 64, pFile) != NULL)
+	while (fgets(szTemp, 64, pFile) != nullptr)
 	{
 		unsigned int physicalID = 0;
 		if (getLinuxInfoToken(szTemp, "physical id", physicalID))

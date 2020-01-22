@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2012-2016 Peter Pearson.
+ Copyright 2012-2019 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public:
 
 	static Colour3f convertByteHSVToLinearRGB(unsigned char H, unsigned char S, unsigned char V);
 	static Colour3f convertLinearHSVToLinearRGB(float H, float S, float V);
-
+	
 
 	////
 

@@ -52,7 +52,7 @@ public:
 
 	struct RenderThreadInitResult
 	{
-		RenderThreadInitResult() : pImageTile(NULL), pRenderThreadContext(NULL)
+		RenderThreadInitResult() : pImageTile(nullptr), pRenderThreadContext(nullptr)
 		{
 
 		}
@@ -172,7 +172,7 @@ protected:
 
 			m_lock.lock();
 
-			LightSampler* pNewLightSampler = NULL;
+			LightSampler* pNewLightSampler = nullptr;
 
 			if (pThisTask->m_localisedSampleCount == 0)
 			{

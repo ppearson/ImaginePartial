@@ -21,7 +21,7 @@
 namespace Imagine
 {
 
-PropertiesTreePropertiesDataStruct::PropertyItem::PropertyItem() : m_pData(NULL), m_type(eNone), m_pOptions(NULL)
+PropertiesTreePropertiesDataStruct::PropertyItem::PropertyItem() : m_pData(nullptr), m_type(eNone), m_pOptions(nullptr)
 {
 
 }
@@ -37,17 +37,17 @@ PropertiesTreePropertiesDataStruct::PropertyItem::PropertyItem(const std::string
 
 void PropertiesTreePropertiesDataStruct::addBool(const std::string& category, const std::string& name, const void* pData)
 {
-	addProperty(category, name, PropertyItem::eBool, pData, NULL);
+	addProperty(category, name, PropertyItem::eBool, pData, nullptr);
 }
 
 void PropertiesTreePropertiesDataStruct::addUInt(const std::string& category, const std::string& name, const void* pData)
 {
-	addProperty(category, name, PropertyItem::eUInt, pData, NULL);
+	addProperty(category, name, PropertyItem::eUInt, pData, nullptr);
 }
 
 void PropertiesTreePropertiesDataStruct::addFloat(const std::string& category, const std::string& name, const void* pData)
 {
-	addProperty(category, name, PropertyItem::eFloat, pData, NULL);
+	addProperty(category, name, PropertyItem::eFloat, pData, nullptr);
 }
 
 void PropertiesTreePropertiesDataStruct::addEnum(const std::string& category, const std::string& name, const void* pData, const char** pOptions)
@@ -57,7 +57,7 @@ void PropertiesTreePropertiesDataStruct::addEnum(const std::string& category, co
 
 void PropertiesTreePropertiesDataStruct::addProperty(const std::string& category, const std::string& name, PropertyItem::PropertyType type, const void* pData, const char** pOptions)
 {
-	m_aItems.push_back(PropertyItem(category, name, type, pData, pOptions));
+	m_aItems.emplace_back(PropertyItem(category, name, type, pData, pOptions));
 }
 
 //
@@ -76,7 +76,7 @@ PropertiesTreeItem::~PropertiesTreeItem()
 PropertiesTreeItem* PropertiesTreeItem::child(int number)
 {
 	if (number >= m_childItems.count())
-		return NULL;
+		return nullptr;
 
 	return m_childItems.value(number);
 }
@@ -120,7 +120,7 @@ void PropertiesTreeItem::addChild(PropertiesTreeItem* pChild)
 ////
 
 PropertiesTreeDataModel::PropertiesTreeDataModel(QObject *parent) : QAbstractItemModel(parent),
-	m_pRootItem(NULL)
+	m_pRootItem(nullptr)
 {
 	clear();
 }
@@ -258,7 +258,7 @@ void PropertiesTreeDataModel::clear()
 	if (m_pRootItem)
 		delete m_pRootItem;
 
-	m_pRootItem = new PropertiesTreeItem(QString(""), NULL, false);
+	m_pRootItem = new PropertiesTreeItem(QString(""), nullptr, false);
 
 	endResetModel();
 }

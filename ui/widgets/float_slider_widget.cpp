@@ -29,7 +29,7 @@ namespace Imagine
 {
 
 FloatSliderWidget::FloatSliderWidget(float min, float max, bool editControl, bool logScaleSlider, bool highPrecision,
-									 QWidget* parent) : QWidget(parent), m_pDoubleSpin(NULL), m_pSlider(NULL),
+									 QWidget* parent) : QWidget(parent), m_pDoubleSpin(nullptr), m_pSlider(nullptr),
 									m_logScale(logScaleSlider)
 {
 	m_pSlider = new QSlider(Qt::Horizontal);
@@ -112,13 +112,13 @@ FloatSliderWidget::~FloatSliderWidget()
 	if (m_pDoubleSpin)
 	{
 		delete m_pDoubleSpin;
-		m_pDoubleSpin = NULL;
+		m_pDoubleSpin = nullptr;
 	}
 
 	if (m_pSlider)
 	{
 		delete m_pSlider;
-		m_pSlider = NULL;
+		m_pSlider = nullptr;
 	}
 }
 

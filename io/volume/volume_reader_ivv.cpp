@@ -18,7 +18,7 @@
 
 #include "volume_reader_ivv.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "global_context.h"
 
@@ -121,7 +121,7 @@ VolumeInstance* VolumeReaderIVV::readVolume(const std::string& filePath, unsigne
 	if (!pFile)
 	{
 		GlobalContext::instance().getLogger().error("Error opening volume file: %s", filePath.c_str());
-		return NULL;
+		return nullptr;
 	}
 
 	size_t bytesRead = 0;
@@ -133,7 +133,7 @@ VolumeInstance* VolumeReaderIVV::readVolume(const std::string& filePath, unsigne
 	{
 		fclose(pFile);
 		GlobalContext::instance().getLogger().error("Can't read volume file: %s", filePath.c_str());
-		return NULL;
+		return nullptr;
 	}
 	
 	// TODO: decent error handling on reads...
@@ -192,9 +192,9 @@ VolumeInstance* VolumeReaderIVV::readVolume(const std::string& filePath, unsigne
 	localBB.includePoint(bbMax);
 	bbox = localBB;
 
-	VolumeGridDense* pVolGridDense = NULL;
-	VolumeGridSparse* pVolGridSparse = NULL;
-	VolumeInstance* pVolInstance = NULL;
+	VolumeGridDense* pVolGridDense = nullptr;
+	VolumeGridSparse* pVolGridSparse = nullptr;
+	VolumeInstance* pVolInstance = nullptr;
 
 	if (denseGrid)
 	{
@@ -219,7 +219,7 @@ VolumeInstance* VolumeReaderIVV::readVolume(const std::string& filePath, unsigne
 	{
 		fclose(pFile);
 		GlobalContext::instance().getLogger().error("Could not allocate memory for volume grid for volume file: %s", filePath.c_str());
-		return NULL;
+		return nullptr;
 	}
 
 	pVolInstance->setLocalBoundaryBox(localBB);

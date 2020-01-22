@@ -153,16 +153,29 @@ public:
 
 		return ret;
 	}
+	
+	Point asAbs() const
+	{
+		float aX = fabsf(x);
+		float aY = fabsf(y);
+		float aZ = fabsf(z);
+		
+		return Point(aX, aY, aZ);
+	}
 
 	inline Point& operator+=(const Point& rhs)
 	{
-		x += rhs.x, y += rhs.y, z += rhs.z;
+		x += rhs.x;
+		y += rhs.y;
+		z += rhs.z;
 		return *this;
 	}
 
 	inline Point& operator-=(const Vector& rhs)
 	{
-		x -= rhs.x, y -= rhs.y, z -= rhs.z;
+		x -= rhs.x;
+		y -= rhs.y;
+		z -= rhs.z;
 		return *this;
 	}
 
@@ -288,7 +301,9 @@ public:
 
 	inline PointDouble &operator*=(double scale)
 	{
-		x *= scale; y *= scale; z *= scale;
+		x *= scale;
+		y *= scale;
+		z *= scale;
 		return *this;
 	}
 

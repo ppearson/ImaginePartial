@@ -40,7 +40,7 @@ namespace Imagine
 {
 
 MaterialControl::MaterialControl(const std::string& name, Object* parentObject, const std::string& label) : Control(name, label), m_pParentObject(parentObject),
-	m_pSelectionManager(NULL), m_shiftPressed(false)
+	m_pSelectionManager(nullptr), m_shiftPressed(false)
 {
 	initCommon();
 }
@@ -320,12 +320,12 @@ Material* MaterialControl::getMaterial()
 	else if (m_pSelectionManager)
 		return m_pSelectionManager->getMaterial();
 
-	return NULL;
+	return nullptr;
 }
 
 void MaterialControl::setSelectionManager()
 {
-	m_pParentObject = NULL;
+	m_pParentObject = nullptr;
 	m_pSelectionManager = &SelectionManager::instance();
 }
 

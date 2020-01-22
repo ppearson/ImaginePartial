@@ -38,7 +38,7 @@ CombinationButton::CombinationButton(const char** pOptions, QWidget* parent) :	Q
 	unsigned int i = 0;
 	while (pOptions[i])
 	{
-		m_aOptions.push_back(pOptions[i++]);
+		m_aOptions.emplace_back(pOptions[i++]);
 	}
 
 	// TODO: could do all this in above loop...
@@ -52,7 +52,7 @@ CombinationButton::CombinationButton(const char** pOptions, QWidget* parent) :	Q
 		m_pSignalMapper->setMapping(pNewOption, menuIndex);
 
 		pNewOption->setCheckable(true);
-		m_aActions.push_back(pNewOption);
+		m_aActions.emplace_back(pNewOption);
 
 		pMenu->addAction(pNewOption);
 

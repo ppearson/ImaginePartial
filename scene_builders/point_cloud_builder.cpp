@@ -153,11 +153,11 @@ void PointCloudBuilder::createScene(Scene& scene)
 				float xPos = rng.randomFloat(0.0f, 1.0f);
 				float yPos = rng.randomFloat(0.0f, 1.0f);
 	
-				samples.samples.push_back(Sample2D(xPos, yPos));
+				samples.samples.emplace_back(Sample2D(xPos, yPos));
 			}
 		}
 		
-		FILE* pPointCloudFile = NULL;
+		FILE* pPointCloudFile = nullptr;
 		if (m_savePointCloudType == 1 && !m_savePath.empty())
 		{
 			pPointCloudFile = fopen(m_savePath.c_str(), "w");
@@ -215,7 +215,7 @@ void PointCloudBuilder::createScene(Scene& scene)
 											red, green, blue);
 			}
 			
-			aFinalItemPositions.push_back(finalPos);
+			aFinalItemPositions.emplace_back(finalPos);
 		}
 		
 		if (pPointCloudFile)

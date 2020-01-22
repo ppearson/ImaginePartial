@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2017 Peter Pearson.
+ Copyright 2017-2020 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ inline static float reverseFloatBytes(float value)
 	// use a separate variable in an attempt to reduce aliasing...
 	float finalValue;
 	
-	unsigned char* pSrc = (unsigned char*)&value;
+	const unsigned char* pSrc = (const unsigned char*)&value;
 	unsigned char* pDst = (unsigned char*)&finalValue;
 	
 	for (unsigned int i = 0; i < 4; i++)
@@ -50,13 +50,26 @@ inline static unsigned int reverseUIntBytes(unsigned int value)
 	// use a separate variable in an attempt to reduce aliasing...
 	unsigned int finalValue;
 	
-	unsigned char* pSrc = (unsigned char*)&value;
+	const unsigned char* pSrc = (const unsigned char*)&value;
 	unsigned char* pDst = (unsigned char*)&finalValue;
 	
 	for (unsigned int i = 0; i < 4; i++)
 	{
 		pDst[i] = pSrc[3 - i];
 	}
+	
+	return finalValue;
+}
+
+inline static uint16_t reverseUInt16Bytes(uint16_t value)
+{
+	uint16_t finalValue;
+	
+	const unsigned char* pSrc = (const unsigned char*)&value;
+	unsigned char* pDst = (unsigned char*)&finalValue;
+	
+	pDst[0] = pSrc[1];
+	pDst[1] = pSrc[0];
 	
 	return finalValue;
 }

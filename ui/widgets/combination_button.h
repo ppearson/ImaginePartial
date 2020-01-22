@@ -34,7 +34,7 @@ class CombinationButton : public QPushButton
 {
 	Q_OBJECT
 public:
-	CombinationButton(const char** pOptions, QWidget* parent = NULL);
+	CombinationButton(const char** pOptions, QWidget* parent = nullptr);
 
 	virtual void mousePressEvent(QMouseEvent* event);
 

@@ -18,10 +18,10 @@
 
 #include "string_helpers.h"
 
-#include <stdio.h>
-#include <assert.h>
+#include <cstdio>
+#include <cassert>
 #include <algorithm>
-#include <stdarg.h>
+#include <cstdarg>
 
 namespace Imagine
 {
@@ -33,7 +33,7 @@ void splitString(const std::string& str, std::vector<std::string>& tokens, const
 
 	while (lastPos != -1 || pos != -1)
 	{
-		tokens.push_back(str.substr(lastPos, pos - lastPos));
+		tokens.emplace_back(str.substr(lastPos, pos - lastPos));
 		lastPos = str.find_first_not_of(sep, pos);
 		pos = str.find_first_of(sep, lastPos);
 	}
@@ -363,8 +363,8 @@ void TextOutputColumnifier::addStringsCustom(const std::string& string0, const c
 
 	std::string customString(szTemp);
 
-	m_column0.push_back(string0);
-	m_column1.push_back(customString);
+	m_column0.emplace_back(string0);
+	m_column1.emplace_back(customString);
 }
 
 void TextOutputColumnifier::addStringsCustom2(const std::string& string0, const std::string& string1, const char* format, ...)
@@ -377,18 +377,18 @@ void TextOutputColumnifier::addStringsCustom2(const std::string& string0, const 
 
 	std::string customString(szTemp);
 
-	m_column0.push_back(string0);
-	m_column1.push_back(string1);
-	m_column2.push_back(customString);
+	m_column0.emplace_back(string0);
+	m_column1.emplace_back(string1);
+	m_column2.emplace_back(customString);
 }
 
 void TextOutputColumnifier::addBlank(unsigned int numColumns)
 {
-	m_column0.push_back("");
-	m_column1.push_back("");
+	m_column0.emplace_back("");
+	m_column1.emplace_back("");
 	if (numColumns > 2)
 	{
-		m_column2.push_back("");
+		m_column2.emplace_back("");
 	}
 }
 

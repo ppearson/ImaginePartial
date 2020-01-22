@@ -37,7 +37,7 @@ class MaterialWidget : public QWidget
 {
 	Q_OBJECT
 public:
-	MaterialWidget(Material** pPairedMaterial, QWidget* parent = NULL);
+	MaterialWidget(Material** pPairedMaterial, QWidget* parent = nullptr);
 	virtual ~MaterialWidget();
 
 	void deleteCurrentMaterial();

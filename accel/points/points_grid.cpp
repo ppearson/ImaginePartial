@@ -75,7 +75,7 @@ void PointsGrid::build(const std::vector<PointColour3f>& points, float lookupSiz
 			{
 				SubCell* pNewSubCell = m_subCellMemory.allocSingle<SubCell>();				
 
-				m_aSubCells.push_back(pNewSubCell);
+				m_aSubCells.emplace_back(pNewSubCell);
 			}
 		}
 	}
@@ -148,8 +148,8 @@ Colour3f PointsGrid::lookupColour(const Point& worldSpacePosition, float filterR
 			items.addItem(distance, pointIndex);
 		}
 
-		const float* pFinalSizes = NULL;
-		const unsigned int* pFinalIndices = NULL;
+		const float* pFinalSizes = nullptr;
+		const unsigned int* pFinalIndices = nullptr;
 		unsigned int numItems = items.getFinalItems(pFinalSizes, pFinalIndices);
 		Colour3f finalColour;
 		float ratioDistance = pFinalSizes[numItems - 1];

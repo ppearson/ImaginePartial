@@ -46,7 +46,7 @@ MultiOptionMenuButton::MultiOptionMenuButton(const std::vector<std::string>& opt
 		m_pSignalMapper->setMapping(pNewOption, menuIndex);
 
 		pNewOption->setCheckable(true);
-		m_aActions.push_back(pNewOption);
+		m_aActions.emplace_back(pNewOption);
 
 		pMenu->addAction(pNewOption);
 
@@ -68,10 +68,10 @@ MultiOptionMenuButton::MultiOptionMenuButton(const std::vector<std::string>& opt
 			connect(pNewOption, SIGNAL(triggered()), m_pSignalMapper, SLOT(map()));
 			m_pSignalMapper->setMapping(pNewOption, menuIndex);
 
-			m_aOptions.push_back(optionName);
+			m_aOptions.emplace_back(optionName);
 
 			pNewOption->setCheckable(true);
-			m_aActions.push_back(pNewOption);
+			m_aActions.emplace_back(pNewOption);
 
 			pMenu->addAction(pNewOption);
 
@@ -168,7 +168,7 @@ bool MultiOptionMenuButton::getEnabledIndexes(std::vector<unsigned int>& indexes
 		const QAction* pAction = m_aActions[i];
 		if (pAction->isChecked())
 		{
-			indexes.push_back(i);
+			indexes.emplace_back(i);
 		}
 	}
 

@@ -24,7 +24,7 @@ namespace Imagine
 bool SceneBuilderFactory::registerSceneBuilder(unsigned char id, std::string description, CreateSceneBuilderCallback createSceneBuilderCB)
 {
 	m_sceneBuilders.insert(SceneBuilderCallbacks::value_type(id, createSceneBuilderCB));
-	m_names.insert(SceneBuilderNames::value_type(id, description));
+	m_names.insert(SceneBuilderNames::value_type(description, id));
 	return true;
 }
 
@@ -34,7 +34,7 @@ SceneBuilder* SceneBuilderFactory::createSceneBuilderForTypeID(unsigned char typ
 	if (itFind != m_sceneBuilders.end())
 		return (itFind->second)();
 
-	return NULL;
+	return nullptr;
 }
 
 } // namespace Imagine

@@ -89,7 +89,7 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 
 		if (pGeoInstance->getTypeID() == 1)
 		{
-			EditableGeometryInstance* pEditableGeoInstance = reinterpret_cast<EditableGeometryInstance*>(pGeoInstance);
+			EditableGeometryInstance* pEditableGeoInstance = dynamic_cast<EditableGeometryInstance*>(pGeoInstance);
 
 			writeUVs = writeUVs && pEditableGeoInstance->hasPerVertexUVs();
 
@@ -109,7 +109,7 @@ bool GeoWriterObj::writeFile(Object* pObject, const std::string& path, const Geo
 		}
 		else if (pGeoInstance->getTypeID() == 3)
 		{
-			StandardGeometryInstance* pStandardGeoInstance = reinterpret_cast<StandardGeometryInstance*>(pGeoInstance);
+			StandardGeometryInstance* pStandardGeoInstance = dynamic_cast<StandardGeometryInstance*>(pGeoInstance);
 
 			writeUVs = writeUVs && pStandardGeoInstance->hasPerVertexUVs();
 

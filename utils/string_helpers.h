@@ -71,15 +71,15 @@ public:
 
 	void addStrings(const std::string& string0, const std::string& string1)
 	{
-		m_column0.push_back(string0);
-		m_column1.push_back(string1);
+		m_column0.emplace_back(string0);
+		m_column1.emplace_back(string1);
 	}
 
 	void addStrings(const std::string& string0, const std::string& string1, const std::string& string2)
 	{
-		m_column0.push_back(string0);
-		m_column1.push_back(string1);
-		m_column2.push_back(string2);
+		m_column0.emplace_back(string0);
+		m_column1.emplace_back(string1);
+		m_column2.emplace_back(string2);
 	}
 
 	void addStringsCustom(const std::string& string0, const char* format, ...);

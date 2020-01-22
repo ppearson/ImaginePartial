@@ -40,11 +40,15 @@
 namespace Imagine
 {
 
-const char* heightSourceOptions[] = { "Image", "Noise", "Ocean", 0 };
+const char* heightSourceOptions[] = { "Image", "Procedural Texture", "Ocean", 0 };
 
 TerrainBuilder::TerrainBuilder() : SceneBuilder(), m_width(100), m_depth(100), m_Xdivisions(100), m_Ydivisions(100), m_editableGeo(false),
-	m_maxHeight(4.0f), m_heightSource(eImage), m_normalise(false), m_heightIgnoreThreshold(31000.0f)
+	m_maxHeight(4.0f), m_heightSource(eTexture), m_normalise(false), m_heightIgnoreThreshold(31000.0f)
 {
+	m_texture.setRequiredType(Texture::eTypeFloatExact);
+	
+	Noise2D* pNoiseTexture = new Noise2D();
+	m_texture.setToManualTexture(pNoiseTexture);
 }
 
 unsigned char TerrainBuilder::getSceneBuilderTypeID()
@@ -70,18 +74,52 @@ void TerrainBuilder::buildParameters(Parameters& parameters, unsigned int flags)
 	parameters.addParameter(new RangeParameter<float, float>("max_height", "Max Height", &m_maxHeight, eParameterFloat, 0.0f, 1000.0f, eParameterScrubButton));
 
 	parameters.addParameter(new EnumParameter("height_source", "height source", (unsigned char*)&m_heightSource, heightSourceOptions));
+	
+	parameters.addParameter(new BasicParameter<TextureParameters>("texture", "Tex", &m_texture, eParameterTexture1f));
 
 	parameters.addParameter(new BasicParameter<std::string>("height_map_path", "Height map path", &m_heightMapPath, eParameterFile));
 
 	parameters.addParameter(new BasicParameter<bool>("normalise", "Normalise", &m_normalise, eParameterBool, 0));
 	parameters.addParameter(new RangeParameter<float, float>("height_ignore_threshold", "Height ignore thresh.", &m_heightIgnoreThreshold, eParameterFloat, 0.0f, 65500.0f, eParameterScrubButton));
+	
+	parameters.setInitiallyHiddenParameter("height_map_path");
+}
+
+bool TerrainBuilder::controlChanged(const std::string& name, PostChangedActions& postChangedActions)
+{
+	if (name == "height_source")
+	{
+		if (m_heightSource == eImage)
+		{
+			postChangedActions.addShowItem("height_map_path");
+			postChangedActions.addHideItem("texture");
+		}
+		else
+		{
+			postChangedActions.addHideItem("height_map_path");
+			postChangedActions.addShowItem("texture");
+		}
+	}
+	else if (name == "height_map_path")
+	{
+		if (m_heightMapPath.find("hgt") != std::string::npos)
+		{
+			m_normalise = true;
+
+			postChangedActions.addRefreshItem("normalise");
+		}
+	}
+	
+	return true;
 }
 
 void TerrainBuilder::createScene(Scene& scene)
 {
 	Mesh* pNewMesh = new Mesh();
 
-	Texture* pHeightMapTexture = NULL;
+	Texture* pHeightMapTexture = nullptr;
+	
+	bool deleteTexture = true;
 
 	if (m_heightSource == eImage && !m_heightMapPath.empty())
 	{
@@ -90,10 +128,10 @@ void TerrainBuilder::createScene(Scene& scene)
 
 		pHeightMapTexture = ImageTextureFactory::createGreyscaleImageTextureForImageFromPath(m_heightMapPath, requiredFlags);
 	}
-	else if (m_heightSource == eNoise)
+	else if (m_heightSource == eTexture)
 	{
-		Noise2D* pNoiseTexture = new Noise2D();
-		pHeightMapTexture = pNoiseTexture;
+		pHeightMapTexture = m_texture.getTexture();
+		deleteTexture = false;
 	}
 	else if (m_heightSource == eOcean)
 	{
@@ -114,7 +152,7 @@ void TerrainBuilder::createScene(Scene& scene)
 		return;
 	}
 
-	if (m_normalise && m_heightSource == eImage && pHeightMapTexture != NULL)
+	if (m_normalise && m_heightSource == eImage && pHeightMapTexture != nullptr)
 	{
 		// work out min and max
 		float minVal = 35000.0f;
@@ -198,9 +236,9 @@ void TerrainBuilder::createScene(Scene& scene)
 	float xIncrease = (float)m_width / (float)m_Xdivisions;
 	float zIncrease = (float)m_depth / (float)m_Ydivisions;
 
-	GeometryInstanceGathered* pNewGeoInstance = NULL;
-	EditableGeometryInstance* pEditableGeoInstance = NULL;
-	StandardGeometryInstance* pStandardGeoInstance = NULL;
+	GeometryInstanceGathered* pNewGeoInstance = nullptr;
+	EditableGeometryInstance* pEditableGeoInstance = nullptr;
+	StandardGeometryInstance* pStandardGeoInstance = nullptr;
 
 	if (m_editableGeo)
 	{
@@ -223,7 +261,7 @@ void TerrainBuilder::createScene(Scene& scene)
 				float zVal = -halfDepth + (zIncrease * z);
 
 				UV uv(u, v);
-				aUVs.push_back(uv);
+				aUVs.emplace_back(uv);
 
 				float height = 0.0f;
 
@@ -233,7 +271,7 @@ void TerrainBuilder::createScene(Scene& scene)
 				height *= m_maxHeight;
 
 				Point newPoint(xVal, height, zVal);
-				aPoints.push_back(newPoint);
+				aPoints.emplace_back(newPoint);
 			}
 		}
 		pEditableGeoInstance->setHasPerVertexUVs(true);
@@ -266,7 +304,7 @@ void TerrainBuilder::createScene(Scene& scene)
 				float zVal = -halfDepth + (zIncrease * z);
 
 				UV uv(u, v);
-				aUVs.push_back(uv);
+				aUVs.emplace_back(uv);
 
 				float height = 0.0f;
 
@@ -276,7 +314,7 @@ void TerrainBuilder::createScene(Scene& scene)
 				height *= m_maxHeight;
 
 				Point newPoint(xVal, height, zVal);
-				aPoints.push_back(newPoint);
+				aPoints.emplace_back(newPoint);
 			}
 		}
 
@@ -285,7 +323,7 @@ void TerrainBuilder::createScene(Scene& scene)
 		pNewGeoInstance = pStandardGeoInstance;
 	}
 
-	if (pHeightMapTexture)
+	if (deleteTexture && pHeightMapTexture)
 	{
 		delete pHeightMapTexture;
 	}
@@ -316,7 +354,7 @@ void TerrainBuilder::createScene(Scene& scene)
 				newFace.addUV(vertex1);
 				newFace.addUV(vertex0);
 
-				aFaces.push_back(newFace);
+				aFaces.emplace_back(newFace);
 			}
 		}
 	}
@@ -340,17 +378,17 @@ void TerrainBuilder::createScene(Scene& scene)
 				unsigned int vertex2 = cornerIndex + (m_Ydivisions + 1);
 				unsigned int vertex3 = cornerIndex + (m_Ydivisions + 1) + 1;
 
-				aPolyIndices.push_back(vertex3);
-				aPolyIndices.push_back(vertex2);
-				aPolyIndices.push_back(vertex1);
-				aPolyIndices.push_back(vertex0);
+				aPolyIndices.emplace_back(vertex3);
+				aPolyIndices.emplace_back(vertex2);
+				aPolyIndices.emplace_back(vertex1);
+				aPolyIndices.emplace_back(vertex0);
 			}
 		}
 
 		unsigned int startIndexCount = 4;
 		for (unsigned int i = 0; i < m_Xdivisions * m_Ydivisions; i++)
 		{
-			aPolyOffsets.push_back(startIndexCount);
+			aPolyOffsets.emplace_back(startIndexCount);
 			startIndexCount += 4;
 		}
 	}
@@ -364,22 +402,6 @@ void TerrainBuilder::createScene(Scene& scene)
 	pNewMesh->setDefaultMaterial();
 
 	addObject(scene, pNewMesh);
-}
-
-bool TerrainBuilder::controlChanged(const std::string& name, PostChangedActions& postChangedActions)
-{
-	if (name == "height_map_path")
-	{
-		if (m_heightMapPath.find("hgt") != std::string::npos)
-		{
-			m_normalise = true;
-
-			postChangedActions.addRefreshItem("normalise");
-
-			return true;
-		}
-	}
-	return false;
 }
 
 } // namespace Imagine

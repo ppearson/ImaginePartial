@@ -39,10 +39,10 @@ Image* ImageReaderTGA::readColourImage(const std::string& filePath, unsigned int
 	TGAInfra infra;
 
 	if (!readData(filePath, infra))
-		return NULL;
+		return nullptr;
 
-	ImageColour3f* pImage3f = NULL;
-	ImageColour3b* pImage3b = NULL;
+	ImageColour3f* pImage3f = nullptr;
+	ImageColour3b* pImage3b = nullptr;
 
 	const bool makeFloat = !(requiredTypeFlags & Image::IMAGE_FORMAT_NATIVE);
 
@@ -53,12 +53,6 @@ Image* ImageReaderTGA::readColourImage(const std::string& filePath, unsigned int
 	else
 	{
 		pImage3b = new ImageColour3b(infra.header.width, infra.header.height, false);
-	}
-
-	if (!pImage3f && !pImage3b)
-	{
-		GlobalContext::instance().getLogger().error("Can't allocate memory for image...");
-		return NULL;
 	}
 
 	TGAPixel* pScanlineBuffer = infra.pBuffer;
@@ -132,12 +126,12 @@ Image* ImageReaderTGA::readGreyscaleImage(const std::string& filePath, unsigned 
 	TGAInfra infra;
 
 	if (!readData(filePath, infra))
-		return NULL;
+		return nullptr;
 
 	const bool makeFloat = !(requiredTypeFlags & Image::IMAGE_FORMAT_NATIVE);
 
-	Image1f* pImage1f = NULL;
-	Image1b* pImage1b = NULL;
+	Image1f* pImage1f = nullptr;
+	Image1b* pImage1b = nullptr;
 
 	if (makeFloat)
 	{
@@ -146,12 +140,6 @@ Image* ImageReaderTGA::readGreyscaleImage(const std::string& filePath, unsigned 
 	else
 	{
 		pImage1b = new Image1b(infra.header.width, infra.header.height, false);
-	}
-
-	if (!pImage1f && !pImage1b)
-	{
-		GlobalContext::instance().getLogger().error("Can't allocate memory for image...");
-		return NULL;
 	}
 
 	TGAPixel* pScanlineBuffer = infra.pBuffer;
@@ -421,13 +409,6 @@ bool ImageReaderTGA::readData(const std::string& filePath, TGAInfra& infra)
 	}
 
 	infra.pBuffer = new TGAPixel[infra.header.width * infra.header.height];
-	if (!infra.pBuffer)
-	{
-		fclose(infra.pFile);
-		GlobalContext::instance().getLogger().error("Can't allocate memory for image...");
-		return false;
-	}
-
 	memset(infra.pBuffer, 0, infra.header.width * infra.header.height * sizeof(TGAPixel));
 
 	unsigned char p[5];
@@ -497,7 +478,7 @@ bool ImageReaderTGA::readData(const std::string& filePath, TGAInfra& infra)
 	return true;
 }
 
-void ImageReaderTGA::extractPixelValues(unsigned char* pixel, TGAPixel* finalPixels, unsigned int bytes)
+void ImageReaderTGA::extractPixelValues(const unsigned char* pixel, TGAPixel* finalPixels, unsigned int bytes)
 {
 	switch (bytes)
 	{

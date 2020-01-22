@@ -28,7 +28,7 @@ class Light;
 
 struct LightsAndSamples
 {
-	LightsAndSamples() : pLight(NULL), numSamples(0), sampleMultiplier(1), rcpMultiplier(1.0f)
+	LightsAndSamples() : pLight(nullptr), numSamples(0), sampleMultiplier(1), rcpMultiplier(1.0f)
 	{
 	}
 

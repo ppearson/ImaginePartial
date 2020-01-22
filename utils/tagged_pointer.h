@@ -30,7 +30,7 @@ class TaggedPointer
 public:
 	// explicitly don't use setBoth() for this, as there's an overhead doing that
 	// and we don't need to anyway...
-	inline TaggedPointer() : m_pPointer(NULL)
+	inline TaggedPointer() : m_pPointer(nullptr)
 	{
 		
 	}

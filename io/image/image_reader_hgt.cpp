@@ -18,7 +18,7 @@
 
 #include "image_reader_hgt.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -39,7 +39,7 @@ Image* ImageReaderHGT::readGreyscaleImage(const std::string& filePath, unsigned 
 	FILE* pFile = fopen(filePath.c_str(), "rb");
 	if (!pFile)
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	// work out the res based on file size... - only way there seems to be to do this.
@@ -59,12 +59,6 @@ Image* ImageReaderHGT::readGreyscaleImage(const std::string& filePath, unsigned 
 	//       creates geo at the same time rather than here...
 
 	Image1f* pNewImage = new Image1f(imageWidth, imageHeight, false);
-
-	if (!pNewImage)
-	{
-		fclose(pFile);
-		return NULL;
-	}
 
 	// TODO: which axis is first?
 	for (unsigned int x = 0; x < numRows; x++)

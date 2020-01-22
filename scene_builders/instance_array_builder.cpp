@@ -18,7 +18,7 @@
 
 #include "instance_array_builder.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "scene.h"
 
@@ -111,11 +111,11 @@ void InstanceArrayBuilder::createScene(Scene& scene)
 
 			scene.getMaterialManager().addMaterial(pNewMaterial);
 
-			aMaterials.push_back(pNewMaterial);
+			aMaterials.emplace_back(pNewMaterial);
 		}
 	}
 
-	CompoundObject* pCO = NULL;
+	CompoundObject* pCO = nullptr;
 	if (m_addToGroup)
 	{
 		pCO = new CompoundObject();
@@ -123,7 +123,7 @@ void InstanceArrayBuilder::createScene(Scene& scene)
 
 	bool shouldMakeBakedInstances = m_useBakedInstances;
 
-	CompoundObject* pSrcCOForBakedInstances = NULL;
+	CompoundObject* pSrcCOForBakedInstances = nullptr;
 
 	// check that source selected object is actually a Compound Object...
 	if (shouldMakeBakedInstances && pCurrentSelObject->getObjectType() == eCollection)
@@ -150,7 +150,7 @@ void InstanceArrayBuilder::createScene(Scene& scene)
 
 			for (unsigned int zItems = 0; zItems < m_depth; zItems++)
 			{
-				Object* pNewObject = NULL;
+				Object* pNewObject = nullptr;
 
 				if (!shouldMakeBakedInstances)
 				{

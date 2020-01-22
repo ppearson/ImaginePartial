@@ -24,8 +24,8 @@
 namespace Imagine
 {
 
-Control::Control(const std::string& name, const std::string& label) : m_widget(NULL), m_name(name), m_label(label),
-	m_pParametersPanel(NULL), m_pConnectionProxy(NULL), m_enabled(true), m_canUndo(false)
+Control::Control(const std::string& name, const std::string& label) : m_widget(nullptr), m_name(name), m_label(label),
+	m_pParametersPanel(nullptr), m_pConnectionProxy(nullptr), m_enabled(true), m_canUndo(false)
 {
 	m_pConnectionProxy = new ControlConnectionProxy(this);
 }

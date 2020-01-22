@@ -40,7 +40,7 @@ ColourControl::ColourControl(const std::string& name, Colour3f* pairedValue, con
 
 		for (unsigned int i = 0; i < 3; i++)
 		{
-			m_Spins[i] = NULL;
+			m_Spins[i] = nullptr;
 		}
 	}
 	else

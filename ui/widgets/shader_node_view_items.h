@@ -37,7 +37,7 @@ class ShaderConnectionUI;
 class ShaderNodeUI : public QGraphicsItem
 {
 public:
-	ShaderNodeUI(const std::string& name, ShaderNode* pActualNode = NULL);
+	ShaderNodeUI(const std::string& name, ShaderNode* pActualNode = nullptr);
 	ShaderNodeUI(ShaderNode* pActualNode);
 
 	virtual ~ShaderNodeUI();
@@ -55,7 +55,7 @@ public:
 
 	virtual bool containsSceneSpace(const QPointF& point) const;
 
-	virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = NULL);
+	virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr);
 
 	virtual QVariant itemChange(GraphicsItemChange change, const QVariant& value);
 
@@ -66,7 +66,7 @@ public:
 
 	struct SelectionInfo
 	{
-		SelectionInfo() : pNode(NULL), selectionType(eSelectionNone), portIndex(-1)
+		SelectionInfo() : pNode(nullptr), selectionType(eSelectionNone), portIndex(-1)
 		{
 
 		}
@@ -143,7 +143,7 @@ public:
 
 	virtual bool contains(const QPointF& point) const;
 
-	virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = NULL);
+	virtual void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget = nullptr);
 
 	virtual QVariant itemChange(GraphicsItemChange change, const QVariant& value);
 
@@ -151,7 +151,7 @@ public:
 
 	struct SelectionInfo
 	{
-		SelectionInfo() : pConnection(NULL), wasSource(false)
+		SelectionInfo() : pConnection(nullptr), wasSource(false)
 		{
 
 		}

@@ -148,7 +148,7 @@ protected:
 class ImageTextureDetails
 {
 public:
-	ImageTextureDetails() : m_pCustomData(NULL), 
+	ImageTextureDetails() : m_pCustomData(nullptr), 
 		m_dataType(eUnknown), m_wrapMode(eClamp),
 	    m_fullWidth(0), m_fullHeight(0), m_channelCount(0), 
 	    m_flipY(false),	m_isTiled(false), m_isScanline(false), m_isMipmapped(false),
@@ -162,7 +162,7 @@ public:
 		if (m_pCustomData)
 		{
 			delete m_pCustomData;
-			m_pCustomData = NULL;
+			m_pCustomData = nullptr;
 		}
 	}
 
@@ -269,7 +269,7 @@ class ImageTextureTileReadParams
 public:
 	__finline ImageTextureTileReadParams(const ImageTextureDetails& textureDetails, unsigned int mmLevel, unsigned int tX,
 							   unsigned int tY, size_t pSize, unsigned char* pD) : m_imageDetails(textureDetails), mipmapLevel(mmLevel),
-								tileX(tX), tileY(tY), pixelSize(pSize), pData(pD), m_pExistingFileHandle(NULL), m_allowedToLeaveFileHandleOpen(false),
+								tileX(tX), tileY(tY), pixelSize(pSize), pData(pD), m_pExistingFileHandle(nullptr), m_allowedToLeaveFileHandleOpen(false),
 								m_wantStats(true)
 	{
 
@@ -304,7 +304,7 @@ public:
 	unsigned char* pData;
 
 protected:
-	// existing file handle which might optionally be set (non-NULL) that an image reader can cast to its own
+	// existing file handle which might optionally be set (non-nullptr) that an image reader can cast to its own
 	// derived class to use to get custom data/file handles in order to read tile data from existing file
 	// handles
 	ImageTextureFileHandle*		m_pExistingFileHandle;
@@ -313,7 +313,7 @@ protected:
 	// be re-used later. If it's false, the reader must open and close a handle to a file within
 	// the same call.
 	// If a reader wants to "leak" a file handle, it must set the pointer in ImageTextureTileReadResults
-	// to a non-NULL value, after which ImageTextureCache then owns and controls the handle object
+	// to a non-nullptr value, after which ImageTextureCache then owns and controls the handle object
 	bool	m_allowedToLeaveFileHandleOpen;
 
 	// whether timing stats during the readImageTile() call are wanted...
@@ -324,8 +324,8 @@ protected:
 class ImageTextureTileReadResults
 {
 public:
-	__finline ImageTextureTileReadResults() : m_pNewFileHandle(NULL), m_existingFileHandleUpdated(false), m_openedFile(false),
-		m_tileWasConstant(false), m_pConstantData(NULL), m_rawBytesRead(0)
+	__finline ImageTextureTileReadResults() : m_pNewFileHandle(nullptr), m_existingFileHandleUpdated(false), m_openedFile(false),
+		m_tileWasConstant(false), m_pConstantData(nullptr), m_rawBytesRead(0)
 	{
 	}
 
@@ -360,7 +360,7 @@ public:
 	unsigned char* getConstantData()
 	{
 		if (!m_tileWasConstant || !m_pConstantData)
-			return NULL;
+			return nullptr;
 
 		return m_pConstantData;
 	}

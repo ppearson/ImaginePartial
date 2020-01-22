@@ -126,7 +126,7 @@ protected:
 	void calculateDifferentials(float x, float y, float offsetX, float offsetY, Normal& diffXDir, Normal& diffYDir) const
 	{
 		const float diffXOffset = ((m_invWidth * (x + 1.0f)) * 2.0f) - 1.0f;
-		const float diffYOffset = ((1.0f - (m_invHeight * (y + 1.0))) * 2.0f) - 1.0f;
+		const float diffYOffset = ((1.0f - (m_invHeight * (y + 1.0f))) * 2.0f) - 1.0f;
 
 		float diffXRad = (diffXOffset * diffXOffset) + (offsetY * offsetY);
 		diffXRad = sqrtf(diffXRad);

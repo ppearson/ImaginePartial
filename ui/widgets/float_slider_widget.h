@@ -32,7 +32,7 @@ class FloatSliderWidget : public QWidget
 {
 	Q_OBJECT
 public:
-	FloatSliderWidget(float min, float max, bool editControl, bool logScaleSlider, bool highPrecision, QWidget* parent = NULL);
+	FloatSliderWidget(float min, float max, bool editControl, bool logScaleSlider, bool highPrecision, QWidget* parent = nullptr);
 	virtual ~FloatSliderWidget();
 
 	void setValue(float value);

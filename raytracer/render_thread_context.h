@@ -43,9 +43,9 @@ class RenderThreadContext
 public:
 	RenderThreadContext(const Raytracer* rt, const SceneInterface* sceneInterface, unsigned int threadID)
 		: m_pRaytracer(rt), m_pSceneInterface(sceneInterface),
-		  m_threadID(threadID), m_pLightSampler(NULL), m_pIntegratorTimeCounter(NULL),
-					m_pTextureTimeCounter(NULL), m_pMainImageTextureCache(NULL),
-					m_pRNG(NULL), m_pSampleBundleReuse(NULL), m_pSampleGenerator(NULL)
+		  m_threadID(threadID), m_pLightSampler(nullptr), m_pIntegratorTimeCounter(nullptr),
+					m_pTextureTimeCounter(nullptr), m_pMainImageTextureCache(nullptr),
+					m_pRNG(nullptr), m_pSampleBundleReuse(nullptr), m_pSampleGenerator(nullptr)
 	{
 
 	}
@@ -55,31 +55,31 @@ public:
 		if (m_pLightSampler)
 		{
 			delete m_pLightSampler;
-			m_pLightSampler = NULL;
+			m_pLightSampler = nullptr;
 		}
 
 		if (m_pIntegratorTimeCounter)
 		{
 			delete m_pIntegratorTimeCounter;
-			m_pIntegratorTimeCounter = NULL;
+			m_pIntegratorTimeCounter = nullptr;
 		}
 
 		if (m_pTextureTimeCounter)
 		{
 			delete m_pTextureTimeCounter;
-			m_pTextureTimeCounter = NULL;
+			m_pTextureTimeCounter = nullptr;
 		}
 		
 		if (m_pSampleBundleReuse)
 		{
 			delete m_pSampleBundleReuse;
-			m_pSampleBundleReuse = NULL;
+			m_pSampleBundleReuse = nullptr;
 		}
 		
 		if (m_pSampleGenerator)
 		{
 			delete m_pSampleGenerator;
-			m_pSampleGenerator = NULL;
+			m_pSampleGenerator = nullptr;
 		}
 	}
 

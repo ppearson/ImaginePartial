@@ -23,16 +23,17 @@
 namespace Imagine
 {
 
-static const unsigned int kStatusMask = (3 << 30);
-static const unsigned int kGoodPartitioningFlagMask = (1 << 2);
-static const unsigned int kCheckAllAxesFlagMask = (1 << 3);
-static const unsigned int kClippingFlagMask = (1 << 4);
-static const unsigned int kTrianglePacketsFlagMask = (1 << 5);
+static const unsigned int kStatusMask = (3u << 30);
+static const unsigned int kGoodPartitioningFlagMask = (1u << 2);
+static const unsigned int kCheckAllAxesFlagMask = (1u << 3);
+static const unsigned int kClippingFlagMask = (1u << 4);
+static const unsigned int kTrianglePacketsFlagMask = (1u << 5);
 
-static const unsigned int kLeafNodeThesholdMask = (255 << 6);
-static const unsigned int kMaxDepthMask = (63 << 14);
-static const unsigned int kConserveMemoryMask = (1 << 21);
-unsigned int AccelSettings::kChunkedParallelBuild = (1 << 22);
+static const unsigned int kLeafNodeThesholdMask = (255u << 6);
+static const unsigned int kMaxDepthMask = (63u << 14);
+static const unsigned int kConserveMemoryMask = (1u << 21);
+
+unsigned int AccelSettings::kChunkedParallelBuild = (1u << 22);
 
 // Mesh KDTree with leaf node threshold = 0 (default), max depth = 0, good partitioning and clipping
 unsigned int AccelSettings::kKDTreeMeshBitSetGoodClipping = 20u;
@@ -105,7 +106,7 @@ bool AccelSettings::hasGoodPartitioning() const
 
 void AccelSettings::setGoodPartitioning(bool goodPartitioning)
 {
-	unsigned int localFlag = 1 << 2;
+	unsigned int localFlag = 1u << 2;
 
 	setFlagForBoolValue(localFlag, goodPartitioning);
 }
@@ -117,7 +118,7 @@ bool AccelSettings::hasCheckAllAxes() const
 
 void AccelSettings::setCheckAllAxes(bool checkAllAxes)
 {
-	unsigned int localFlag = 1 << 3;
+	unsigned int localFlag = 1u << 3;
 
 	setFlagForBoolValue(localFlag, checkAllAxes);
 }
@@ -129,7 +130,7 @@ bool AccelSettings::hasClipping() const
 
 void AccelSettings::setClipping(bool clipping)
 {
-	unsigned int localFlag = 1 << 4;
+	unsigned int localFlag = 1u << 4;
 
 	setFlagForBoolValue(localFlag, clipping);
 }
@@ -141,7 +142,7 @@ bool AccelSettings::hasTrianglePackets() const
 
 void AccelSettings::setTrianglePackets(bool triPackets)
 {
-	unsigned int localFlag = 1 << 5;
+	unsigned int localFlag = 1u << 5;
 
 	setFlagForBoolValue(localFlag, triPackets);
 }

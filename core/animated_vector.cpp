@@ -135,13 +135,13 @@ void AnimatedVector::deleteKey()
 	z.deleteKey(time);
 }
 
-CurveInterpolationType AnimatedVector::getInterpolationType() const
+AnimationCurve::CurveInterpolationType AnimatedVector::getInterpolationType() const
 {
 	// currently, they're all the same
 	return x.getInterpolationType();
 }
 
-void AnimatedVector::setInterpolationType(CurveInterpolationType type)
+void AnimatedVector::setInterpolationType(AnimationCurve::CurveInterpolationType type)
 {
 	x.setInterpolationType(type);
 	y.setInterpolationType(type);

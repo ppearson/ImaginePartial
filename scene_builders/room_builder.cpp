@@ -97,7 +97,7 @@ void RoomBuilder::createScene(Scene& scene)
 	addObject(scene, pLeftWall);
 	addObject(scene, pRightWall);
 
-	Material* pFloorMaterial = NULL;
+	Material* pFloorMaterial = nullptr;
 
 	if (m_materials == eFloorAndWalls)
 	{

@@ -44,7 +44,7 @@ namespace Imagine
 {
 
 MaterialPreviewRenderThread::MaterialPreviewRenderThread(SceneInterface* pScene, MaterialPreviewWidget* pWidget)
-	: QThread(NULL), m_pScene(pScene), m_pImage(NULL), m_pRaytracer(NULL), m_pSettings(NULL), m_pWidget(pWidget)
+	: QThread(nullptr), m_pScene(pScene), m_pImage(nullptr), m_pRaytracer(nullptr), m_pSettings(nullptr), m_pWidget(pWidget)
 {
 	unsigned int threads = GlobalContext::instance().getRenderThreads();
 	if (threads > 2)
@@ -65,7 +65,7 @@ MaterialPreviewRenderThread::~MaterialPreviewRenderThread()
 
 	if (m_pRaytracer)
 	{
-		m_pRaytracer = NULL;
+		m_pRaytracer = nullptr;
 		delete m_pRaytracer;
 	}
 }
@@ -133,7 +133,7 @@ void MaterialPreviewRenderThread::run()
 /////
 
 MaterialPreviewWidget::MaterialPreviewWidget(QWidget* parent) : QWidget(parent), SceneInterface(),
-	m_pQImage(NULL), m_pRawImage(NULL), m_pDisplayImage(NULL), m_pCurrentMaterial(NULL), m_lastWidth(0), m_lastHeight(0)
+	m_pQImage(nullptr), m_pRawImage(nullptr), m_pDisplayImage(nullptr), m_pCurrentMaterial(nullptr), m_lastWidth(0), m_lastHeight(0)
 {
 	setupScene();
 
@@ -210,13 +210,13 @@ MaterialPreviewWidget::~MaterialPreviewWidget()
 	if (m_pUpdateThread)
 	{
 		delete m_pUpdateThread;
-		m_pUpdateThread = NULL;
+		m_pUpdateThread = nullptr;
 	}
 
 	if (m_pRefreshTimer)
 	{
 		delete m_pRefreshTimer;
-		m_pRefreshTimer = NULL;
+		m_pRefreshTimer = nullptr;
 	}
 }
 
@@ -245,7 +245,7 @@ void MaterialPreviewWidget::setupObjectsAndLights()
 
 	clearAllObjects();
 
-	Light* pLight = NULL;
+	Light* pLight = nullptr;
 
 	if (m_sceneSetup.lightType == eSinglePoint)
 	{
@@ -277,9 +277,9 @@ void MaterialPreviewWidget::setupObjectsAndLights()
 		pLight = pPSLight;
 	}
 
-	m_aLights.push_back(pLight);
+	m_aLights.emplace_back(pLight);
 
-	m_pCurrentObject = NULL;
+	m_pCurrentObject = nullptr;
 	if (m_sceneSetup.objectType == eSphere)
 	{
 		m_pCurrentObject = new Sphere(2.0f, 8, false);
@@ -295,7 +295,7 @@ void MaterialPreviewWidget::setupObjectsAndLights()
 		m_pCurrentObject->constructGeometry();
 	}
 
-	m_aObjects.push_back(m_pCurrentObject);
+	m_aObjects.emplace_back(m_pCurrentObject);
 
 	if (m_sceneSetup.backgroundCheckerboard)
 	{
@@ -322,9 +322,9 @@ void MaterialPreviewWidget::setupObjectsAndLights()
 		pBackplane3->setPosition(Vector(0.0f, -2.0f, -1.0f));
 		pBackplane3->setRotation(Vector(0.0f, 0.0f, 0.0f));
 
-		m_aObjects.push_back(pBackplane1);
-		m_aObjects.push_back(pBackplane2);
-		m_aObjects.push_back(pBackplane3);
+		m_aObjects.emplace_back(pBackplane1);
+		m_aObjects.emplace_back(pBackplane2);
+		m_aObjects.emplace_back(pBackplane3);
 	}
 
 	m_lock.unlock();
@@ -460,7 +460,7 @@ void MaterialPreviewWidget::showImage(const OutputImage* pImage)
 	if (m_pDisplayImage)
 	{
 		delete m_pDisplayImage;
-		m_pDisplayImage = NULL;
+		m_pDisplayImage = nullptr;
 	}
 
 	m_pDisplayImage = pNewImage;
@@ -554,7 +554,7 @@ void MaterialPreviewWidget::menuObjectSphere()
 	setupObjectsAndLights();
 	updateRaytracer(); // if we change the light, we need to update raytracer, otherwise env light pointer gets cached
 
-	renderImage(NULL);
+	renderImage(nullptr);
 }
 
 void MaterialPreviewWidget::menuObjectCube()
@@ -564,7 +564,7 @@ void MaterialPreviewWidget::menuObjectCube()
 	setupObjectsAndLights();
 	updateRaytracer(); // if we change the light, we need to update raytracer, otherwise env light pointer gets cached
 
-	renderImage(NULL);
+	renderImage(nullptr);
 }
 
 void MaterialPreviewWidget::menuLightPoint()
@@ -574,7 +574,7 @@ void MaterialPreviewWidget::menuLightPoint()
 	setupObjectsAndLights();
 	updateRaytracer(); // if we change the light, we need to update raytracer, otherwise env light pointer gets cached
 
-	renderImage(NULL);
+	renderImage(nullptr);
 }
 
 void MaterialPreviewWidget::menuLightArea()
@@ -584,7 +584,7 @@ void MaterialPreviewWidget::menuLightArea()
 	setupObjectsAndLights();
 	updateRaytracer(); // if we change the light, we need to update raytracer, otherwise env light pointer gets cached
 
-	renderImage(NULL);
+	renderImage(nullptr);
 }
 
 void MaterialPreviewWidget::menuLightEnvironment()
@@ -594,7 +594,7 @@ void MaterialPreviewWidget::menuLightEnvironment()
 	setupObjectsAndLights();
 	updateRaytracer(); // if we change the light, we need to update raytracer, otherwise env light pointer gets cached
 
-	renderImage(NULL);
+	renderImage(nullptr);
 }
 
 void MaterialPreviewWidget::menuBackground()
@@ -604,7 +604,7 @@ void MaterialPreviewWidget::menuBackground()
 	setupObjectsAndLights();
 	updateRaytracer(); // if we change the light, we need to update raytracer, otherwise env light pointer gets cached
 
-	renderImage(NULL);
+	renderImage(nullptr);
 }
 
 void MaterialPreviewWidget::menuGlobalIllumination()
@@ -612,7 +612,7 @@ void MaterialPreviewWidget::menuGlobalIllumination()
 	m_sceneSetup.globalIllumination = !m_sceneSetup.globalIllumination;
 
 	updateRaytracer();
-	renderImage(NULL);
+	renderImage(nullptr);
 }
 
 } // namespace Imagine

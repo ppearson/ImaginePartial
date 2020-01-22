@@ -50,8 +50,8 @@ namespace Imagine
 
 ShaderNodeViewWidget::ShaderNodeViewWidget(ShaderNodeViewWidgetHost* pHost, QWidget* pParent)
 	: QGraphicsView(pParent),
-	  m_mouseMode(eMouseNone), m_scale(0.8f), m_selectionType(eSelectionNone), m_pSelectedItem(NULL),
-	  m_pNodesCollection(NULL), m_pHost(pHost), m_pInteractionConnectionItem(NULL), m_selConnectionDragType(eSelConDragNone)
+	  m_mouseMode(eMouseNone), m_scale(0.8f), m_selectionType(eSelectionNone), m_pSelectedItem(nullptr),
+	  m_pNodesCollection(nullptr), m_pHost(pHost), m_pInteractionConnectionItem(nullptr), m_selConnectionDragType(eSelConDragNone)
 {
 //	setViewport(new QGLWidget(QGLFormat(QGL::SampleBuffers | QGL::DirectRendering)));
 
@@ -62,7 +62,7 @@ ShaderNodeViewWidget::ShaderNodeViewWidget(ShaderNodeViewWidgetHost* pHost, QWid
 
 	for (unsigned int i = 0; i < 3; i++)
 	{
-		m_creationMenuSignalMapper[i] = NULL;
+		m_creationMenuSignalMapper[i] = nullptr;
 	}
 
 	updateCreationMenu();
@@ -112,7 +112,7 @@ void ShaderNodeViewWidget::updateCreationMenu()
 		// find the category for the menu
 
 		std::map<std::string, NodeCreationMenuCategory*>::iterator itFind = m_aMenuCategories.find(category);
-		NodeCreationMenuCategory* pMenuCat = NULL;
+		NodeCreationMenuCategory* pMenuCat = nullptr;
 		if (itFind == m_aMenuCategories.end())
 		{
 			// we haven't got this one yet, so create a new one
@@ -126,7 +126,7 @@ void ShaderNodeViewWidget::updateCreationMenu()
 		}
 
 		QAction* pNewAction = new QAction(itemName.c_str(), this);
-		pMenuCat->nodeItems.push_back(NodeCreationMenuItem(category, itemName, pNewAction));
+		pMenuCat->nodeItems.emplace_back(NodeCreationMenuItem(category, itemName, pNewAction));
 	}
 
 	m_aMenuCategoriesIndexed.resize(m_aMenuCategories.size());
@@ -193,7 +193,7 @@ void ShaderNodeViewWidget::createUIItemsFromNodesCollection()
 	QGraphicsScene* pScene = scene();
 	pScene->clear();
 
-	m_pSelectedItem = NULL;
+	m_pSelectedItem = nullptr;
 
 	m_aConnections.clear();
 	m_aNodes.clear();
@@ -216,7 +216,7 @@ void ShaderNodeViewWidget::createUIItemsFromNodesCollection()
 		aCreatedUINodes[nodeID] = pNewUINode;
 
 		pScene->addItem(pNewUINode);
-		m_aNodes.push_back(pNewUINode);
+		m_aNodes.emplace_back(pNewUINode);
 	}
 
 	// then go back and add connections for them
@@ -259,7 +259,7 @@ void ShaderNodeViewWidget::createUIItemsFromNodesCollection()
 
 				pScene->addItem(pConnection);
 
-				m_aConnections.push_back(pConnection);
+				m_aConnections.emplace_back(pConnection);
 
 				pThisUINode->setInputPortConnectionItem(inputIndex, pConnection);
 
@@ -358,11 +358,11 @@ void ShaderNodeViewWidget::mousePressEvent(QMouseEvent* event)
 						m_selConnectionDragType = eSelConDragExistingInput;
 						m_pInteractionConnectionItem = pTestNode->getInputPortConnectionItem(selInfo.portIndex);
 						m_pInteractionConnectionItem->setTempMousePos(cursorScenePos);
-						m_pInteractionConnectionItem->setDestinationNode(NULL);
+						m_pInteractionConnectionItem->setDestinationNode(nullptr);
 						m_pInteractionConnectionItem->setDestinationNodePortIndex(-1);
 
-						// set the connection on the node we're disconnecting from to NULL
-						pTestNode->setInputPortConnectionItem(selInfo.portIndex, NULL);
+						// set the connection on the node we're disconnecting from to nullptr
+						pTestNode->setInputPortConnectionItem(selInfo.portIndex, nullptr);
 
 						// fix up backing data structure
 						pTestNode->getActualNode()->setInputPortConnection(selInfo.portIndex, -1, -1);
@@ -377,7 +377,7 @@ void ShaderNodeViewWidget::mousePressEvent(QMouseEvent* event)
 					{
 						// it hasn't, so create a new temporary one...
 						m_selConnectionDragType = eSelConDragNewInput;
-						m_pInteractionConnectionItem = new ShaderConnectionUI(NULL, pTestNode);
+						m_pInteractionConnectionItem = new ShaderConnectionUI(nullptr, pTestNode);
 						m_pInteractionConnectionItem->setTempMousePos(cursorScenePos);
 						m_pInteractionConnectionItem->setDestinationNodePortIndex(selInfo.portIndex);
 						m_pSelectedItem = m_pInteractionConnectionItem;
@@ -403,11 +403,11 @@ void ShaderNodeViewWidget::mousePressEvent(QMouseEvent* event)
 							m_selConnectionDragType = eSelConDragExistingOutput;
 							m_pInteractionConnectionItem = pTestNode->getSingleOutputPortConnectionItem(selInfo.portIndex);
 							m_pInteractionConnectionItem->setTempMousePos(cursorScenePos);
-							m_pInteractionConnectionItem->setSourceNode(NULL);
+							m_pInteractionConnectionItem->setSourceNode(nullptr);
 							m_pInteractionConnectionItem->setSourceNodePortIndex(-1);
 
-							// set the connection on the node we're disconnecting from to NULL
-							pTestNode->addOutputPortConnectionItem(selInfo.portIndex, NULL);
+							// set the connection on the node we're disconnecting from to nullptr
+							pTestNode->addOutputPortConnectionItem(selInfo.portIndex, nullptr);
 
 							m_pSelectedItem = m_pInteractionConnectionItem;
 
@@ -425,7 +425,7 @@ void ShaderNodeViewWidget::mousePressEvent(QMouseEvent* event)
 
 					// otherwise (no connections, or more than one), just create a new connection for dragging
 					m_selConnectionDragType = eSelConDragNewOutput;
-					m_pInteractionConnectionItem = new ShaderConnectionUI(pTestNode, NULL);
+					m_pInteractionConnectionItem = new ShaderConnectionUI(pTestNode, nullptr);
 					m_pInteractionConnectionItem->setTempMousePos(cursorScenePos);
 					m_pInteractionConnectionItem->setSourceNodePortIndex(selInfo.portIndex);
 					pTestNode->addOutputPortConnectionItem(selInfo.portIndex, m_pInteractionConnectionItem);
@@ -466,7 +466,7 @@ void ShaderNodeViewWidget::mousePressEvent(QMouseEvent* event)
 			ShaderConnectionUI* pConn = *itConnection;
 
 			// ignore connections which aren't fully-connected
-			if (pConn->getDestinationNode() == NULL || pConn->getSourceNode() == NULL)
+			if (pConn->getDestinationNode() == nullptr || pConn->getSourceNode() == nullptr)
 				continue;
 
 			if (pConn->didHit(cursorScenePos, connSelInfo, closestConnectionHitDistance))
@@ -495,10 +495,10 @@ void ShaderNodeViewWidget::mousePressEvent(QMouseEvent* event)
 
 				ShaderNodeUI* pOldSourceNode = m_pInteractionConnectionItem->getSourceNode();
 				unsigned int oldSourcePortIndex = m_pInteractionConnectionItem->getSourceNodePortIndex();
-				m_pInteractionConnectionItem->setSourceNode(NULL);
+				m_pInteractionConnectionItem->setSourceNode(nullptr);
 				m_pInteractionConnectionItem->setSourceNodePortIndex(-1);
 
-				// set the connection on the node we're disconnecting from to NULL
+				// set the connection on the node we're disconnecting from to nullptr
 				pOldSourceNode->removeOutputPortConnectionItem(oldSourcePortIndex, m_pInteractionConnectionItem);
 
 				// fix up backing data structure - both source and destination
@@ -521,11 +521,11 @@ void ShaderNodeViewWidget::mousePressEvent(QMouseEvent* event)
 
 				ShaderNodeUI* pOldDestinationNode = m_pInteractionConnectionItem->getDestinationNode();
 				unsigned int oldDestinationPortIndex = m_pInteractionConnectionItem->getSourceNodePortIndex();
-				m_pInteractionConnectionItem->setDestinationNode(NULL);
+				m_pInteractionConnectionItem->setDestinationNode(nullptr);
 				m_pInteractionConnectionItem->setDestinationNodePortIndex(-1);
 
-				// set the connection on the node we're disconnecting from to NULL
-				pOldDestinationNode->setInputPortConnectionItem(oldDestinationPortIndex, NULL);
+				// set the connection on the node we're disconnecting from to nullptr
+				pOldDestinationNode->setInputPortConnectionItem(oldDestinationPortIndex, nullptr);
 
 				// fix up backing data structure - both source and destination
 				ShaderNode* pActualDestNode = pOldDestinationNode->getActualNode();
@@ -546,7 +546,7 @@ void ShaderNodeViewWidget::mousePressEvent(QMouseEvent* event)
 	{
 		m_pSelectedItem->setSelected(false);
 		m_selectionType = eSelectionNone;
-		m_pSelectedItem = NULL;
+		m_pSelectedItem = nullptr;
 	}
 
 	if (event->modifiers() & Qt::ALT || event->button() == Qt::MiddleButton)
@@ -634,7 +634,7 @@ void ShaderNodeViewWidget::mouseReleaseEvent(QMouseEvent* event)
 	bool didReconnectExistingConnection = false;
 
 	if (m_selConnectionDragType != eSelConDragNone &&
-			m_pSelectedItem != NULL)
+			m_pSelectedItem != nullptr)
 	{
 		// we should be currently dragging a connection from a port, so work out what port we might be being
 		// dropped on on a source node...
@@ -817,7 +817,7 @@ void ShaderNodeViewWidget::mouseReleaseEvent(QMouseEvent* event)
 
 	if (m_selectionType != eSelectionNode)
 	{
-		m_pSelectedItem = NULL;
+		m_pSelectedItem = nullptr;
 		m_selectionType = eSelectionNone;
 		m_selConnectionDragType = eSelConDragNone;
 	}
@@ -853,16 +853,16 @@ void ShaderNodeViewWidget::mouseReleaseEvent(QMouseEvent* event)
 			if (pDstNode)
 			{
 				unsigned int originalPortIndex = m_pInteractionConnectionItem->getDestinationNodePortIndex();
-				pDstNode->setInputPortConnectionItem(originalPortIndex, NULL);
-				m_pInteractionConnectionItem->setDestinationNode(NULL);
+				pDstNode->setInputPortConnectionItem(originalPortIndex, nullptr);
+				m_pInteractionConnectionItem->setDestinationNode(nullptr);
 			}
 
 			ShaderNodeUI* pSrcNode = m_pInteractionConnectionItem->getSourceNode();
 			if (pSrcNode)
 			{
 				unsigned int originalPortIndex = m_pInteractionConnectionItem->getSourceNodePortIndex();
-				pSrcNode->addOutputPortConnectionItem(originalPortIndex, NULL);
-				m_pInteractionConnectionItem->setSourceNode(NULL);
+				pSrcNode->addOutputPortConnectionItem(originalPortIndex, nullptr);
+				m_pInteractionConnectionItem->setSourceNode(nullptr);
 			}
 
 			// just deleting the object is good enough, as QGraphicsItem's destructor calls
@@ -871,7 +871,7 @@ void ShaderNodeViewWidget::mouseReleaseEvent(QMouseEvent* event)
 		}
 	}
 
-	m_pInteractionConnectionItem = NULL;
+	m_pInteractionConnectionItem = nullptr;
 
 	if (didConnectNewConnection || didReconnectExistingConnection)
 	{
@@ -896,7 +896,7 @@ void ShaderNodeViewWidget::mouseDoubleClickEvent(QMouseEvent* event)
 		m_pSelectedItem->setSelected(false);
 	}
 
-	ShaderNodeUI* pClickedNode = NULL;
+	ShaderNodeUI* pClickedNode = nullptr;
 
 	// doing it this way (while inefficient as no acceleration structure is used) means we only get
 	// the Nodes. Using scene.itemAt() returns children of QGraphicsItem object (like the text items)
@@ -925,7 +925,7 @@ void ShaderNodeViewWidget::mouseDoubleClickEvent(QMouseEvent* event)
 	{
 		m_pSelectedItem->setSelected(false);
 		m_selectionType = eSelectionNone;
-		m_pSelectedItem = NULL;
+		m_pSelectedItem = nullptr;
 
 		return;
 	}
@@ -1007,7 +1007,7 @@ void ShaderNodeViewWidget::createNewNodeMenu(unsigned int categoryIndex, int men
 	ShaderNodeUI* pNewUINode = new ShaderNodeUI(pNewNode);
 	pNewUINode->setCustomPos(m_lastMouseScenePos.rx(), m_lastMouseScenePos.ry());
 
-	m_aNodes.push_back(pNewUINode);
+	m_aNodes.emplace_back(pNewUINode);
 	scene()->addItem(pNewUINode);
 }
 

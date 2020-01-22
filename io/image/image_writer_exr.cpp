@@ -18,7 +18,7 @@
 
 #include "image_writer_exr.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 
 #include "image/output_image.h"
@@ -142,27 +142,27 @@ bool ImageWriterEXR::writeStandardImage(const std::string& filePath, const Outpu
 
 	unsigned int rgbStride = (channels & ImageWriter::ALPHA) ? 4 : 3;
 
-	T* rgba = NULL;
+	T* rgba = nullptr;
 	if (channels & ImageWriter::RGB)
 		rgba = new T[width * height * rgbStride];
-	T* pDepth = NULL;
+	T* pDepth = nullptr;
 	if (channels & ImageWriter::DEPTH)
 		pDepth = new T[width * height];
-	T* pNormal = NULL;
+	T* pNormal = nullptr;
 	if (channels & ImageWriter::NORMALS)
 		pNormal = new T[width * height * 3];
-	T* pWPP = NULL;
+	T* pWPP = nullptr;
 	if (channels & ImageWriter::WPP)
 		pWPP = new T[width * height * 3];
-	T* pShadows = NULL;
+	T* pShadows = nullptr;
 	if (channels & ImageWriter::SHADOWS)
 		pShadows = new T[width * height];
 
-	const Colour4f* pRow = NULL;
-	const float* pDepthRow = NULL;
-	const Colour3f* pNormalRow = NULL;
-	const Colour3f* pWPPRow = NULL;
-	const float* pShadowsRow = NULL;
+	const Colour4f* pRow = nullptr;
+	const float* pDepthRow = nullptr;
+	const Colour3f* pNormalRow = nullptr;
+	const Colour3f* pWPPRow = nullptr;
+	const float* pShadowsRow = nullptr;
 
 	for (unsigned int y = 0; y < height; y++)
 	{
@@ -361,7 +361,7 @@ bool ImageWriterEXR::writeDeepImage(const std::string& filePath, const OutputIma
 	half* pBlueFullSamples = new half[totalSamples];
 	half* pZFullSamples = new half[totalSamples];
 
-	const DeepValues* pDeepValues = NULL;
+	const DeepValues* pDeepValues = nullptr;
 
 	// accumulate the data for writing...
 	std::vector<half*> aAlphaPointers(width * height);

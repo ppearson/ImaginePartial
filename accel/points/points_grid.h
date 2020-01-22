@@ -44,7 +44,7 @@ public:
 		
 		void addPoint(uint32_t index)
 		{
-			m_pointIndices.push_back(index);
+			m_pointIndices.emplace_back(index);
 		}
 		
 		const std::vector<uint32_t>& getIndices() const

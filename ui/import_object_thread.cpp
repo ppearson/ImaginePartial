@@ -33,7 +33,7 @@
 namespace Imagine
 {
 
-ImportObjectThread::ImportObjectThread(QObject* parent) : QThread(parent), m_pScene(NULL)
+ImportObjectThread::ImportObjectThread(QObject* parent) : QThread(parent), m_pScene(nullptr)
 {
 }
 
@@ -53,7 +53,7 @@ void ImportObjectThread::importObjects(const std::vector<std::string>& aPaths, c
 
 void ImportObjectThread::run()
 {
-	Object* pMesh = NULL;
+	Object* pMesh = nullptr;
 	// this needs to get cleaned up by the receiver...
 	std::vector<Object*>* aObjects = new std::vector<Object*>;
 	std::vector<Material*>* aMaterials = new std::vector<Material*>;
@@ -87,16 +87,16 @@ void ImportObjectThread::run()
 				for (; itMat != pNewMats.end(); ++itMat)
 				{
 					Material* pMaterial = *itMat;
-					aMaterials->push_back(pMaterial);
+					aMaterials->emplace_back(pMaterial);
 				}
 
-				aObjects->push_back(pMesh);
+				aObjects->emplace_back(pMesh);
 			}
 
 			if (pReader)
 			{
 				delete pReader;
-				pReader = NULL;
+				pReader = nullptr;
 			}
 		}
 	}

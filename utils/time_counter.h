@@ -47,13 +47,13 @@ public:
 		//
 //		struct timespec requestStart, requestEnd;
 //		clock_gettime(CLOCK_REALTIME, &requestStart);
-		gettimeofday(&m_startTime, NULL);
+		gettimeofday(&m_startTime, nullptr);
 	}
 
 	void stop()
 	{
 		timeval endTime;
-		gettimeofday(&endTime, NULL);
+		gettimeofday(&endTime, nullptr);
 
 		double mseconds = (endTime.tv_sec - m_startTime.tv_sec) * 1000000;
 		mseconds += (endTime.tv_usec - m_startTime.tv_usec);
@@ -156,13 +156,13 @@ public:
 
 	virtual void start()
 	{
-		gettimeofday(&m_startTime, NULL);
+		gettimeofday(&m_startTime, nullptr);
 	}
 
 	virtual void stop()
 	{
 		timeval endTime;
-		gettimeofday(&endTime, NULL);
+		gettimeofday(&endTime, nullptr);
 
 		double mseconds = (endTime.tv_sec - m_startTime.tv_sec) * 1000000;
 		mseconds += (endTime.tv_usec - m_startTime.tv_usec);

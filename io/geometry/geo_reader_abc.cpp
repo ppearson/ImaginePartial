@@ -88,7 +88,7 @@ bool GeoReaderAbc::readFile(const std::string& path, const GeoReaderOptions& opt
 
 void GeoReaderAbc::processObjectsBaked(IObject& object, std::vector<Object*>& objects, chrono_t time)
 {
-	Mesh* pNewMesh = NULL;
+	Mesh* pNewMesh = nullptr;
 	unsigned int childrenCount = object.getNumChildren();
 	for (unsigned int i = 0; i < childrenCount; i++)
 	{
@@ -104,7 +104,7 @@ void GeoReaderAbc::processObjectsBaked(IObject& object, std::vector<Object*>& ob
 		size_t numPoints = 0;
 		size_t numUVs = 0;
 
-		EditableGeometryInstance* pNewGeoInstance = NULL;
+		EditableGeometryInstance* pNewGeoInstance = nullptr;
 
 		if (Alembic::AbcGeom::IPolyMesh::matches(child.getHeader()))
 		{
@@ -221,7 +221,7 @@ void GeoReaderAbc::processObjectsBaked(IObject& object, std::vector<Object*>& ob
 					{
 						unsigned int thisUVIndex = startUVIndex - j;
 						V2f uvValue = (*uvValues)[(*uvIndices)[thisUVIndex]];
-						geoInstanceUVs.push_back(UV(uvValue[0], uvValue[1]));
+						geoInstanceUVs.emplace_back(UV(uvValue[0], uvValue[1]));
 						newFace.addUV(uvIndex++);
 					}
 
@@ -231,7 +231,7 @@ void GeoReaderAbc::processObjectsBaked(IObject& object, std::vector<Object*>& ob
 				newFace.calculateNormal(pGeoInstance);
 				newFace.reverse(true);
 
-				geoInstanceFaces.push_back(newFace);
+				geoInstanceFaces.emplace_back(newFace);
 
 				indexCount += numVertices;
 			}
@@ -258,7 +258,7 @@ void GeoReaderAbc::processObjectsBaked(IObject& object, std::vector<Object*>& ob
 						unsigned int finalUVIndex = (*pFaceIndices)[thisUVIndex];
 
 						V2f uvValue = (*uvValues)[(*uvIndices)[finalUVIndex]];
-						geoInstanceUVs.push_back(UV(uvValue[0], uvValue[1]));
+						geoInstanceUVs.emplace_back(UV(uvValue[0], uvValue[1]));
 						newFace.addUV(uvIndex++);
 					}
 
@@ -268,7 +268,7 @@ void GeoReaderAbc::processObjectsBaked(IObject& object, std::vector<Object*>& ob
 				newFace.calculateNormal(pGeoInstance);
 				newFace.reverse(true);
 
-				geoInstanceFaces.push_back(newFace);
+				geoInstanceFaces.emplace_back(newFace);
 
 				indexCount += numVertices;
 			}
@@ -282,7 +282,7 @@ void GeoReaderAbc::processObjectsBaked(IObject& object, std::vector<Object*>& ob
 			if (!geoInstancePoints.empty())
 			{
 				pNewMesh->getGeometryInstance()->calculateBoundaryBox();
-				objects.push_back(pNewMesh);
+				objects.emplace_back(pNewMesh);
 			}
 		}
 	}
@@ -290,7 +290,7 @@ void GeoReaderAbc::processObjectsBaked(IObject& object, std::vector<Object*>& ob
 
 void GeoReaderAbc::processObjectsInstances(IObject& object, std::vector<Object*>& objects, chrono_t time)
 {
-	Mesh* pNewMesh = NULL;
+	Mesh* pNewMesh = nullptr;
 	unsigned int childrenCount = object.getNumChildren();
 	for (unsigned int i = 0; i < childrenCount; i++)
 	{
@@ -475,7 +475,7 @@ void GeoReaderAbc::processObjectsInstances(IObject& object, std::vector<Object*>
 					{
 						unsigned int uvIndex = uvCount;// + numVertices - 1; // reverse winding order
 						V2f uvValue = (*uvValues)[(*uvIndices)[uvIndex/* - j*/]];
-						getSubObjectVertexUVs(pNewMesh).push_back(UV(uvValue[0], uvValue[1]));
+						getSubObjectVertexUVs(pNewMesh).emplace_back(UV(uvValue[0], uvValue[1]));
 						newFace.addUV(uvCount++);
 					}
 
@@ -485,7 +485,7 @@ void GeoReaderAbc::processObjectsInstances(IObject& object, std::vector<Object*>
 				newFace.calculateNormal(pGeoInstance);
 				newFace.reverse(true);
 
-				getSubObjectFaces(pNewMesh).push_back(newFace);
+				getSubObjectFaces(pNewMesh).emplace_back(newFace);
 
 				indexCount += numVertices;
 			}
@@ -498,7 +498,7 @@ void GeoReaderAbc::processObjectsInstances(IObject& object, std::vector<Object*>
 				if (!getSubObjectPoints(pNewMesh).empty())
 				{
 					pNewMesh->getGeometryInstance()->calculateBoundaryBox();
-					objects.push_back(pNewMesh);
+					objects.emplace_back(pNewMesh);
 				}
 			}
 		}
@@ -508,7 +508,7 @@ void GeoReaderAbc::processObjectsInstances(IObject& object, std::vector<Object*>
 
 			if (pNewMesh)
 			{
-				objects.push_back(pNewMesh);
+				objects.emplace_back(pNewMesh);
 			}
 		}
 	}
@@ -526,7 +526,7 @@ void GeoReaderAbc::addTransformedPolyPoints(IPolyMeshSchema& meshSchema, IPolyMe
 
 		V3d transformedPoint = point * transform;
 
-		getSubObjectPoints(pMesh).push_back(Point(transformedPoint.x, transformedPoint.y, transformedPoint.z));
+		getSubObjectPoints(pMesh).emplace_back(Point(transformedPoint.x, transformedPoint.y, transformedPoint.z));
 	}
 }
 
@@ -542,7 +542,7 @@ void GeoReaderAbc::addTransformedSubDPoints(ISubDSchema& subDSchema, ISubDSchema
 
 		V3d transformedPoint = point * transform;
 
-		getSubObjectPoints(pMesh).push_back(Point(transformedPoint.x, transformedPoint.y, transformedPoint.z));
+		getSubObjectPoints(pMesh).emplace_back(Point(transformedPoint.x, transformedPoint.y, transformedPoint.z));
 	}
 }
 
@@ -556,7 +556,7 @@ void GeoReaderAbc::addPolyPoints(IPolyMeshSchema& meshSchema, IPolyMeshSchema::S
 	{
 		V3d point = (*(meshSample.getPositions()))[i];
 
-		meshPoints.push_back(Point(point.x, point.y, point.z));
+		meshPoints.emplace_back(Point(point.x, point.y, point.z));
 	}
 }
 
@@ -570,7 +570,7 @@ void GeoReaderAbc::addSubDPoints(ISubDSchema& subDSchema, ISubDSchema::Sample& s
 	{
 		V3d point = (*(subDSample.getPositions()))[i];
 
-		meshPoints.push_back(Point(point.x, point.y, point.z));
+		meshPoints.emplace_back(Point(point.x, point.y, point.z));
 	}
 }
 

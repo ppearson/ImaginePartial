@@ -32,7 +32,7 @@
 namespace Imagine
 {
 
-MaterialWidget::MaterialWidget(Material** pPairedMaterial, QWidget* parent) : QWidget(parent), m_pParamsPanel(NULL)
+MaterialWidget::MaterialWidget(Material** pPairedMaterial, QWidget* parent) : QWidget(parent), m_pParamsPanel(nullptr)
 {
 	if (pPairedMaterial)
 	{
@@ -41,8 +41,8 @@ MaterialWidget::MaterialWidget(Material** pPairedMaterial, QWidget* parent) : QW
 	}
 	else
 	{
-		m_pMaterial = NULL;
-		m_pActualMaterial = NULL;
+		m_pMaterial = nullptr;
+		m_pActualMaterial = nullptr;
 	}
 
 	QVBoxLayout* layout = new QVBoxLayout(this);
@@ -55,7 +55,7 @@ MaterialWidget::MaterialWidget(Material** pPairedMaterial, QWidget* parent) : QW
 	m_pMaterialParamsLayout = new QVBoxLayout(m_pMaterialParamsContainer);
 	m_pMaterialParamsLayout->setContentsMargins(0, 0, 0, 0);
 
-	m_pMaterialContentLastContent = NULL;
+	m_pMaterialContentLastContent = nullptr;
 
 	layout->addWidget(m_pMaterialType);
 	layout->addWidget(m_pMaterialParamsContainer);
@@ -70,7 +70,7 @@ MaterialWidget::MaterialWidget(Material** pPairedMaterial, QWidget* parent) : QW
 
 		m_pMaterialType->addItem(materialName.c_str());
 
-		m_aMaterialIDs.push_back(materialID);
+		m_aMaterialIDs.emplace_back(materialID);
 	}
 
 	QObject::connect(m_pMaterialType, SIGNAL(currentIndexChanged(int)), this, SLOT(materialTypeChanged(int)));
@@ -108,7 +108,7 @@ MaterialWidget::~MaterialWidget()
 	if (m_pMaterialType)
 	{
 		delete m_pMaterialType;
-		m_pMaterialType = NULL;
+		m_pMaterialType = nullptr;
 	}
 
 	if (m_pParamsPanel)
@@ -119,7 +119,7 @@ MaterialWidget::~MaterialWidget()
 		}
 
 		delete m_pParamsPanel;
-		m_pParamsPanel = NULL;
+		m_pParamsPanel = nullptr;
 	}
 	else
 	{
@@ -127,14 +127,14 @@ MaterialWidget::~MaterialWidget()
 		{
 			m_pMaterialParamsLayout->removeWidget(m_pMaterialContentLastContent);
 			delete m_pMaterialContentLastContent;
-			m_pMaterialContentLastContent = NULL;
+			m_pMaterialContentLastContent = nullptr;
 		}
 	}
 
 	if (m_pMaterialParamsContainer)
 	{
 		delete m_pMaterialParamsContainer;
-		m_pMaterialParamsContainer = NULL;
+		m_pMaterialParamsContainer = nullptr;
 	}
 }
 
@@ -150,15 +150,15 @@ void MaterialWidget::deleteCurrentMaterial()
 		if (m_pParamsPanel)
 		{
 			delete m_pParamsPanel;
-			m_pParamsPanel = NULL;
+			m_pParamsPanel = nullptr;
 
-			m_pMaterialContentLastContent = NULL;
+			m_pMaterialContentLastContent = nullptr;
 		}
 		else
 		{
 			// not sure how this situation can happen, but...
 			delete m_pMaterialContentLastContent;
-			m_pMaterialContentLastContent = NULL;
+			m_pMaterialContentLastContent = nullptr;
 		}
 	}
 

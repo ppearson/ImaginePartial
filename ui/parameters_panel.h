@@ -43,7 +43,7 @@ public:
 
 	struct ControlData
 	{
-		ControlData() : control(NULL), layout(NULL)
+		ControlData() : control(nullptr), layout(nullptr)
 		{
 
 		}

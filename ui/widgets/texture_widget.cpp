@@ -68,7 +68,7 @@ namespace Imagine
 {
 
 TextureWidget::TextureWidget(TextureParameters* pParams, QWidget* parent, unsigned int flags) : QWidget(parent),
-	m_pTexture(NULL), m_scaleU(1.0f), m_scaleV(1.0f), m_performAutoFileBrowse(true), m_logScale(false), m_highPrecision(false)
+	m_pTexture(nullptr), m_scaleU(1.0f), m_scaleV(1.0f), m_performAutoFileBrowse(true), m_logScale(false), m_highPrecision(false)
 {
 	m_pPairedValue = pParams;
 	if (m_pPairedValue)
@@ -86,32 +86,32 @@ TextureWidget::TextureWidget(TextureParameters* pParams, QWidget* parent, unsign
 TextureWidget::TextureWidget(Texture::RequiredType outputType, bool performAutoFileBrowse, QWidget* parent) : QWidget(parent),
 	m_outputType(outputType), m_scaleU(1.0f), m_scaleV(1.0f), m_performAutoFileBrowse(performAutoFileBrowse), m_logScale(false), m_highPrecision(false)
 {
-	m_pPairedValue = NULL;
-	m_pTexture = NULL;
+	m_pPairedValue = nullptr;
+	m_pTexture = nullptr;
 
 	initCommon();
 }
 
 void TextureWidget::initCommon()
 {
-	m_pTopContentWidget = NULL;
-	m_pTopContentWidgetLayout = NULL;
-	m_pTopContentLastContent = NULL;
+	m_pTopContentWidget = nullptr;
+	m_pTopContentWidgetLayout = nullptr;
+	m_pTopContentLastContent = nullptr;
 
-	m_pMainContentWidget = NULL;
-	m_pMainContentWidgetLayout = NULL;
-	m_pMainContentLastContent = NULL;
-	m_pMainContentLastParametersPanel = NULL;
+	m_pMainContentWidget = nullptr;
+	m_pMainContentWidgetLayout = nullptr;
+	m_pMainContentLastContent = nullptr;
+	m_pMainContentLastParametersPanel = nullptr;
 
-	m_pMenuNone = NULL;
-	m_pMenuConstant = NULL;
+	m_pMenuNone = nullptr;
+	m_pMenuConstant = nullptr;
 
 	m_lastContentWasCustom = false;
 
-	m_pConstantColour = NULL;
+	m_pConstantColour = nullptr;
 	m_cachedConstantColour = Colour3f(0.6f);
 
-	m_pFloatSlider = NULL;
+	m_pFloatSlider = nullptr;
 
 	QVBoxLayout* mainLayout = new QVBoxLayout(this);
 	setLayout(mainLayout);
@@ -169,7 +169,7 @@ void TextureWidget::initCommon()
 	m_pScaleContainerLayout->addWidget(m_pTextScale2);
 	m_pScaleContainerLayout->addWidget(m_pScaleScrub2);
 
-	m_pMainContentLastContent = NULL;
+	m_pMainContentLastContent = nullptr;
 
 	mainLayout->addWidget(m_pMainContentWidget);
 
@@ -205,7 +205,7 @@ void TextureWidget::initCommon()
 
 		pNewMenu->addAction(m_pMenuNone);
 
-		m_aTextureIDs.push_back((unsigned char)256); // For None type
+		m_aTextureIDs.emplace_back((unsigned char)256); // For None type
 	}
 
 	if (m_outputType == Texture::eTypeColour || m_outputType == Texture::eTypeColourExact)
@@ -252,16 +252,16 @@ void TextureWidget::initCommon()
 	// manually add first two for constant and image
 	if (m_outputType == Texture::eTypeColour)
 	{
-		m_aTextureIDs.push_back(0);
-		m_aTextureIDs.push_back(1);
+		m_aTextureIDs.emplace_back(0);
+		m_aTextureIDs.emplace_back(1);
 	}
 	else
 	{
 		if (m_outputType == Texture::eTypeFloatExact)
 		{
-			m_aTextureIDs.push_back(0);
+			m_aTextureIDs.emplace_back(0);
 		}
-		m_aTextureIDs.push_back(2); // float texture
+		m_aTextureIDs.emplace_back(2); // float texture
 	}
 
 	if (m_outputType == Texture::eTypeColour)
@@ -445,25 +445,25 @@ TextureWidget::~TextureWidget()
 	{
 		// if we're not paired, we created the texture, so destroy it
 		delete m_pTexture;
-		m_pTexture = NULL;
+		m_pTexture = nullptr;
 	}
 
 	if (m_pScaleContainerWidget)
 	{
 		delete m_pScaleContainerWidget;
-		m_pScaleContainerWidget = NULL;
+		m_pScaleContainerWidget = nullptr;
 	}
 
 	if (m_pConstantColour)
 	{
 		delete m_pConstantColour;
-		m_pConstantColour = NULL;
+		m_pConstantColour = nullptr;
 	}
 
 	if (m_pImageFile)
 	{
 		delete m_pImageFile;
-		m_pImageFile = NULL;
+		m_pImageFile = nullptr;
 	}
 }
 
@@ -491,13 +491,13 @@ void TextureWidget::showContent(int index, bool textureModified)
 			{
 				m_pMainContentWidgetLayout->removeWidget(m_pMainContentLastContent);
 				m_pMainContentLastContent->hide();
-				m_pMainContentLastContent = NULL;
+				m_pMainContentLastContent = nullptr;
 			}
 
 			if (m_pMainContentLastParametersPanel)
 			{
 				delete m_pMainContentLastParametersPanel;
-				m_pMainContentLastParametersPanel = NULL;
+				m_pMainContentLastParametersPanel = nullptr;
 			}
 
 			m_lastContentWasCustom = false;
@@ -508,7 +508,7 @@ void TextureWidget::showContent(int index, bool textureModified)
 		}
 		else if (index == 1)
 		{
-			setupTopWidgetScale(true, NULL);
+			setupTopWidgetScale(true, nullptr);
 			updateScalesFromPairedTexture();
 
 			if (m_pMainContentLastContent)
@@ -520,7 +520,7 @@ void TextureWidget::showContent(int index, bool textureModified)
 			if (m_pMainContentLastParametersPanel)
 			{
 				delete m_pMainContentLastParametersPanel;
-				m_pMainContentLastParametersPanel = NULL;
+				m_pMainContentLastParametersPanel = nullptr;
 			}
 
 			m_pMainContentWidget->setVisible(true);
@@ -550,7 +550,7 @@ void TextureWidget::showContent(int index, bool textureModified)
 			if (m_pMainContentLastParametersPanel)
 			{
 				delete m_pMainContentLastParametersPanel;
-				m_pMainContentLastParametersPanel = NULL;
+				m_pMainContentLastParametersPanel = nullptr;
 			}
 
 			// get actual textureID from menu ID
@@ -577,7 +577,7 @@ void TextureWidget::showContent(int index, bool textureModified)
 				}
 				else
 				{
-					setupTopWidgetScale(true, NULL);
+					setupTopWidgetScale(true, nullptr);
 					updateScalesFromPairedTexture();
 				}
 
@@ -599,8 +599,8 @@ void TextureWidget::showContent(int index, bool textureModified)
 				}
 				else
 				{
-					// there wasn't a parameters panel, so set the last content to NULL
-					m_pMainContentLastContent = NULL;
+					// there wasn't a parameters panel, so set the last content to nullptr
+					m_pMainContentLastContent = nullptr;
 				}
 			}
 
@@ -628,13 +628,13 @@ void TextureWidget::showContent(int index, bool textureModified)
 			{
 				m_pMainContentWidgetLayout->removeWidget(m_pMainContentLastContent);
 				m_pMainContentLastContent->hide();
-				m_pMainContentLastContent = NULL;
+				m_pMainContentLastContent = nullptr;
 			}
 
 			if (m_pMainContentLastParametersPanel)
 			{
 				delete m_pMainContentLastParametersPanel;
-				m_pMainContentLastParametersPanel = NULL;
+				m_pMainContentLastParametersPanel = nullptr;
 			}
 
 			m_lastContentWasCustom = false;
@@ -645,7 +645,7 @@ void TextureWidget::showContent(int index, bool textureModified)
 		}
 		else if (index == 1) // because there isn't a colour image type, this is actually the menu index instead of textureID
 		{
-			setupTopWidgetScale(true, NULL);
+			setupTopWidgetScale(true, nullptr);
 
 			if (m_pMainContentLastContent)
 			{
@@ -656,7 +656,7 @@ void TextureWidget::showContent(int index, bool textureModified)
 			if (m_pMainContentLastParametersPanel)
 			{
 				delete m_pMainContentLastParametersPanel;
-				m_pMainContentLastParametersPanel = NULL;
+				m_pMainContentLastParametersPanel = nullptr;
 			}
 
 			m_pMainContentWidget->setVisible(true);
@@ -687,7 +687,7 @@ void TextureWidget::showContent(int index, bool textureModified)
 			if (m_pMainContentLastParametersPanel)
 			{
 				delete m_pMainContentLastParametersPanel;
-				m_pMainContentLastParametersPanel = NULL;
+				m_pMainContentLastParametersPanel = nullptr;
 			}
 
 			// get actual textureID from menu ID
@@ -715,7 +715,7 @@ void TextureWidget::showContent(int index, bool textureModified)
 				}
 				else
 				{
-					setupTopWidgetScale(true, NULL);
+					setupTopWidgetScale(true, nullptr);
 				}
 
 				Parameters textureParameters;
@@ -736,8 +736,8 @@ void TextureWidget::showContent(int index, bool textureModified)
 				}
 				else
 				{
-					// there wasn't a parameters panel, so set the last content to NULL
-					m_pMainContentLastContent = NULL;
+					// there wasn't a parameters panel, so set the last content to nullptr
+					m_pMainContentLastContent = nullptr;
 				}
 			}
 
@@ -755,13 +755,13 @@ void TextureWidget::showContent(int index, bool textureModified)
 			{
 				m_pMainContentWidgetLayout->removeWidget(m_pMainContentLastContent);
 				m_pMainContentLastContent->hide();
-				m_pMainContentLastContent = NULL;
+				m_pMainContentLastContent = nullptr;
 			}
 
 			if (m_pMainContentLastParametersPanel)
 			{
 				delete m_pMainContentLastParametersPanel;
-				m_pMainContentLastParametersPanel = NULL;
+				m_pMainContentLastParametersPanel = nullptr;
 			}
 
 			m_overallType = eTextureNone;
@@ -805,7 +805,7 @@ void TextureWidget::setupTopWidgetScale(bool addWidget, Texture* pTexture)
 
 Texture* TextureWidget::generateFloatTexture() const
 {
-	Texture* pNewTexture = NULL;
+	Texture* pNewTexture = nullptr;
 	if (m_overallType == eTextureProcedural)
 	{
 		// because we're not paired, we control the texture
@@ -821,7 +821,7 @@ Texture* TextureWidget::generateFloatTexture() const
 
 	if (m_overallType == eTextureImage && filePath.empty())
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	// load in the texture...
@@ -834,7 +834,7 @@ Texture* TextureWidget::generateFloatTexture() const
 		delete pImageReader;
 
 		if (!pDisplacementMapImage)
-			return NULL;
+			return nullptr;
 
 		if (pDisplacementMapImage->getImageType() == (Image::IMAGE_CHANNELS_1 | Image::IMAGE_FORMAT_FLOAT))
 		{
@@ -858,7 +858,7 @@ Texture* TextureWidget::generateFloatTexture() const
 
 Texture* TextureWidget::generateColourTexture() const
 {
-	Texture* pNewTexture = NULL;
+	Texture* pNewTexture = nullptr;
 	if (m_overallType == eTextureProcedural)
 	{
 		// because we're not paired, we control the texture
@@ -874,7 +874,7 @@ Texture* TextureWidget::generateColourTexture() const
 
 	if (m_overallType == eTextureImage && filePath.empty())
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	// load in the texture...
@@ -887,7 +887,7 @@ Texture* TextureWidget::generateColourTexture() const
 		delete pImageReader;
 
 		if (!pDisplacementMapImage)
-			return NULL;
+			return nullptr;
 
 		if (pDisplacementMapImage->getImageType() == (Image::IMAGE_CHANNELS_3 | Image::IMAGE_FORMAT_FLOAT))
 		{
@@ -1014,14 +1014,14 @@ void TextureWidget::addMenuItems(const std::map<std::string, unsigned char>& ite
 		const std::string& textureName = (*itTextName).first;
 		int textureTypeID = (int)(*itTextName).second;
 		
-		m_aTextureIDs.push_back((unsigned char)textureTypeID);
+		m_aTextureIDs.emplace_back((unsigned char)textureTypeID);
 
 		QAction* pNewTextureType = new QAction(textureName.c_str(), m_pTypeButton);
 		m_pTypeButton->connect(pNewTextureType, SIGNAL(triggered()), m_pSignalMapper, SLOT(map()));
 		m_pSignalMapper->setMapping(pNewTextureType, nextMenuIndex);
 
 		pNewTextureType->setCheckable(true);
-		m_aMenuOther.push_back(pNewTextureType);
+		m_aMenuOther.emplace_back(pNewTextureType);
 
 		// hack to set procedural texture menu checked state if it matched paired value
 		if (m_pPairedValue)

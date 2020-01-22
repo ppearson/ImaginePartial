@@ -177,7 +177,7 @@ template <class Value, class StoreAdapter>
 class ShardedMap
 {
 public:
-	ShardedMap() : m_shardCount(1)
+	ShardedMap() : m_shardCount(1u)
 	{
 		m_aShards.resize(1);
 	}
@@ -198,7 +198,7 @@ public:
 	class iterator
 	{
 	public:
-		iterator() : m_pShardMap(NULL), m_shardIndex(-1), m_holdLock(false)
+		iterator() : m_pShardMap(nullptr), m_shardIndex(-1u), m_holdLock(false)
 		{
 		}
 
@@ -219,7 +219,7 @@ public:
 		~iterator()
 		{
 			releaseShard();
-			m_pShardMap = NULL;
+			m_pShardMap = nullptr;
 		}
 
 		iterator& operator=(const iterator& rhs)

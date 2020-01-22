@@ -19,7 +19,7 @@
 #include "float_pair_control.h"
 
 #include <QHBoxLayout>
-#include <math.h>
+#include <cmath>
 
 #include "parameter.h"
 #include "widgets/double_spin_box_ex.h"

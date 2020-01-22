@@ -36,7 +36,7 @@ class RayVisibilityButton : public QPushButton
 {
 	Q_OBJECT
 public:
-	RayVisibilityButton(QWidget* parent = NULL);
+	RayVisibilityButton(QWidget* parent = nullptr);
 
 	virtual void mousePressEvent(QMouseEvent* event);
 

@@ -60,7 +60,7 @@ bool GeoReader3ds::readFile(const std::string& path, const GeoReaderOptions& opt
 		if (!getSubObjectPoints(m_pNewMesh).empty())
 		{
 			m_pNewMesh->getGeometryInstance()->calculateBoundaryBox();
-			m_aSubObjects.push_back(m_pNewMesh);
+			m_aSubObjects.emplace_back(m_pNewMesh);
 		}
 	}
 
@@ -146,7 +146,7 @@ bool GeoReader3ds::readFile(const std::string& path, const GeoReaderOptions& opt
 
 		mm.addMaterial(pMaterial, true);
 
-		m_aNewMaterials.push_back(pMaterial);
+		m_aNewMaterials.emplace_back(pMaterial);
 	}
 
 	return true;
@@ -202,7 +202,7 @@ bool GeoReader3ds::processChunks(std::fstream& stream, const GeoReaderOptions& o
 					if (!getSubObjectPoints(m_pNewMesh).empty())
 					{
 						m_pNewMesh->getGeometryInstance()->calculateBoundaryBox();
-						m_aSubObjects.push_back(m_pNewMesh);
+						m_aSubObjects.emplace_back(m_pNewMesh);
 					}
 				}
 				// create the new one
@@ -225,7 +225,7 @@ bool GeoReader3ds::processChunks(std::fstream& stream, const GeoReaderOptions& o
 
 					Point newPoint(x, y, z);
 
-					getSubObjectPoints(m_pNewMesh).push_back(newPoint);
+					getSubObjectPoints(m_pNewMesh).emplace_back(newPoint);
 				}
 
 				if (options.importCompoundObjects)
@@ -261,7 +261,7 @@ bool GeoReader3ds::processChunks(std::fstream& stream, const GeoReaderOptions& o
 						newFace.addUV(vert3 + vertexOffset);
 					}
 
-					getSubObjectFaces(m_pNewMesh).push_back(newFace);
+					getSubObjectFaces(m_pNewMesh).emplace_back(newFace);
 				}
 
 				if (haveUVs)
@@ -313,7 +313,7 @@ bool GeoReader3ds::processChunks(std::fstream& stream, const GeoReaderOptions& o
 
 					UV newUV(u, v);
 
-					getSubObjectVertexUVs(m_pNewMesh).push_back(newUV);
+					getSubObjectVertexUVs(m_pNewMesh).emplace_back(newUV);
 				}
 				break;
 			}
@@ -492,7 +492,7 @@ bool GeoReader3ds::processMaterialChunks(std::fstream& stream)
 
 				if (!diffuseTextureMapFile.empty())
 				{
-					if (diffuseTextureMapFile.find(".") != std::string::npos)
+					if (diffuseTextureMapFile.find('.') != std::string::npos)
 					{
 						std::string basePath = FileHelpers::getFileDirectory(m_originalPath);
 

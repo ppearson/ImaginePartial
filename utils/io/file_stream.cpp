@@ -21,11 +21,11 @@
 namespace Imagine
 {
 
-FileStream::FileStream() : Stream(), m_pFile(NULL)
+FileStream::FileStream() : Stream(), m_pFile(nullptr)
 {
 }
 
-FileStream::FileStream(const std::string& path, OpenMode mode) : Stream(), m_pFile(NULL), m_filePath(path)
+FileStream::FileStream(const std::string& path, OpenMode mode) : Stream(), m_pFile(nullptr), m_filePath(path)
 {
 	open(path, mode);
 }
@@ -49,12 +49,12 @@ bool FileStream::write(const void* ptr, size_t size)
 
 bool FileStream::canRead()
 {
-	return m_pFile != NULL;
+	return m_pFile != nullptr;
 }
 
 bool FileStream::canWrite()
 {
-	return m_pFile != NULL;
+	return m_pFile != nullptr;
 }
 
 bool FileStream::open(const std::string& filePath, OpenMode mode)
@@ -77,7 +77,7 @@ bool FileStream::open(const std::string& filePath, OpenMode mode)
 
 	m_pFile = fopen(filePath.c_str(), strOpenMode.c_str());
 
-	return m_pFile != NULL;
+	return m_pFile != nullptr;
 }
 
 void FileStream::close()
@@ -85,7 +85,7 @@ void FileStream::close()
 	if (m_pFile)
 	{
 		fclose(m_pFile);
-		m_pFile = NULL;
+		m_pFile = nullptr;
 	}
 }
 

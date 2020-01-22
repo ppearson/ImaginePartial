@@ -34,7 +34,7 @@ class MultiOptionMenuButton : public QPushButton
 {
 	Q_OBJECT
 public:
-	MultiOptionMenuButton(const std::vector<std::string>& options, const std::vector<std::string>* pAlternativeOptions, QWidget* parent = NULL);
+	MultiOptionMenuButton(const std::vector<std::string>& options, const std::vector<std::string>* pAlternativeOptions, QWidget* parent = nullptr);
 
 	struct SelectedItems
 	{

@@ -39,34 +39,34 @@
 namespace Imagine
 {
 
-Cylinder* Handle::pObjectXTranslateHandleLine = NULL;
-Cylinder* Handle::pObjectYTranslateHandleLine = NULL;
-Cylinder* Handle::pObjectZTranslateHandleLine = NULL;
+Cylinder* Handle::pObjectXTranslateHandleLine = nullptr;
+Cylinder* Handle::pObjectYTranslateHandleLine = nullptr;
+Cylinder* Handle::pObjectZTranslateHandleLine = nullptr;
 
-Cone* Handle::pObjectXTranslateHandleHead = NULL;
-Cone* Handle::pObjectYTranslateHandleHead = NULL;
-Cone* Handle::pObjectZTranslateHandleHead = NULL;
+Cone* Handle::pObjectXTranslateHandleHead = nullptr;
+Cone* Handle::pObjectYTranslateHandleHead = nullptr;
+Cone* Handle::pObjectZTranslateHandleHead = nullptr;
 
-Plane* Handle::pObjectXYTranslateHandlePlane = NULL;
-Plane* Handle::pObjectXZTranslateHandlePlane = NULL;
-Plane* Handle::pObjectYZTranslateHandlePlane = NULL;
+Plane* Handle::pObjectXYTranslateHandlePlane = nullptr;
+Plane* Handle::pObjectXZTranslateHandlePlane = nullptr;
+Plane* Handle::pObjectYZTranslateHandlePlane = nullptr;
 
-Torus* Handle::pObjectXRotateHandleLoop = NULL;
-Torus* Handle::pObjectYRotateHandleLoop = NULL;
-Torus* Handle::pObjectZRotateHandleLoop = NULL;
+Torus* Handle::pObjectXRotateHandleLoop = nullptr;
+Torus* Handle::pObjectYRotateHandleLoop = nullptr;
+Torus* Handle::pObjectZRotateHandleLoop = nullptr;
 
-Cylinder* Handle::pFaceNormalTranslateHandleLine = NULL;
-Cone* Handle::pFaceNormalTranslateHandleHead = NULL;
-Cube* Handle::pFaceExtrude = NULL;
+Cylinder* Handle::pFaceNormalTranslateHandleLine = nullptr;
+Cone* Handle::pFaceNormalTranslateHandleHead = nullptr;
+Cube* Handle::pFaceExtrude = nullptr;
 
-Cylinder* Handle::pFaceTranslateXLine = NULL;
-Cone* Handle::pFaceTranslateXHead = NULL;
-Cylinder* Handle::pFaceTranslateYLine = NULL;
-Cone* Handle::pFaceTranslateYHead = NULL;
+Cylinder* Handle::pFaceTranslateXLine = nullptr;
+Cone* Handle::pFaceTranslateXHead = nullptr;
+Cylinder* Handle::pFaceTranslateYLine = nullptr;
+Cone* Handle::pFaceTranslateYHead = nullptr;
 
-Cube* Handle::pFaceScaleX = NULL;
-Cube* Handle::pFaceScaleY = NULL;
-Cube* Handle::pFaceScaleUniform = NULL;
+Cube* Handle::pFaceScaleX = nullptr;
+Cube* Handle::pFaceScaleY = nullptr;
+Cube* Handle::pFaceScaleUniform = nullptr;
 
 static const float kObjectRotateHandleThickness = 0.02f;
 static const unsigned int kObjectRotateHandleSegments = 36;

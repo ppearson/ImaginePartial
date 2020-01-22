@@ -58,7 +58,7 @@ public:
 		eVoidPointer
 	};
 
-	AttributeValue() : m_dataCharS(NULL), m_stringLength(0), m_itemType(eNone)
+	AttributeValue() : m_dataCharS(nullptr), m_stringLength(0), m_itemType(eNone)
 	{
 
 	}
@@ -150,7 +150,7 @@ public:
 		if (m_itemType == eString && m_dataCharS)
 		{
 			delete [] m_dataCharS;
-			m_dataCharS = NULL;
+			m_dataCharS = nullptr;
 		}
 		else if (m_itemType == eVoidPointer)
 		{
@@ -168,7 +168,7 @@ public:
 		if (m_itemType == eString)
 		{
 			delete [] m_dataCharS;
-			m_dataCharS = NULL;
+			m_dataCharS = nullptr;
 
 			m_dataCharS = new char[rhs.m_stringLength];
 			m_stringLength = rhs.m_stringLength;

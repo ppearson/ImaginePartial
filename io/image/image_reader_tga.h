@@ -72,7 +72,7 @@ protected:
 	};
 
 	bool readData(const std::string& filePath, TGAInfra& infra);
-	void extractPixelValues(unsigned char* pixel, TGAPixel* finalPixels, unsigned int bytes);
+	void extractPixelValues(const unsigned char* pixel, TGAPixel* finalPixels, unsigned int bytes);
 };
 
 } // namespace Imagine

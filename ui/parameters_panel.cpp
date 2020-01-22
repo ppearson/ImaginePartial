@@ -54,7 +54,7 @@ ParametersPanel::~ParametersPanel()
 	if (m_form)
 	{
 		delete m_form;
-		m_form = NULL;
+		m_form = nullptr;
 	}
 
 	std::map<std::string, ControlData>::iterator it = m_aControls.begin();
@@ -187,7 +187,7 @@ void ParametersPanel::addTab(const std::string& title)
 	newTabLayout->setFormAlignment(Qt::AlignLeft | Qt::AlignTop);
 	newTabLayout->setLabelAlignment(Qt::AlignLeft);
 
-	m_aTabs.push_back(newTabPage);
+	m_aTabs.emplace_back(newTabPage);
 
 	m_tabWidget->addTab(newTabPage, title.c_str());
 
@@ -201,7 +201,7 @@ void ParametersPanel::addControl(Control* pControl, bool addLabel, unsigned int 
 		return;
 
 	// we can't add controls without a Widget
-	if (pControl->getWidget() == NULL)
+	if (pControl->getWidget() == nullptr)
 		return;
 
 	// don't allow controls without a name

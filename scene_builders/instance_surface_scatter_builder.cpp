@@ -158,7 +158,7 @@ void InstanceSurfaceScatterBuilder::createScene(Scene& scene)
 
 			scene.getMaterialManager().addMaterial(pNewMaterial);
 
-			posInfo.aMaterials.push_back(pNewMaterial);
+			posInfo.aMaterials.emplace_back(pNewMaterial);
 		}
 	}
 
@@ -183,7 +183,7 @@ void InstanceSurfaceScatterBuilder::createScene(Scene& scene)
 				break;
 			}
 
-			posInfo.aMultipleSrcCO.push_back(pLocalCO);
+			posInfo.aMultipleSrcCO.emplace_back(pLocalCO);
 		}
 	}
 	else
@@ -284,7 +284,7 @@ void InstanceSurfaceScatterBuilder::generateCandidateStartPoints(std::vector<Poi
 			float xPos = rng.randomFloat(0.0f, 1.0f);
 			float yPos = rng.randomFloat(0.0f, 1.0f);
 
-			samples.samples.push_back(Sample2D(xPos, yPos));
+			samples.samples.emplace_back(Sample2D(xPos, yPos));
 		}
 	}
 
@@ -300,7 +300,7 @@ void InstanceSurfaceScatterBuilder::generateCandidateStartPoints(std::vector<Poi
 		newSample.x *= m_width;
 		newSample.y *= m_depth;
 
-		points.push_back(Point(newSample.x, m_raycastStartHeight, newSample.y));
+		points.emplace_back(Point(newSample.x, m_raycastStartHeight, newSample.y));
 	}
 }
 
@@ -378,7 +378,7 @@ bool InstanceSurfaceScatterBuilder::testPositionPickAndAddObject(Scene& scene, c
 		//       don't have as much as an offset, whereas objects on a steep incline (trees for example) have more of an offset
 		newPoint.y += m_surfaceYOffset;
 
-		Object* pNewObject = NULL;
+		Object* pNewObject = nullptr;
 
 		if (!posInfo.shouldMakeBakedInstances)
 		{

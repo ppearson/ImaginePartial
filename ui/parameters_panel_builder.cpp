@@ -51,7 +51,7 @@ ParametersPanel* ParametersPanelBuilder::buildParametersPanel(Parameters& parame
 {
 	std::vector<Parameter*>& params = parameters.getParameters();
 	if (params.empty())
-		return NULL;
+		return nullptr;
 
 	ParametersPanel* pPP = new ParametersPanel(pParent, panelType);
 
@@ -73,7 +73,7 @@ ParametersPanel* ParametersPanelBuilder::buildParametersPanel(Parameters& parame
 		// this isn't great, but due to wanting a completely clean separation between ParameterPanels/Controls and Parameters, the easiest
 		// way to do things...
 
-		Control* pControl = NULL;
+		Control* pControl = nullptr;
 
 		bool fullControl = true;
 		bool addLabel = true;
@@ -182,7 +182,7 @@ ParametersPanel* ParametersPanelBuilder::buildParametersPanel(Parameters& parame
 				// TODO: this is a quick hack...
 				if (flags & eParameterMaterialSelectionManager)
 				{
-					pControl = new MaterialControl(name, NULL, label);
+					pControl = new MaterialControl(name, nullptr, label);
 					MaterialControl* pMC = static_cast<MaterialControl*>(pControl);
 					pMC->setSelectionManager();
 				}

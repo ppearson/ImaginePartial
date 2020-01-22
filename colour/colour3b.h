@@ -52,7 +52,7 @@ public:
 	{
 		return Colour3b(scale * r, scale * g, scale * b);
 	}
-
+	
 	Colour3b& operator*=(Colour3b rhs)
 	{
 		r *= rhs.r;

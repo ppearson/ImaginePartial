@@ -32,7 +32,7 @@ namespace Imagine
 {
 
 SimpleParametersPanel::SimpleParametersPanel(ParametersInterface* pParent) : m_pParent(pParent),
-	m_pTextureWidget(NULL), m_pMaterialWidget(NULL)
+	m_pTextureWidget(nullptr), m_pMaterialWidget(nullptr)
 {
 	m_pWidget = new QWidget();
 	m_pWidget->setContentsMargins(0, 0, 0, 0);
@@ -54,7 +54,7 @@ SimpleParametersPanel::~SimpleParametersPanel()
 	if (m_pWidget)
 	{
 		delete m_pWidget;
-		m_pWidget = NULL;
+		m_pWidget = nullptr;
 	}
 
 	std::map<std::string, Control*>::iterator it = m_aControls.begin();
@@ -74,7 +74,7 @@ void SimpleParametersPanel::addControl(Control* pControl)
 		return;
 
 	// we can't add controls without a Widget
-	if (pControl->getWidget() == NULL)
+	if (pControl->getWidget() == nullptr)
 		return;
 
 	// don't allow controls without a name

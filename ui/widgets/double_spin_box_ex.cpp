@@ -23,7 +23,7 @@
 namespace Imagine
 {
 
-DoubleSpinBoxEx::DoubleSpinBoxEx(int precision) : QDoubleSpinBox(NULL), m_decimalPlacesToShow(0)
+DoubleSpinBoxEx::DoubleSpinBoxEx(int precision) : QDoubleSpinBox(nullptr), m_decimalPlacesToShow(0)
 {
 	setDecimals(precision);
 	setButtonSymbols(QAbstractSpinBox::NoButtons);

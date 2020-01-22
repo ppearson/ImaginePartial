@@ -148,7 +148,7 @@ public:
 	////
 
 
-	float		m[3][3];
+	float		m[9];
 };
 
 } // namespace Imagine

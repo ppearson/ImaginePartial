@@ -20,9 +20,9 @@
 
 #include <algorithm>
 
-#include <stdio.h>
+#include <cstdio>
 #include <sys/stat.h>
-#include <string.h>
+#include <cstring>
 #include <dirent.h>
 #include <unistd.h>
 
@@ -148,11 +148,11 @@ std::string FileHelpers::getFileNameAllPlatforms(const std::string& path)
 
 std::string FileHelpers::bakeFrameIntoFileSequencePath(const std::string& path, unsigned int frame)
 {
-	size_t sequenceCharStart = path.find_first_of("#");
+	size_t sequenceCharStart = path.find_first_of('#');
 	if (sequenceCharStart == std::string::npos)
 		return path;
 
-	size_t sequenceCharEnd = path.find_first_not_of("#", sequenceCharStart);
+	size_t sequenceCharEnd = path.find_first_not_of('#', sequenceCharStart);
 	unsigned int sequenceCharLength = sequenceCharEnd - sequenceCharStart;
 
 	char szFrameFormatter[16];
@@ -222,10 +222,10 @@ bool FileHelpers::getFilesInDirectory(const std::string& directoryPath, const st
 	if (!dir)
 		return false;
 
-	struct dirent* dirEnt = NULL;
+	struct dirent* dirEnt = nullptr;
 	char tempBuffer[4096];
 
-	while ((dirEnt = readdir(dir)) != NULL)
+	while ((dirEnt = readdir(dir)) != nullptr)
 	{
 		// ignore directories for the moment
 		if (dirEnt->d_type == DT_DIR)
@@ -259,7 +259,7 @@ bool FileHelpers::getFilesInDirectory(const std::string& directoryPath, const st
 
 					if (getFileExtension(dirEnt->d_name) == extension)
 					{
-						files.push_back(fullAbsolutePath);
+						files.emplace_back(fullAbsolutePath);
 					}
 				}
 			}
@@ -270,7 +270,7 @@ bool FileHelpers::getFilesInDirectory(const std::string& directoryPath, const st
 			std::string fullAbsolutePath = combinePaths(directoryPath, dirEnt->d_name);
 			if (getFileExtension(dirEnt->d_name) == extension)
 			{
-				files.push_back(fullAbsolutePath);
+				files.emplace_back(fullAbsolutePath);
 			}
 		}
 	}

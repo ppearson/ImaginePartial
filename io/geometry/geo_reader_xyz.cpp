@@ -19,7 +19,7 @@
 #include "geo_reader_xyz.h"
 
 #include <algorithm>
-#include <stdio.h>
+#include <cstdio>
 
 #include "global_context.h"
 
@@ -56,7 +56,7 @@ bool GeoReaderXYZ::readFile(const std::string& path, const GeoReaderOptions& opt
 
 	while (fileStream.getline(buf, 256))
 	{
-		if (buf[0] == 0)
+		if (buf[0] == 0 || buf[0] == '#')
 			continue;
 		
 		float x;
@@ -67,7 +67,7 @@ bool GeoReaderXYZ::readFile(const std::string& path, const GeoReaderOptions& opt
 
 		Point vertex(x, y, z);
 
-		aPointPositions.push_back(vertex);
+		aPointPositions.emplace_back(vertex);
 	}
 	
 	fileStream.close();

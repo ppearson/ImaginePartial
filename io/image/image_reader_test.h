@@ -31,12 +31,12 @@ public:
 
 	virtual Image* readColourImage(const std::string& filePath, unsigned int requiredTypeFlags)
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	virtual Image* readGreyscaleImage(const std::string& filePath, unsigned int requiredTypeFlags)
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	virtual bool supportsPartialReading() const

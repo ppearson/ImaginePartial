@@ -40,7 +40,7 @@ Image* ImageReader::readColourImageAndByteCopy(const std::string& filePath, Imag
 {
 	Image* pColourImage = readColourImage(filePath, requiredTypeFlags);
 	if (!pColourImage)
-		return NULL;
+		return nullptr;
 
 	// see if we've got a byte format image already...
 	if (pColourImage->getImageType() & Image::IMAGE_FORMAT_BYTE)
@@ -117,13 +117,13 @@ Image* ImageReader::readGreyscaleImage(const std::string& filePath, unsigned int
 {
 	Image* pColourImage = readColourImage(filePath, requiredTypeFlags);
 	if (!pColourImage)
-		return NULL;
+		return nullptr;
 
 	if (pColourImage->getImageType() & Image::IMAGE_FORMAT_FLOAT)
 	{
 		ImageColour3f* pColour3fImage = dynamic_cast<ImageColour3f*>(pColourImage);
 		if (!pColour3fImage)
-			return NULL;
+			return nullptr;
 
 		Image1f* pFloatImage = new Image1f(*pColour3fImage, requiredTypeFlags & Image::IMAGE_FLAGS_BRIGHTNESS);
 		if (pFloatImage)
@@ -136,7 +136,7 @@ Image* ImageReader::readGreyscaleImage(const std::string& filePath, unsigned int
 	{
 		ImageColour3h* pColour3hImage = dynamic_cast<ImageColour3h*>(pColourImage);
 		if (!pColour3hImage)
-			return NULL;
+			return nullptr;
 
 		Image1h* pHalfImage = new Image1h(*pColour3hImage, requiredTypeFlags & Image::IMAGE_FLAGS_BRIGHTNESS);
 		if (pHalfImage)
@@ -146,7 +146,7 @@ Image* ImageReader::readGreyscaleImage(const std::string& filePath, unsigned int
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 } // namespace Imagine

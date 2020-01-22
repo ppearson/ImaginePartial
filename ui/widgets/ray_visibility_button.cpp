@@ -35,13 +35,13 @@ RayVisibilityButton::RayVisibilityButton(QWidget* parent) :	QPushButton(parent)
 
 	m_pSignalMapper = new QSignalMapper(this);
 
-	m_aOptions.push_back("Camera");
-	m_aOptions.push_back("Shadow");
-	m_aOptions.push_back("Reflection");
-	m_aOptions.push_back("Refraction");
-	m_aOptions.push_back("Diffuse");
-	m_aOptions.push_back("Glossy");
-	m_aOptions.push_back("Volume scatter");
+	m_aOptions.emplace_back("Camera");
+	m_aOptions.emplace_back("Shadow");
+	m_aOptions.emplace_back("Reflection");
+	m_aOptions.emplace_back("Refraction");
+	m_aOptions.emplace_back("Diffuse");
+	m_aOptions.emplace_back("Glossy");
+	m_aOptions.emplace_back("Volume scatter");
 
 	unsigned int menuIndex = 0;
 	std::vector<std::string>::const_iterator it = m_aOptions.begin();
@@ -53,7 +53,7 @@ RayVisibilityButton::RayVisibilityButton(QWidget* parent) :	QPushButton(parent)
 		m_pSignalMapper->setMapping(pNewOption, menuIndex);
 
 		pNewOption->setCheckable(true);
-		m_aActions.push_back(pNewOption);
+		m_aActions.emplace_back(pNewOption);
 
 		pMenu->addAction(pNewOption);
 

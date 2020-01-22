@@ -80,8 +80,6 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 	line.resize(2048);
 
 	Mesh* pNewMesh = new Mesh();
-	if (!pNewMesh)
-		return false;
 
 	std::vector<StringToken> aItems(128);
 	std::vector<StringToken> aComponents(3);
@@ -96,7 +94,7 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 	std::vector<Point> aPoints;
 	std::vector<UV> aUVs;
 
-	EditableGeometryInstance* pNewGeoInstance = NULL;
+	EditableGeometryInstance* pNewGeoInstance = nullptr;
 
 	pNewGeoInstance = new EditableGeometryInstance();
 
@@ -139,7 +137,7 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 
 			Point vertex(x, y, z);
 
-			aPoints.push_back(vertex);
+			aPoints.emplace_back(vertex);
 		}
 /*		else if (buf[0] == 'v' && buf[1] == 'n')
 		{
@@ -151,7 +149,7 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 
 			Normal vertex(x, y, z);
 
-			getSubObjectVertexNormals(pNewMesh).push_back(vertex);
+			getSubObjectVertexNormals(pNewMesh).emplace_back(vertex);
 		}
 */		else if (buf[0] == 'v' && buf[1] == 't')
 		{
@@ -162,7 +160,7 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 
 			UV uv(u, v);
 
-			aUVs.push_back(uv);
+			aUVs.emplace_back(uv);
 		}
 		else if ((buf[0] == 'o' || buf[0] == 'g') && buf[1] == ' ')
 		{
@@ -201,12 +199,12 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 					}
 					GeoHelperObj::calculateFaceNormalsForGeometry(pNewGeoInstance);
 					pNewGeoInstance->calculateBoundaryBox();
-					subObjects.push_back(pNewMesh);
+					subObjects.emplace_back(pNewMesh);
 				}
 				else
 				{
 					delete pNewMesh;
-					pNewMesh = NULL;
+					pNewMesh = nullptr;
 				}
 			}
 
@@ -221,15 +219,13 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 
 			// create the new one
 			pNewMesh = new Mesh();
-			if (pNewMesh)
-			{
-				pNewGeoInstance = new EditableGeometryInstance();
-				pNewMesh->setGeometryInstance(pNewGeoInstance);
-				pNewMesh->setMaterial(pDefaultMaterial);
-				pNewMesh->setName(objectName);
-				
-				haveMaterialForMesh = false;
-			}
+			pNewGeoInstance = new EditableGeometryInstance();
+			pNewMesh->setGeometryInstance(pNewGeoInstance);
+			pNewMesh->setMaterial(pDefaultMaterial);
+			pNewMesh->setName(objectName);
+			
+			haveMaterialForMesh = false;
+
 		}
 		else if (buf[0] == 'f')
 		{
@@ -259,7 +255,7 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 			{
 				const StringToken& item = aItems[i];
 
-				const std::string& strItem = line.substr(item.start, item.length);
+				const std::string strItem = line.substr(item.start, item.length);
 
 				components = fastSplitNoEmpties(strItem, aComponents, sep2);
 
@@ -270,7 +266,7 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 					if (component.length == 0)
 						continue;
 
-					const std::string& strValue = strItem.substr(component.start, component.length);
+					const std::string strValue = strItem.substr(component.start, component.length);
 
 					int value = atoi(strValue.c_str());
 
@@ -307,7 +303,7 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 				}
 			}
 
-			getSubObjectFaces(pNewMesh).push_back(newFace);
+			getSubObjectFaces(pNewMesh).emplace_back(newFace);
 		}
 		else if (stringCompare(buf, "mtllib", 6))
 		{
@@ -352,12 +348,12 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 					}
 					GeoHelperObj::calculateFaceNormalsForGeometry(pNewGeoInstance);
 					pNewGeoInstance->calculateBoundaryBox();
-					subObjects.push_back(pNewMesh);
+					subObjects.emplace_back(pNewMesh);
 				}
 				else
 				{
 					delete pNewMesh;
-					pNewMesh = NULL;
+					pNewMesh = nullptr;
 				}
 
 				aVertexIndexesForObject.clear();
@@ -365,14 +361,11 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 
 				// create the new one
 				pNewMesh = new Mesh();
-				if (pNewMesh)
-				{
-					pNewGeoInstance = new EditableGeometryInstance();
-					pNewMesh->setGeometryInstance(pNewGeoInstance);
-					pNewMesh->setMaterial(pDefaultMaterial);
-					pNewMesh->setName(lastName);
-					haveMaterialForMesh = true;
-				}
+				pNewGeoInstance = new EditableGeometryInstance();
+				pNewMesh->setGeometryInstance(pNewGeoInstance);
+				pNewMesh->setMaterial(pDefaultMaterial);
+				pNewMesh->setName(lastName);
+				haveMaterialForMesh = true;
 			}
 
 			lastMaterialName = mtlName;
@@ -418,7 +411,7 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 			}
 			GeoHelperObj::calculateFaceNormalsForGeometry(pNewGeoInstance);
 			pNewGeoInstance->calculateBoundaryBox();
-			subObjects.push_back(pNewMesh);
+			subObjects.emplace_back(pNewMesh);
 		}
 	}
 
@@ -463,9 +456,9 @@ bool GeoReaderObj::readFileEditableMesh(const std::string& path, const GeoReader
 	{
 		Material* pMat = *itMat;
 
-		aMaterials.push_back(pMat);
+		aMaterials.emplace_back(pMat);
 
-		m_aNewMaterials.push_back(pMat);
+		m_aNewMaterials.emplace_back(pMat);
 	}
 
 	m_newObject->getMaterialManager().addMaterials(aMaterials, true);
@@ -488,8 +481,6 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 	line.resize(2048);
 
 	Mesh* pNewMesh = new Mesh();
-	if (!pNewMesh)
-		return false;
 
 	std::vector<StringToken> aItems(128);
 	std::vector<StringToken> aComponents(3);
@@ -504,7 +495,7 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 	std::vector<Point> aPoints;
 	std::vector<UV> aUVs;
 
-	StandardGeometryInstance* pNewGeoInstance = NULL;
+	StandardGeometryInstance* pNewGeoInstance = nullptr;
 
 	pNewGeoInstance = new StandardGeometryInstance();
 
@@ -552,7 +543,7 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 
 			Point vertex(x, y, z);
 
-			aPoints.push_back(vertex);
+			aPoints.emplace_back(vertex);
 		}
 /*		else if (buf[0] == 'v' && buf[1] == 'n')
 		{
@@ -564,7 +555,7 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 
 			Normal vertex(x, y, z);
 
-			getSubObjectVertexNormals(pNewMesh).push_back(vertex);
+			getSubObjectVertexNormals(pNewMesh).emplace_back(vertex);
 		}
 */		else if (buf[0] == 'v' && buf[1] == 't')
 		{
@@ -575,7 +566,7 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 
 			UV uv(u, v);
 
-			aUVs.push_back(uv);
+			aUVs.emplace_back(uv);
 		}
 		else if ((buf[0] == 'o' || buf[0] == 'g') && buf[1] == ' ')
 		{
@@ -623,12 +614,12 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 					}
 
 					pNewGeoInstance->calculateBoundaryBox();
-					subObjects.push_back(pNewMesh);
+					subObjects.emplace_back(pNewMesh);
 				}
 				else
 				{
 					delete pNewMesh;
-					pNewMesh = NULL;
+					pNewMesh = nullptr;
 				}
 			}
 
@@ -648,14 +639,11 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 
 			// create the new one
 			pNewMesh = new Mesh();
-			if (pNewMesh)
-			{
-				pNewGeoInstance = new StandardGeometryInstance();
-				pNewMesh->setGeometryInstance(pNewGeoInstance);
-				pNewMesh->setMaterial(pDefaultMaterial);
-				pNewMesh->setName(objectName);
-				haveMaterialForMesh = false;
-			}
+			pNewGeoInstance = new StandardGeometryInstance();
+			pNewMesh->setGeometryInstance(pNewGeoInstance);
+			pNewMesh->setMaterial(pDefaultMaterial);
+			pNewMesh->setName(objectName);
+			haveMaterialForMesh = false;
 		}
 		else if (buf[0] == 'f')
 		{
@@ -685,7 +673,7 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 			{
 				const StringToken& item = aItems[i];
 
-				const std::string& strItem = line.substr(item.start, item.length);
+				const std::string strItem = line.substr(item.start, item.length);
 
 				components = fastSplitNoEmpties(strItem, aComponents, sep2);
 
@@ -696,7 +684,7 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 					if (component.length == 0)
 						continue;
 
-					const std::string& strValue = strItem.substr(component.start, component.length);
+					const std::string strValue = strItem.substr(component.start, component.length);
 
 					int value = atoi(strValue.c_str());
 
@@ -708,7 +696,7 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 							unsigned int vertexIndex = value > 0 ? value - 1 : (aPoints.size() + value);
 							aVertexIndexesForObject.insert(vertexIndex);
 
-							aPolyIndices.push_back(vertexIndex);
+							aPolyIndices.emplace_back(vertexIndex);
 							break;
 						}
 						case 1:
@@ -719,7 +707,7 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 							unsigned int uvIndex = value > 0 ? value - 1 : (aUVs.size() + value);
 							aUVIndexesForObject.insert(uvIndex);
 
-							aUVIndices.push_back(uvIndex);
+							aUVIndices.emplace_back(uvIndex);
 							break;
 						}
 /*						case 2:
@@ -733,7 +721,7 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 				}
 			}
 
-			aPolyOffsets.push_back(aPolyIndices.size());
+			aPolyOffsets.emplace_back(aPolyIndices.size());
 		}
 		else if (stringCompare(buf, "mtllib", 6))
 		{
@@ -787,12 +775,12 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 					}
 
 					pNewGeoInstance->calculateBoundaryBox();
-					subObjects.push_back(pNewMesh);
+					subObjects.emplace_back(pNewMesh);
 				}
 				else
 				{
 					delete pNewMesh;
-					pNewMesh = NULL;
+					pNewMesh = nullptr;
 				}
 
 				aVertexIndexesForObject.clear();
@@ -805,14 +793,11 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 
 				// create the new one
 				pNewMesh = new Mesh();
-				if (pNewMesh)
-				{
-					pNewGeoInstance = new StandardGeometryInstance();
-					pNewMesh->setGeometryInstance(pNewGeoInstance);
-					pNewMesh->setMaterial(pDefaultMaterial);
-					pNewMesh->setName(lastName);
-					haveMaterialForMesh = true;
-				}
+				pNewGeoInstance = new StandardGeometryInstance();
+				pNewMesh->setGeometryInstance(pNewGeoInstance);
+				pNewMesh->setMaterial(pDefaultMaterial);
+				pNewMesh->setName(lastName);
+				haveMaterialForMesh = true;
 			}
 
 			lastMaterialName = mtlName;
@@ -867,7 +852,7 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 			}
 
 			pNewGeoInstance->calculateBoundaryBox();
-			subObjects.push_back(pNewMesh);
+			subObjects.emplace_back(pNewMesh);
 		}
 	}
 
@@ -912,9 +897,9 @@ bool GeoReaderObj::readFileStandardMesh(const std::string& path, const GeoReader
 	{
 		Material* pMat = *itMat;
 
-		aMaterials.push_back(pMat);
+		aMaterials.emplace_back(pMat);
 
-		m_aNewMaterials.push_back(pMat);
+		m_aNewMaterials.emplace_back(pMat);
 	}
 
 	m_newObject->getMaterialManager().addMaterials(aMaterials, true);
@@ -938,8 +923,6 @@ bool GeoReaderObj::readFileTriangleMesh(const std::string& path, const GeoReader
 	line.resize(1024);
 
 	TriangleMesh* pNewMesh = new TriangleMesh();
-	if (!pNewMesh)
-		return false;
 
 	std::vector<StringToken> aItems(16);
 	std::vector<StringToken> aComponents(3);
@@ -985,7 +968,7 @@ bool GeoReaderObj::readFileTriangleMesh(const std::string& path, const GeoReader
 
 			Point vertex(x, y, z);
 
-			aPoints.push_back(vertex);
+			aPoints.emplace_back(vertex);
 		}
 /*		else if (buf[0] == 'v' && buf[1] == 't')
 		{
@@ -996,7 +979,7 @@ bool GeoReaderObj::readFileTriangleMesh(const std::string& path, const GeoReader
 
 			UV uv(u, v);
 
-			pUVsList->push_back(uv);
+			pUVsList->emplace_back(uv);
 		}
 */		else if (buf[0] == 'f')
 		{
@@ -1025,7 +1008,7 @@ bool GeoReaderObj::readFileTriangleMesh(const std::string& path, const GeoReader
 			{
 				const StringToken& item = aItems[i];
 
-				const std::string& strItem = line.substr(item.start, item.length);
+				std::string strItem = line.substr(item.start, item.length);
 
 				components = fastSplitNoEmpties(strItem, aComponents, sep2);
 
@@ -1036,7 +1019,7 @@ bool GeoReaderObj::readFileTriangleMesh(const std::string& path, const GeoReader
 					if (component.length == 0)
 						continue;
 
-					const std::string& strValue = strItem.substr(component.start, component.length);
+					std::string strValue = strItem.substr(component.start, component.length);
 
 					int value = atoi(strValue.c_str());
 
@@ -1075,7 +1058,7 @@ bool GeoReaderObj::readFileTriangleMesh(const std::string& path, const GeoReader
 
 			TriangleIndicesUniform newIndices(triangleVerticies[0], triangleVerticies[1], triangleVerticies[2], triangleIndex++);
 
-			pNewGeoInstance->getTriangleIndices().push_back(newIndices);
+			pNewGeoInstance->getTriangleIndices().emplace_back(newIndices);
 		}
 	}
 
@@ -1138,7 +1121,7 @@ bool GeoReaderObj::readFilePointCloud(const std::string& path, const GeoReaderOp
 
 			Point vertex(x, y, z);
 
-			aPointPositions.push_back(vertex);
+			aPointPositions.emplace_back(vertex);
 		}
 /*		else if (buf[0] == 'v' && buf[1] == 't')
 		{
@@ -1149,7 +1132,7 @@ bool GeoReaderObj::readFilePointCloud(const std::string& path, const GeoReaderOp
 
 			UV uv(u, v);
 
-			pUVsList->push_back(uv);
+			pUVsList->emplace_back(uv);
 		}
 */		
 
@@ -1159,8 +1142,6 @@ bool GeoReaderObj::readFilePointCloud(const std::string& path, const GeoReaderOp
 	fileStream.close();
 
 	CompoundStaticSpheres* pCompoundSpheres = new CompoundStaticSpheres();
-	if (!pCompoundSpheres)
-		return false;
 	
 	pCompoundSpheres->buildFromPositions(aPointPositions, options.pointSize);
 

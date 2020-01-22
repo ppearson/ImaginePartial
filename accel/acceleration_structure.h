@@ -127,7 +127,7 @@ public:
 	void clear()
 	{
 		m_aObjects.clear();
-		std::vector<T*>().swap(m_aObjects);
+		m_aObjects.shrink_to_fit();
 	}
 
 	bool isPointerType() const
@@ -147,12 +147,12 @@ public:
 
 	std::vector<T>* getObjectVector()
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	std::vector<const Object*>* getExtraVector()
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	inline bool didHitObject(const unsigned int index, const Ray& ray, float& t, HitResult& result) const
@@ -219,7 +219,7 @@ public:
 	void clear()
 	{
 		m_aObjects.clear();
-		std::vector<T>().swap(m_aObjects);
+		m_aObjects.shrink_to_fit();
 	}
 
 	bool isPointerType() const
@@ -234,7 +234,7 @@ public:
 
 	std::vector<T*>* getObjectPtrVector()
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	std::vector<T>* getObjectVector()
@@ -244,7 +244,7 @@ public:
 
 	std::vector<const Object*>* getExtraVector()
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	inline bool didHitObject(const unsigned int index, const Ray& ray, float& t, HitResult& result) const
@@ -300,7 +300,7 @@ template<typename T>
 class AccelerationOHItemCompactTriangle
 {
 public:
-	AccelerationOHItemCompactTriangle() : m_pRTH(NULL)
+	AccelerationOHItemCompactTriangle() : m_pRTH(nullptr)
 	{
 	}
 
@@ -312,7 +312,7 @@ public:
 	void clear()
 	{
 		m_aObjects.clear();
-		std::vector<T>().swap(m_aObjects);
+		m_aObjects.shrink_to_fit();
 	}
 
 	bool isPointerType() const
@@ -327,7 +327,7 @@ public:
 
 	std::vector<T*>* getObjectPtrVector()
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	std::vector<T>* getObjectVector()
@@ -337,7 +337,7 @@ public:
 
 	std::vector<const Object*>* getExtraVector()
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	inline bool didHitObject(const unsigned int index, const Ray& ray, float& t, HitResult& result) const
@@ -408,7 +408,7 @@ public:
 	void clear()
 	{
 		m_aObjects.clear();
-		std::vector<T>().swap(m_aObjects);
+		m_aObjects.shrink_to_fit();
 	}
 
 	bool isPointerType() const
@@ -428,7 +428,7 @@ public:
 
 	std::vector<T*>* getObjectPtrVector()
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	std::vector<T>* getObjectVector()
@@ -497,7 +497,7 @@ template<typename T>
 class AccelerationOHItemCompactTriangleCombined
 {
 public:
-	AccelerationOHItemCompactTriangleCombined() : m_pRTH(NULL)
+	AccelerationOHItemCompactTriangleCombined() : m_pRTH(nullptr)
 	{
 	}
 
@@ -509,7 +509,7 @@ public:
 	void clear()
 	{
 		m_aObjects.clear();
-		std::vector<T>().swap(m_aObjects);
+		m_aObjects.shrink_to_fit();
 	}
 
 	bool isPointerType() const
@@ -529,7 +529,7 @@ public:
 
 	std::vector<T*>* getObjectPtrVector()
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	std::vector<T>* getObjectVector()
@@ -600,7 +600,7 @@ template<typename T>
 class AccelerationOHItemZeroTriangle
 {
 public:
-	AccelerationOHItemZeroTriangle() : m_pRTH(NULL)
+	AccelerationOHItemZeroTriangle() : m_pRTH(nullptr)
 	{
 	}
 
@@ -612,7 +612,7 @@ public:
 	void clear()
 	{
 		m_aObjects.clear();
-		std::vector<T>().swap(m_aObjects);
+		m_aObjects.shrink_to_fit();
 	}
 
 	void clearUnneededTriangles()
@@ -632,7 +632,7 @@ public:
 
 	std::vector<T*>* getObjectPtrVector()
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	std::vector<T>* getObjectVector()
@@ -642,7 +642,7 @@ public:
 
 	std::vector<const Object*>* getExtraVector()
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	inline bool didHitObject(const unsigned int index, const Ray& ray, float& t, HitResult& result) const
@@ -696,7 +696,7 @@ template<typename T, typename OH>
 class AccelerationStructure
 {
 public:
-	AccelerationStructure() : m_pRenderTriangleHolder(NULL)
+	AccelerationStructure() : m_pRenderTriangleHolder(nullptr)
 	{
 	}
 

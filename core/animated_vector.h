@@ -47,8 +47,8 @@ public:
 	void setKey(float time);
 	void deleteKey();
 
-	CurveInterpolationType getInterpolationType() const;
-	void setInterpolationType(CurveInterpolationType type);
+	AnimationCurve::CurveInterpolationType getInterpolationType() const;
+	void setInterpolationType(AnimationCurve::CurveInterpolationType type);
 
 	void load(Stream* stream, unsigned int version);
 	void store(Stream* stream) const;

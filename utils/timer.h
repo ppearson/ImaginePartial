@@ -1,6 +1,6 @@
 /*
  Imagine
- Copyright 2011-2012 Peter Pearson.
+ Copyright 2011-2019 Peter Pearson.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  You may not use this file except in compliance with the License.
@@ -19,8 +19,15 @@
 #ifndef TIMER_H
 #define TIMER_H
 
-#include <string>
+#define USE_CHRONO 1
+
+#if USE_CHRONO
+#include <chrono>
+#else
 #include <sys/time.h>
+#endif
+
+#include <string>
 #include <stdio.h>
 
 #include "logger.h"
@@ -31,16 +38,25 @@ namespace Imagine
 class Timer
 {
 public:
-	Timer(const std::string& name, bool enabled = true) : m_name(name), m_pLogger(NULL), m_enabled(enabled)
+	Timer(const std::string& name, bool enabled = true) : m_name(name), m_pLogger(nullptr), m_enabled(enabled)
 	{
 		if (enabled)
-			gettimeofday(&m_startTime, NULL);
+		{
+#if USE_CHRONO
+			m_startTimePoint = std::chrono::steady_clock::now();
+#else
+			gettimeofday(&m_startTime, nullptr);
+#endif
+		}
 	}
 
 	Timer(const std::string& name, Logger& logger, bool enabled = true) : m_name(name), m_pLogger(&logger), m_enabled(enabled)
 	{
-		if (enabled)
-			gettimeofday(&m_startTime, NULL);
+#if USE_CHRONO
+		m_startTimePoint = std::chrono::steady_clock::now();
+#else
+		gettimeofday(&m_startTime, nullptr);
+#endif
 	}
 
 	~Timer()
@@ -48,11 +64,18 @@ public:
 		if (!m_enabled)
 			return;
 
+#if USE_CHRONO
+		std::chrono::steady_clock::time_point endTimePoint = std::chrono::steady_clock::now();
+		std::chrono::duration<double> timeSpan = std::chrono::duration_cast<std::chrono::duration<double> >(endTimePoint - m_startTimePoint);
+		
+		double seconds = timeSpan.count();
+#else
 		timeval endTime;
-		gettimeofday(&endTime, NULL);
+		gettimeofday(&endTime, nullptr);
 
 		double seconds = (endTime.tv_sec - m_startTime.tv_sec);
 		seconds += (endTime.tv_usec - m_startTime.tv_usec) / 1000000.0;
+#endif
 
 		if (seconds > 60.0)
 		{
@@ -83,7 +106,12 @@ protected:
 	std::string		m_name;
 	Logger*			m_pLogger;
 	bool			m_enabled;
-	timeval			m_startTime;
+	
+#if USE_CHRONO
+	std::chrono::steady_clock::time_point	m_startTimePoint;
+#else
+	timeval						m_startTime;
+#endif
 };
 
 

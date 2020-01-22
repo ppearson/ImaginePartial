@@ -19,8 +19,8 @@
 #include "thread_pool.h"
 
 #include <algorithm>
-#include <string.h> // for memset
-#include <assert.h>
+#include <cstring> // for memset
+#include <cassert>
 
 #include "global_context.h"
 #include "utils/logger.h"
@@ -28,7 +28,7 @@
 namespace Imagine
 {
 
-ThreadPoolTask::ThreadPoolTask() : m_pThreadPool(NULL)
+ThreadPoolTask::ThreadPoolTask() : m_pThreadPool(nullptr)
 {
 }
 
@@ -187,7 +187,7 @@ void ThreadController::freeThread(unsigned int thread)
 }
 
 ThreadPoolThread::ThreadPoolThread(ThreadPool* pThreadPool, unsigned int threadID, Thread::ThreadPriority priority) : Thread(priority),
-	m_pTask(NULL), m_pTaskBundle(NULL),	m_bundleIndex(0), m_bundleSize(0), m_pThreadPool(pThreadPool), m_threadID(threadID)
+	m_pTask(nullptr), m_pTaskBundle(nullptr),	m_bundleIndex(0), m_bundleSize(0), m_pThreadPool(pThreadPool), m_threadID(threadID)
 {
 }
 
@@ -196,7 +196,7 @@ ThreadPoolThread::~ThreadPoolThread()
 	if (m_pTaskBundle)
 	{
 		delete m_pTaskBundle;
-		m_pTaskBundle = NULL;
+		m_pTaskBundle = nullptr;
 	}
 }
 
@@ -220,13 +220,13 @@ void ThreadPoolThread::runSingleTask()
 		{
 			// task is done, so remove it
 			m_pThreadPool->deleteTask(m_pTask, false);
-			m_pTask = NULL;
+			m_pTask = nullptr;
 		}
 		else
 		{
 			// re-add the task
 			m_pThreadPool->addTask(m_pTask);
-			m_pTask = NULL;
+			m_pTask = nullptr;
 		}
 
 		m_pThreadPool->taskDone();
@@ -246,7 +246,7 @@ void ThreadPoolThread::runTaskBundle()
 {
 	assert(m_pThreadPool);
 
-	ThreadPoolTask* pTask = NULL;
+	ThreadPoolTask* pTask = nullptr;
 	while (m_isRunning)
 	{
 		// while we've got tasks in our local bundle...
@@ -258,12 +258,12 @@ void ThreadPoolThread::runTaskBundle()
 			{
 				// task is done, so remove it
 				m_pThreadPool->deleteTask(pTask, false);
-				m_pTaskBundle->m_pTasks[m_bundleIndex] = NULL;
-				m_pTask = NULL;
+				m_pTaskBundle->m_pTasks[m_bundleIndex] = nullptr;
+				m_pTask = nullptr;
 			}
 			else
 			{
-				m_requeueTasks.m_pTasks.push_back(pTask);
+				m_requeueTasks.m_pTasks.emplace_back(pTask);
 			}
 
 			m_pThreadPool->taskDone();
@@ -314,7 +314,7 @@ void ThreadPoolThread::deleteTasksInBundle()
 }
 
 ThreadPool::ThreadPool(unsigned int threads, bool useBundles) : m_controller(threads),
-	m_pAsyncFinishThread(NULL),
+	m_pAsyncFinishThread(nullptr),
     m_numberOfThreads(threads),
 	m_setAffinity(false), m_lowPriorityThreads(false), m_useBundles(useBundles),
 	m_startedThreads(0), m_isActive(false),
@@ -324,7 +324,7 @@ ThreadPool::ThreadPool(unsigned int threads, bool useBundles) : m_controller(thr
 	{
 		if (m_useBundles)
 		{
-			m_aRequeuedTasks.push_back(new RequeuedTasks());
+			m_aRequeuedTasks.emplace_back(new RequeuedTasks());
 		}
 	}
 
@@ -338,7 +338,7 @@ ThreadPool::~ThreadPool()
 	if (m_pAsyncFinishThread)
 	{
 		delete m_pAsyncFinishThread;
-		m_pAsyncFinishThread = NULL;
+		m_pAsyncFinishThread = nullptr;
 	}
 }
 
@@ -348,7 +348,7 @@ void ThreadPool::addTask(ThreadPoolTask* pTask)
 
 	pTask->setThreadPool(this);
 
-	m_aTasks.push_back(pTask);
+	m_aTasks.emplace_back(pTask);
 
 	m_lock.unlock();
 }
@@ -357,19 +357,19 @@ void ThreadPool::requeueTask(ThreadPoolTask* pTask, unsigned int threadID)
 {
 	RequeuedTasks* pRQT = m_aRequeuedTasks[threadID];
 
-	pRQT->m_pTasks.push_back(pTask);
+	pRQT->m_pTasks.emplace_back(pTask);
 }
 
 void ThreadPool::addTaskNoLock(ThreadPoolTask* pTask)
 {
 	pTask->setThreadPool(this);
 
-	m_aTasks.push_back(pTask);
+	m_aTasks.emplace_back(pTask);
 }
 
 ThreadPoolTask* ThreadPool::getNextTask()
 {
-	ThreadPoolTask* pTask = NULL;
+	ThreadPoolTask* pTask = nullptr;
 
 	m_lock.lock();
 
@@ -622,7 +622,7 @@ void ThreadPool::addRequeuedTasks(RequeuedTasks& rqt)
 	{
 		ThreadPoolTask* pTask = *it;
 
-		m_aTasks.push_back(pTask);
+		m_aTasks.emplace_back(pTask);
 	}
 
 	rqt.m_pTasks.clear();

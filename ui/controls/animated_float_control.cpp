@@ -22,7 +22,7 @@
 #include <QAction>
 #include <QMenu>
 
-#include <math.h>
+#include <cmath>
 
 #include "parameter.h"
 
@@ -217,19 +217,19 @@ void AnimatedFloatControl::menuSelected(int index)
 		}
 		case 4: // linear interpolation
 		{
-			m_pairedValue->setInterpolationType(eLinearInterpolation);
+			m_pairedValue->setInterpolationType(AnimationCurve::eLinearInterpolation);
 			setInterpolationTypeChecked(0);
 			break;
 		}
 		case 5: // quadratic interpolation
 		{
-			m_pairedValue->setInterpolationType(eQuadraticInterpolation);
+			m_pairedValue->setInterpolationType(AnimationCurve::eQuadraticInterpolation);
 			setInterpolationTypeChecked(1);
 			break;
 		}
 		case 6: // cubic interpolation
 		{
-			m_pairedValue->setInterpolationType(eCubicInterpolation);
+			m_pairedValue->setInterpolationType(AnimationCurve::eCubicInterpolation);
 			setInterpolationTypeChecked(2);
 			break;
 		}

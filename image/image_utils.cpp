@@ -99,7 +99,7 @@ void ImageUtils::flipImageTileVertically(unsigned char* pData, unsigned int pixe
 	if (pTempScanline)
 	{
 		delete [] pTempScanline;
-		pTempScanline = NULL;
+		pTempScanline = nullptr;
 	}
 }
 
@@ -129,7 +129,7 @@ void ImageUtils::flipImageVertically(ImageColour3f* pImage, unsigned int scanlin
 	if (pTempScanline)
 	{
 		delete [] pTempScanline;
-		pTempScanline = NULL;
+		pTempScanline = nullptr;
 	}
 }
 
@@ -159,7 +159,7 @@ void ImageUtils::flipImageVertically(ImageColour3h* pImage, unsigned int scanlin
 	if (pTempScanline)
 	{
 		delete [] pTempScanline;
-		pTempScanline = NULL;
+		pTempScanline = nullptr;
 	}
 }
 
@@ -189,7 +189,7 @@ void ImageUtils::flipImageVertically(Image1f* pImage, unsigned int scanlines, un
 	if (pTempScanline)
 	{
 		delete [] pTempScanline;
-		pTempScanline = NULL;
+		pTempScanline = nullptr;
 	}
 }
 
@@ -219,7 +219,7 @@ void ImageUtils::flipImageVertically(Image1h* pImage, unsigned int scanlines, un
 	if (pTempScanline)
 	{
 		delete [] pTempScanline;
-		pTempScanline = NULL;
+		pTempScanline = nullptr;
 	}
 }
 

@@ -19,7 +19,7 @@
 #include "uint_control.h"
 
 #include <QHBoxLayout>
-#include <math.h>
+#include <cmath>
 
 #include "ui/widgets/scrub_button.h"
 

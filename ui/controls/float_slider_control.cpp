@@ -25,7 +25,7 @@ namespace Imagine
 
 FloatSliderControl::FloatSliderControl(const std::string& name, float* pairedValue, float min, float max, const std::string& label,
 									   bool editControl, bool logScaleSlider, bool highPrecision) :
-	Control(name, label), m_pSlider(NULL)
+	Control(name, label), m_pSlider(nullptr)
 {
 	m_pSlider = new FloatSliderWidget(min, max, editControl, logScaleSlider, highPrecision);
 

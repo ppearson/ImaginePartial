@@ -34,7 +34,7 @@ static const int kColourPopupBoxSize = 12;
 static const int kColourPopupMargin = 6;
 
 ColourChooserPopup::ColourChooserPopup(ColourButton* owner) : QWidget(0, Qt::Popup),
-	m_pPixmap(NULL), m_pOwner(owner), m_selectedColourIndex(-1)
+	m_pPixmap(nullptr), m_pOwner(owner), m_selectedColourIndex(-1)
 {
 	setAttribute(Qt::WA_DeleteOnClose, false);
 	hide();
@@ -51,64 +51,64 @@ ColourChooserPopup::~ColourChooserPopup()
 
 void ColourChooserPopup::buildColours()
 {
-	m_aColours.push_back(QColor(  0,   0,   0));
-	m_aColours.push_back(QColor( 25,  25,  25));
-	m_aColours.push_back(QColor( 50,  50,  50));
-	m_aColours.push_back(QColor( 75,  75,  75));
-	m_aColours.push_back(QColor(100, 100, 100));
-	m_aColours.push_back(QColor(125, 125, 125));
-	m_aColours.push_back(QColor(150, 150, 150));
-	m_aColours.push_back(QColor(175, 175, 175));
-	m_aColours.push_back(QColor(200, 200, 200));
-	m_aColours.push_back(QColor(225, 225, 225));
-	m_aColours.push_back(QColor(255, 255, 255));
-	m_aColours.push_back(QColor(128, 128, 128));
+	m_aColours.emplace_back(QColor(  0,   0,   0));
+	m_aColours.emplace_back(QColor( 25,  25,  25));
+	m_aColours.emplace_back(QColor( 50,  50,  50));
+	m_aColours.emplace_back(QColor( 75,  75,  75));
+	m_aColours.emplace_back(QColor(100, 100, 100));
+	m_aColours.emplace_back(QColor(125, 125, 125));
+	m_aColours.emplace_back(QColor(150, 150, 150));
+	m_aColours.emplace_back(QColor(175, 175, 175));
+	m_aColours.emplace_back(QColor(200, 200, 200));
+	m_aColours.emplace_back(QColor(225, 225, 225));
+	m_aColours.emplace_back(QColor(255, 255, 255));
+	m_aColours.emplace_back(QColor(128, 128, 128));
 
-	m_aColours.push_back(QColor(255,   0,   0));
-	m_aColours.push_back(QColor(255,  64,  64));
-	m_aColours.push_back(QColor(255, 128, 128));
-	m_aColours.push_back(QColor(255, 196, 196));
-	m_aColours.push_back(QColor(196,   0,   0));
-	m_aColours.push_back(QColor(128,   0,   0));
+	m_aColours.emplace_back(QColor(255,   0,   0));
+	m_aColours.emplace_back(QColor(255,  64,  64));
+	m_aColours.emplace_back(QColor(255, 128, 128));
+	m_aColours.emplace_back(QColor(255, 196, 196));
+	m_aColours.emplace_back(QColor(196,   0,   0));
+	m_aColours.emplace_back(QColor(128,   0,   0));
 
-	m_aColours.push_back(QColor(  0, 255,   0));
-	m_aColours.push_back(QColor( 64, 255,  64));
-	m_aColours.push_back(QColor(128, 255, 128));
-	m_aColours.push_back(QColor(196, 255, 196));
-	m_aColours.push_back(QColor(  0, 196,   0));
-	m_aColours.push_back(QColor(  0, 128,   0));
+	m_aColours.emplace_back(QColor(  0, 255,   0));
+	m_aColours.emplace_back(QColor( 64, 255,  64));
+	m_aColours.emplace_back(QColor(128, 255, 128));
+	m_aColours.emplace_back(QColor(196, 255, 196));
+	m_aColours.emplace_back(QColor(  0, 196,   0));
+	m_aColours.emplace_back(QColor(  0, 128,   0));
 
-	m_aColours.push_back(QColor(  0,   0, 255));
-	m_aColours.push_back(QColor( 64,  64, 255));
-	m_aColours.push_back(QColor(128, 128, 255));
-	m_aColours.push_back(QColor(196, 196, 255));
-	m_aColours.push_back(QColor(  0,   0, 196));
-	m_aColours.push_back(QColor(  0,   0, 128));
+	m_aColours.emplace_back(QColor(  0,   0, 255));
+	m_aColours.emplace_back(QColor( 64,  64, 255));
+	m_aColours.emplace_back(QColor(128, 128, 255));
+	m_aColours.emplace_back(QColor(196, 196, 255));
+	m_aColours.emplace_back(QColor(  0,   0, 196));
+	m_aColours.emplace_back(QColor(  0,   0, 128));
 
-	m_aColours.push_back(QColor(255, 255,   0));
-	m_aColours.push_back(QColor(255, 255,  64));
-	m_aColours.push_back(QColor(255, 255, 128));
-	m_aColours.push_back(QColor(255, 255, 196));
-	m_aColours.push_back(QColor(196, 196,   0));
-	m_aColours.push_back(QColor(128, 128,   0));
+	m_aColours.emplace_back(QColor(255, 255,   0));
+	m_aColours.emplace_back(QColor(255, 255,  64));
+	m_aColours.emplace_back(QColor(255, 255, 128));
+	m_aColours.emplace_back(QColor(255, 255, 196));
+	m_aColours.emplace_back(QColor(196, 196,   0));
+	m_aColours.emplace_back(QColor(128, 128,   0));
 
-	m_aColours.push_back(QColor(  0, 255, 255));
-	m_aColours.push_back(QColor( 64, 255, 255));
-	m_aColours.push_back(QColor(128, 255, 255));
-	m_aColours.push_back(QColor(196, 255, 255));
-	m_aColours.push_back(QColor(  0, 196, 196));
-	m_aColours.push_back(QColor(  0, 128, 128));
+	m_aColours.emplace_back(QColor(  0, 255, 255));
+	m_aColours.emplace_back(QColor( 64, 255, 255));
+	m_aColours.emplace_back(QColor(128, 255, 255));
+	m_aColours.emplace_back(QColor(196, 255, 255));
+	m_aColours.emplace_back(QColor(  0, 196, 196));
+	m_aColours.emplace_back(QColor(  0, 128, 128));
 
-	m_aColours.push_back(QColor(255,   0, 255));
-	m_aColours.push_back(QColor(255,  96, 255));
-	m_aColours.push_back(QColor(255, 128, 255));
-	m_aColours.push_back(QColor(255, 196, 255));
-	m_aColours.push_back(QColor(196,   0, 196));
-	m_aColours.push_back(QColor(128,   0, 128));
+	m_aColours.emplace_back(QColor(255,   0, 255));
+	m_aColours.emplace_back(QColor(255,  96, 255));
+	m_aColours.emplace_back(QColor(255, 128, 255));
+	m_aColours.emplace_back(QColor(255, 196, 255));
+	m_aColours.emplace_back(QColor(196,   0, 196));
+	m_aColours.emplace_back(QColor(128,   0, 128));
 
-	m_aColours.push_back(QColor(185, 148, 69)); // gold
-	m_aColours.push_back(QColor(134, 83, 34));  // terracotta
-	m_aColours.push_back(QColor(175, 161, 73));  // brass
+	m_aColours.emplace_back(QColor(185, 148, 69)); // gold
+	m_aColours.emplace_back(QColor(134, 83, 34));  // terracotta
+	m_aColours.emplace_back(QColor(175, 161, 73));  // brass
 }
 
 void ColourChooserPopup::buildPixmap()
@@ -121,7 +121,7 @@ void ColourChooserPopup::doLayout()
 	if (m_pPixmap)
 	{
 		delete m_pPixmap;
-		m_pPixmap = NULL;
+		m_pPixmap = nullptr;
 	}
 
 	setFocusPolicy(Qt::StrongFocus);
@@ -168,7 +168,7 @@ void ColourChooserPopup::doLayout()
 
 			painter.drawRect(boxRect);
 
-			m_aBoxes.push_back(boxRect);
+			m_aBoxes.emplace_back(boxRect);
 
 			count++;
 		}

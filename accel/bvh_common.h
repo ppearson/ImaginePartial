@@ -171,12 +171,12 @@ public:
 	{
 #if USE_BVHTEMP_TAGGED_POINTER
 		leaf.m_objectsCount = 0;
-		leaf.m_pObjects = NULL;
+		leaf.m_pObjects = nullptr;
 		m_tag = 3;
 #else
 		leaf.m_flags = 3;
 		leaf.m_objectsCount = 0;
-		leaf.m_pObjects = NULL;
+		leaf.m_pObjects = nullptr;
 #endif
 	}
 
@@ -329,9 +329,9 @@ struct BVHBuildThreadState
 struct BVHBuildContext
 {
 	BVHBuildContext(const AccelStructureConfig& accelConfig, bool useSlabAlloc = false)
-		: accelConfig(accelConfig), m_pRootNode(NULL), m_pEmptyLeafTemp(NULL),
+		: accelConfig(accelConfig), m_pRootNode(nullptr), m_pEmptyLeafTemp(nullptr),
 			m_nextFreeNodeIndex(0), m_nextFreeObjectArrayIndex(0), m_nextFreeObjectIndex(0), m_triPacketIndex(0),
-			m_useSlabAllocator(useSlabAlloc), m_pFirstBuildState(NULL)
+			m_useSlabAllocator(useSlabAlloc), m_pFirstBuildState(nullptr)
 	{
 		m_pRootNode = new BVHTempNode();
 
@@ -348,11 +348,11 @@ struct BVHBuildContext
 			// also need to check if m_pRootNode points at this first for empty BVHs...
 			if (m_pRootNode == m_pEmptyLeafTemp)
 			{
-				m_pRootNode = NULL;
+				m_pRootNode = nullptr;
 			}
 			
 			delete m_pEmptyLeafTemp;
-			m_pEmptyLeafTemp = NULL;
+			m_pEmptyLeafTemp = nullptr;
 		}
 
 		if (m_useSlabAllocator)
@@ -368,14 +368,14 @@ struct BVHBuildContext
 			if (m_pFirstBuildState)
 			{
 				delete m_pFirstBuildState;
-				m_pFirstBuildState = NULL;
+				m_pFirstBuildState = nullptr;
 			}
 
 			// now delete the first node which currently isn't allocated from a slab allocator - TODO: should probably do that...
 			if (m_useSlabAllocator && m_pRootNode)
 			{
 				delete m_pRootNode;
-				m_pRootNode = NULL;
+				m_pRootNode = nullptr;
 			}
 		}
 	}
@@ -395,7 +395,7 @@ struct BVHBuildContext
 		BVHBuildThreadState* pNewBuildState = new BVHBuildThreadState(pParentPartitioner, true, mallocTrim);
 
 		m_buildThreadStateLock.lock();
-		m_aBuildThreadState.push_back(pNewBuildState);
+		m_aBuildThreadState.emplace_back(pNewBuildState);
 		m_buildThreadStateLock.unlock();
 
 		return pNewBuildState;

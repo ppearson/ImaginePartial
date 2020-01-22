@@ -137,13 +137,13 @@ protected:
 
 struct HitResult
 {
-	__finline HitResult() : triID(-1), objID(-1), haveDerivatives(false), eta(1.0f) ,time(0.0f), originType(RAY_UNDEFINED),
-		rayWidth(0.0f), shadingFlags(0), otherFlags(0), intersectionError(0.0f), pObject(NULL), pMedium(NULL), pLight(NULL), pBakedBSDF(NULL),
-		pTriangleHolder(NULL), pCustom1(NULL), pShadingContext(NULL)
+	__finline HitResult() : triID(-1u), objID(-1u), haveDerivatives(false), eta(1.0f) ,time(0.0f), originType(RAY_UNDEFINED),
+		rayWidth(0.0f), shadingFlags(0u), otherFlags(0u), intersectionError(0.0f), pObject(nullptr), pMedium(nullptr), pLight(nullptr), pBakedBSDF(nullptr),
+		pTriangleHolder(nullptr), pCustom1(nullptr), pShadingContext(nullptr)
 	{
 	}
 
-	void setPointers(const Object* pObj, const Medium* pMed = NULL, const Light* pLi = NULL)
+	void setPointers(const Object* pObj, const Medium* pMed = nullptr, const Light* pLi = nullptr)
 	{
 		pObject = pObj;
 		pMedium = pMed;
@@ -152,8 +152,8 @@ struct HitResult
 
 	void reset()
 	{
-		triID = -1;
-		objID = -1;
+		triID = -1u;
+		objID = -1u;
 
 		hitPoint = Point();
 		geometryNormal = Normal();
@@ -171,15 +171,15 @@ struct HitResult
 		time = 0.0f;
 		originType = RAY_UNDEFINED;
 		rayWidth = 0.0f;
-		shadingFlags = 0;
-		otherFlags = 0;
+		shadingFlags = 0u;
+		otherFlags = 0u;
 		intersectionError = 0.0f;
-		pObject = NULL;
-		pMedium = NULL;
-		pLight = NULL;
-		pBakedBSDF = NULL;
-		pTriangleHolder = NULL;
-		pCustom1 = NULL;
+		pObject = nullptr;
+		pMedium = nullptr;
+		pLight = nullptr;
+		pBakedBSDF = nullptr;
+		pTriangleHolder = nullptr;
+		pCustom1 = nullptr;
 		// don't override pShadingContext
 	}
 

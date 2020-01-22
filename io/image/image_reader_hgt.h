@@ -31,7 +31,7 @@ public:
 
 	virtual Image* readColourImage(const std::string& filePath, unsigned int requiredTypeFlags)
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	// only interested in greyscale for heightmaps...

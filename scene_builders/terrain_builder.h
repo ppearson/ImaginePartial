@@ -21,6 +21,8 @@
 
 #include "scene_builder.h"
 
+#include "textures/texture_parameters.h"
+
 namespace Imagine
 {
 
@@ -32,7 +34,7 @@ public:
 	enum HeightSource
 	{
 		eImage,
-		eNoise,
+		eTexture,
 		eOcean
 	};
 
@@ -59,6 +61,8 @@ protected:
 	HeightSource	m_heightSource;
 
 	std::string		m_heightMapPath;
+	
+	TextureParameters	m_texture;
 
 	bool			m_normalise;
 	float			m_heightIgnoreThreshold;

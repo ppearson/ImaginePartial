@@ -66,7 +66,7 @@ ManipulatorHandle* ActiveManipulatorHandles::getManipulatorHandle(unsigned int I
 	std::map<unsigned int, ManipulatorHandle*>::iterator itFind = m_aManipulatorHandles.find(ID);
 
 	if (itFind == m_aManipulatorHandles.end())
-		return NULL;
+		return nullptr;
 
 	ManipulatorHandle* pManHandle = (*itFind).second;
 	return pManHandle;

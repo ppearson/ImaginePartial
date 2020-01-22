@@ -45,7 +45,7 @@ SimpleParametersPanel* SimplePanelBuilder::buildParametersPanel(Parameters& para
 {
 	std::vector<Parameter*>& params = parameters.getParameters();
 	if (params.empty())
-		return NULL;
+		return nullptr;
 
 	SimpleParametersPanel* pSPP = new SimpleParametersPanel(pParent);
 
@@ -65,7 +65,7 @@ SimpleParametersPanel* SimplePanelBuilder::buildParametersPanel(Parameters& para
 		// this isn't great, but due to wanting a completely clean separation between ParameterPanels/Controls and Parameters, the easiest
 		// way to do things...
 
-		Control* pControl = NULL;
+		Control* pControl = nullptr;
 
 		switch (parameterType)
 		{
@@ -113,6 +113,13 @@ SimpleParametersPanel* SimplePanelBuilder::buildParametersPanel(Parameters& para
 				RangeParameterPair<float, float>* pTypedParam = static_cast<RangeParameterPair<float, float>*>(pParam);
 				pControl = new FloatPairControl(name, pTypedParam->getPairedValue1(), pTypedParam->getPairedValue2(), pTypedParam->getMin(),
 												 pTypedParam->getMax(), label, pTypedParam->getFlags());
+				break;
+			}
+			case eParameterFloatSplitPair:
+			{
+				RangeParameterSplitPair<float, float>* pTypedParam = static_cast<RangeParameterSplitPair<float, float>*>(pParam);
+				pControl = new FloatPairControl(name, pTypedParam->getPairedValue1(), pTypedParam->getPairedValue2(), pTypedParam->getMin1(),
+												 pTypedParam->getMax1(), pTypedParam->getMin2(), pTypedParam->getMax2(), label, pTypedParam->getFlags());
 				break;
 			}
 			case eParameterEnum:
